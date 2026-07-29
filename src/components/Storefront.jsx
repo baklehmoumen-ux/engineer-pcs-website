@@ -84,10 +84,23 @@ export default function Storefront() {
   };
 
   return (
-    // Added pb-20 (padding-bottom) so the mobile bottom bar doesn't cover the last products
     <div className="min-h-screen bg-gray-50 font-sans pb-20 md:pb-0">
       
-      {/* 1. THE NAVBAR (Responsive adjustments) */}
+      {/* 1. NEW TOP UTILITY BAR (Shows Socials) */}
+      <div className="bg-gray-900 text-gray-300 text-[10px] md:text-xs py-2 px-3 md:px-6 flex justify-between items-center z-50 relative">
+        <span className="font-medium tracking-wide">📍 Pro PC Builders</span>
+        <div className="flex gap-4">
+          <a href="https://wa.me/963946508988" target="_blank" rel="noreferrer" className="hover:text-green-400 flex items-center gap-1 transition font-bold">
+            <span className="text-sm">💬</span> WhatsApp
+          </a>
+          {/* UPDATE YOUR INSTAGRAM LINK HERE */}
+          <a href="https://instagram.com/your_instagram_handle" target="_blank" rel="noreferrer" className="hover:text-pink-400 flex items-center gap-1 transition font-bold">
+            <span className="text-sm">📸</span> Instagram
+          </a>
+        </div>
+      </div>
+
+      {/* 2. THE NAVBAR */}
       <header className="bg-[#131921] text-white p-3 md:p-4 sticky top-0 z-40 shadow-lg">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-3 md:gap-4">
           
@@ -136,7 +149,7 @@ export default function Storefront() {
         </div>
       </header>
 
-      {/* 2. THE CATEGORY MENU (Perfect for mobile swiping) */}
+      {/* 3. THE CATEGORY MENU */}
       <nav className="bg-[#232F3E] text-white text-sm py-2 px-2 md:px-4 shadow-md overflow-x-auto whitespace-nowrap hide-scrollbar">
         <div className="max-w-7xl mx-auto flex gap-4 md:gap-6 px-2">
           {categories.map((category) => (
@@ -153,7 +166,7 @@ export default function Storefront() {
         </div>
       </nav>
 
-      {/* 3. THE PRODUCT GRID (2 columns on mobile, 4 on desktop) */}
+      {/* 4. THE PRODUCT GRID */}
       <main className="max-w-7xl mx-auto p-3 md:p-6">
         <h2 className="text-xl md:text-3xl font-bold text-gray-800 mb-4 md:mb-8 border-b-2 border-gray-200 pb-2">
           {searchQuery ? `Results for "${searchQuery}"` : activeCategory}
@@ -166,14 +179,12 @@ export default function Storefront() {
             {filteredInventory.map((item) => (
               <div key={item.id} className="group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col overflow-hidden relative">
                 
-                {/* Smaller image area for mobile */}
                 <div className="h-32 md:h-56 bg-gray-50 flex items-center justify-center p-2 md:p-4">
                   <div className="text-gray-400 text-[10px] md:text-xs text-center border-2 border-dashed border-gray-200 p-2 md:p-8 rounded-lg w-full h-full flex items-center justify-center">
                     [Img: {item.image}]
                   </div>
                 </div>
                 
-                {/* Product Text */}
                 <div className="p-3 md:p-5 flex flex-col flex-1">
                   <span className="text-[10px] md:text-xs font-bold text-blue-500 uppercase tracking-wider mb-1 line-clamp-1">{item.category}</span>
                   <h3 className="text-gray-900 font-semibold text-xs md:text-sm line-clamp-2 mb-2 md:mb-3">
@@ -210,7 +221,7 @@ export default function Storefront() {
         </button>
       </div>
 
-      {/* 4. THE INTERACTIVE MULTI-STEP DRAWER */}
+      {/* 5. THE INTERACTIVE MULTI-STEP DRAWER */}
       {isDrawerOpen && (
         <div className="fixed inset-0 z-50 flex justify-end bg-black bg-opacity-60 backdrop-blur-sm transition-opacity">
           <div className="w-full max-w-md bg-white h-full shadow-2xl flex flex-col animate-slide-in-right">
