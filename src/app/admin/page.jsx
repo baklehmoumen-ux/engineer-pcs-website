@@ -134,7 +134,6 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [editingItem, setEditingItem] = useState(null);
   
-  // NEW: Search Engine State
   const [adminSearch, setAdminSearch] = useState('');
 
   const [formData, setFormData] = useState({
@@ -143,7 +142,8 @@ export default function AdminDashboard() {
     category: 'Motherboards',
     price: '',
     image: '',
-    in_stock: true
+    in_stock: true,
+    description: ''
   });
 
   const fetchProducts = async () => {
@@ -158,14 +158,12 @@ export default function AdminDashboard() {
     fetchProducts();
   }, []);
 
-  // Merge static items with DB items (DB entries override static items)
   const allProducts = useMemo(() => {
     const dbIds = new Set(dbProducts.map(p => p.id));
     const remainingStatic = staticInventory.filter(item => !dbIds.has(item.id));
     return [...dbProducts, ...remainingStatic].sort((a, b) => a.name.localeCompare(b.name));
   }, [dbProducts]);
 
-  // NEW: Filter items based on the admin search bar
   const displayedProducts = useMemo(() => {
     if (!adminSearch) return allProducts;
     const lowerSearch = adminSearch.toLowerCase();
@@ -183,19 +181,19 @@ export default function AdminDashboard() {
       category: formData.category,
       price: parseFloat(formData.price),
       image: formData.image || '/images/default.jpg',
-      in_stock: formData.in_stock
+      in_stock: formData.in_stock,
+      description: formData.description || ''
     };
 
-    // Upsert into Supabase so editing static items creates/updates their record in Supabase
     const { error } = await supabase.from('products').upsert([itemData]);
     if (error) {
       console.error("Error saving product:", error);
-      alert("Failed to save product to database.");
+      alert(`Failed to save: ${error.message}`);
+    } else {
+      setFormData({ id: '', name: '', category: 'Motherboards', price: '', image: '', in_stock: true, description: '' });
+      setEditingItem(null);
+      fetchProducts();
     }
-
-    setFormData({ id: '', name: '', category: 'Motherboards', price: '', image: '', in_stock: true });
-    setEditingItem(null);
-    fetchProducts();
   };
 
   const handleEdit = (product) => {
@@ -206,7 +204,8 @@ export default function AdminDashboard() {
       category: product.category,
       price: product.price,
       image: product.image,
-      in_stock: product.in_stock !== undefined ? product.in_stock : true
+      in_stock: product.in_stock !== undefined ? product.in_stock : true,
+      description: product.description || ''
     });
   };
 
@@ -251,7 +250,17 @@ export default function AdminDashboard() {
               </div>
 
               <div>
-                {/* UPDATED: Multiple Images prompt */}
+                <label className="block text-xs font-bold text-gray-600 mb-1">Description & Specifications</label>
+                <textarea 
+                  rows="3" 
+                  className="w-full p-2.5 border rounded-lg outline-none text-sm text-black resize-y" 
+                  value={formData.description} 
+                  onChange={(e) => setFormData({...formData, description: e.target.value})} 
+                  placeholder="Enter detailed specifications here..." 
+                />
+              </div>
+
+              <div>
                 <label className="block text-xs font-bold text-gray-600 mb-1">Image Path(s) / URL(s) - Separate with commas</label>
                 <input type="text" className="w-full p-2.5 border rounded-lg outline-none text-sm text-black" value={formData.image} onChange={(e) => setFormData({...formData, image: e.target.value})} placeholder="url1.jpg, url2.jpg" />
               </div>
@@ -273,7 +282,7 @@ export default function AdminDashboard() {
                   {editingItem ? 'Update Item' : 'Add Item'}
                 </button>
                 {editingItem && (
-                  <button type="button" onClick={() => { setEditingItem(null); setFormData({ id: '', name: '', category: 'Motherboards', price: '', image: '', in_stock: true }); }} className="bg-gray-300 hover:bg-gray-400 px-4 py-2.5 rounded-lg font-bold text-gray-700 cursor-pointer">
+                  <button type="button" onClick={() => { setEditingItem(null); setFormData({ id: '', name: '', category: 'Motherboards', price: '', image: '', in_stock: true, description: '' }); }} className="bg-gray-300 hover:bg-gray-400 px-4 py-2.5 rounded-lg font-bold text-gray-700 cursor-pointer">
                     Cancel
                   </button>
                 )}
@@ -284,7 +293,6 @@ export default function AdminDashboard() {
           <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-md">
             <h2 className="text-xl font-bold mb-4 text-gray-800">📦 All Store Catalog ({allProducts.length})</h2>
             
-            {/* NEW: Admin Search Bar */}
             <div className="mb-4">
               <input 
                 type="text" 

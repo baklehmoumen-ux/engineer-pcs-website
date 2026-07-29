@@ -264,9 +264,11 @@ export default function Storefront() {
     return found ? found.quantity : 0;
   };
 
+  // Updated to handle array of images for the initial active image view
   const openDetailModal = (product) => {
     setSelectedProduct(product);
-    setActiveImage(product.image || '/images/default.jpg');
+    const firstImg = product.image ? product.image.split(',')[0].trim() : '/images/default.jpg';
+    setActiveImage(firstImg);
   };
 
   const submitOrder = (e) => {
@@ -454,6 +456,8 @@ export default function Storefront() {
             {filteredInventory.map((item) => {
               const qty = getItemQuantity(item.id);
               const isOutOfStock = item.in_stock === false;
+              // Extract the first image out of the comma-separated string
+              const firstImage = item.image ? item.image.split(',')[0].trim() : '/images/default.jpg';
 
               return (
                 <div key={item.id} className={`group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col overflow-hidden relative ${isOutOfStock ? 'opacity-75' : ''}`}>
@@ -472,9 +476,9 @@ export default function Storefront() {
                       </div>
                     )}
 
-                    {/* REPLACED WITH REAL IMAGE TAG */}
+                    {/* REPLACED WITH REAL IMAGE TAG (Using the first image available) */}
                     <img 
-                      src={item.image || '/images/default.jpg'} 
+                      src={firstImage} 
                       alt={item.name}
                       className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                       onError={(e) => { e.target.src = 'https://via.placeholder.com/300?text=PC+Component'; }}
@@ -661,17 +665,22 @@ export default function Storefront() {
                   />
                 </div>
 
-                {/* Additional Picture Thumbnails */}
+                {/* Additional Picture Thumbnails - Split array if multiple images were added via commas */}
                 <div className="flex gap-2 overflow-x-auto pb-1">
-                  {[selectedProduct.image, '/images/default.jpg', '/images/box-preview.jpg'].map((img, idx) => (
+                  {(selectedProduct.image ? selectedProduct.image.split(',').map(s => s.trim()) : ['/images/default.jpg']).map((img, idx) => (
                     <button
                       key={idx}
-                      onClick={() => setActiveImage(img || '/images/default.jpg')}
-                      className={`h-14 w-14 rounded-lg border-2 overflow-hidden bg-gray-50 flex items-center justify-center text-[8px] text-gray-400 flex-shrink-0 cursor-pointer ${
+                      onClick={() => setActiveImage(img)}
+                      className={`h-14 w-14 rounded-lg border-2 overflow-hidden bg-gray-50 flex items-center justify-center p-0.5 flex-shrink-0 cursor-pointer ${
                         activeImage === img ? 'border-yellow-500' : 'border-gray-200'
                       }`}
                     >
-                      Pic {idx + 1}
+                      <img 
+                        src={img} 
+                        alt={`Thumbnail ${idx + 1}`} 
+                        className="w-full h-full object-cover rounded-md" 
+                        onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=Img'; }} 
+                      />
                     </button>
                   ))}
                 </div>
@@ -702,8 +711,9 @@ export default function Storefront() {
 
                   <div className="mb-6">
                     <span className="text-xs font-bold text-gray-500 uppercase block mb-1">Description & Specifications</span>
-                    <p className="text-xs text-gray-600 leading-relaxed bg-gray-50 p-3 rounded-lg border border-gray-200">
-                      Official {selectedProduct.category} component by EngineerPCs. Verified for high performance, compatibility, and full manufacturer warranty.
+                    {/* UPDATED: Will show the custom description you type, or fall back to the default message! */}
+                    <p className="text-xs text-gray-600 leading-relaxed bg-gray-50 p-3 rounded-lg border border-gray-200 whitespace-pre-wrap">
+                      {selectedProduct.description || `Official ${selectedProduct.category} component by EngineerPCs. Verified for high performance, compatibility, and full manufacturer warranty.`}
                     </p>
                   </div>
                 </div>
