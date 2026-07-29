@@ -25,7 +25,9 @@ const inventoryPart1 = [
   { id: 'psu-5', category: 'Power Supplies', name: 'ThermalRight TR-SP850-W 850W White', price: 118, image: '/images/tr-sp850-w.jpg' },
   { id: 'psu-6', category: 'Power Supplies', name: 'ThermalRight TR-SP1000 1000W', price: 130, image: '/images/tr-sp1000.jpg' },
   { id: 'psu-7', category: 'Power Supplies', name: 'ThermalRight TR-SP1000-W 1000W White', price: 135, image: '/images/tr-sp1000-w.jpg' },
-];// Master Inventory Part 2: ThermalRight Air & Aqua Elite Liquid Coolers
+];
+
+// Master Inventory Part 2: ThermalRight Air & Aqua Elite Liquid Coolers
 const inventoryPart2 = [
   { id: 'cool-1', category: 'Liquid & Air Cooling', name: 'ThermalRight Assassin X 120 Refined SE ARGB (AM4,AM5)', price: 18, image: '/images/cool1.jpg' },
   { id: 'cool-2', category: 'Liquid & Air Cooling', name: 'ThermalRight Burst Assassin 120 SE ARGB', price: 24, image: '/images/burst120.jpg' },
@@ -38,7 +40,9 @@ const inventoryPart2 = [
   { id: 'cool-9', category: 'Liquid & Air Cooling', name: 'ThermalRight Aqua Elite 360 WHITE V3', price: 73, image: '/images/aqua360w.jpg' },
   { id: 'cool-10', category: 'Liquid & Air Cooling', name: 'ThermalRight Aqua Elite 360 ARGB BLACK V6', price: 70, image: '/images/aqua360v6.jpg' },
   { id: 'cool-11', category: 'Liquid & Air Cooling', name: 'ThermalRight Aqua Elite 360 ARGB WHITE V6', price: 73, image: '/images/aqua360v6w.jpg' },
-];// Master Inventory Part 3: ThermalRight Frozen Series Coolers
+];
+
+// Master Inventory Part 3: ThermalRight Frozen Series Coolers
 const inventoryPart3 = [
   { id: 'cool-12', category: 'Liquid & Air Cooling', name: 'ThermalRight Frozen Infinity 360 BLACK', price: 82, image: '/images/frozinf360.jpg' },
   { id: 'cool-13', category: 'Liquid & Air Cooling', name: 'ThermalRight Frozen Infinity 360 WHITE', price: 85, image: '/images/frozinf360w.jpg' },
@@ -60,7 +64,9 @@ const inventoryPart4 = [
   { id: 'cool-25', category: 'Liquid & Air Cooling', name: 'ThermalRight Trofeo Vision 360 ARGB WHITE', price: 180, image: '/images/trof360w.jpg' },
   { id: 'cool-26', category: 'Liquid & Air Cooling', name: 'ThermalRight Levita Vision 360 ARGB BLACK', price: 230, image: '/images/lev360.jpg' },
   { id: 'cool-27', category: 'Liquid & Air Cooling', name: 'ThermalRight Levita Vision 360 ARGB WHITE', price: 235, image: '/images/lev360w.jpg' },
-];// Master Inventory Part 5: ThermalRight Cases, Fans, Hubs & Accessories
+];
+
+// Master Inventory Part 5: ThermalRight Cases, Fans, Hubs & Accessories
 const inventoryPart5 = [
   { id: 'case-1', category: 'PC Cases', name: 'ThermalRight A70 VISION', price: 160, image: '/images/a70.jpg' },
   { id: 'case-2', category: 'PC Cases', name: 'ThermalRight A70 VISION WHITE', price: 165, image: '/images/a70w.jpg' },
@@ -91,7 +97,9 @@ const inventoryPart6 = [
   { id: 'case-12', category: 'PC Cases', name: 'Darkflash F1 White with 6 argb fans', price: 138, image: '/images/f1w.jpg' },
   { id: 'case-13', category: 'PC Cases', name: 'Darkflash C280 Black with 7 argb fans', price: 84, image: '/images/c280.jpg' },
   { id: 'case-14', category: 'PC Cases', name: 'Darkflash C280 White with 7 argb fans', price: 86, image: '/images/c280w.jpg' },
-];// Master Inventory Part 7: Darkflash PC Cases (Part 2)
+];
+
+// Master Inventory Part 7: Darkflash PC Cases (Part 2)
 const inventoryPart7 = [
   { id: 'case-15', category: 'PC Cases', name: 'Darkflash DK431 Mesh Black with 4 argb fans', price: 70, image: '/images/dk431m.jpg' },
   { id: 'case-16', category: 'PC Cases', name: 'Darkflash DK431 Glass Black with 4 argb fans', price: 73, image: '/images/dk431g.jpg' },
@@ -117,7 +125,9 @@ const inventoryPart8 = [
   { id: 'chair-2', category: 'Chairs & Accessories', name: 'Darkflash Ergonomic Chair EA100 RED', price: 176, image: '/images/ea100r.jpg' },
   { id: 'chair-3', category: 'Chairs & Accessories', name: 'Darkflash Ergonomic Chair EA100 WHITE', price: 176, image: '/images/ea100w.jpg' },
   { id: 'chair-4', category: 'Chairs & Accessories', name: 'Darkflash Ergonomic Chair EA100 BLUE', price: 176, image: '/images/ea100b.jpg' },
-];// Master Inventory Part 9: Monitors, AMD CPUs & Motherboards
+];
+
+// Master Inventory Part 9: Monitors, AMD CPUs & Motherboards
 const inventoryPart9 = [
   { id: 'mon-1', category: 'Monitors', name: 'MSI MAG 271QPX QD-OLED X28', price: 590, image: '/images/msi271.jpg' },
   { id: 'mon-2', category: 'Monitors', name: 'MSI MAG 244F', price: 125, image: '/images/msi244.jpg' },
@@ -153,7 +163,9 @@ const staticInventory = [
   ...inventoryPart7,
   ...inventoryPart8,
   ...inventoryPart9
-];export default function Storefront() {
+];
+
+export default function Storefront() {
   const [dbProducts, setDbProducts] = useState([]);
   const [cart, setCart] = useState([]);
   const [activeCategory, setActiveCategory] = useState('All');
@@ -168,7 +180,9 @@ const staticInventory = [
 
   // Detail Modal State (For viewing further pictures & details)
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [activeImage, setActiveImage] = useState('');// 1. Fetch live products from Supabase on mount
+  const [activeImage, setActiveImage] = useState('');
+
+  // 1. Fetch live products from Supabase on mount
   useEffect(() => {
     async function fetchLiveProducts() {
       try {
@@ -195,7 +209,9 @@ const staticInventory = [
     setTimeout(() => {
       setToastMessage('');
     }, 2200);
-  };// Filter & Price Sorting Memo
+  };
+
+  // Filter & Price Sorting Memo
   const filteredInventory = useMemo(() => {
     let items = masterInventory.filter(item => {
       const matchesCategory = activeCategory === 'All' || item.category === activeCategory;
@@ -238,7 +254,9 @@ const staticInventory = [
 
   const removeFromCart = (id) => {
     setCart(prev => prev.filter(item => item.id !== id));
-  };const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  };
+
+  const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
 
   const getItemQuantity = (id) => {
@@ -266,7 +284,9 @@ const staticInventory = [
 
     const encodedMessage = encodeURIComponent(message);
     window.open(`https://wa.me/963946508988?text=${encodedMessage}`, '_blank');
-  };return (
+  };
+
+  return (
     <div className="min-h-screen bg-gray-50 font-sans pb-24 md:pb-0 relative">
       
       {/* FLOATING TOAST NOTIFICATION */}
@@ -312,7 +332,9 @@ const staticInventory = [
             Instagram
           </a>
         </div>
-      </div>{/* 2. MAIN NAVBAR */}
+      </div>
+
+      {/* 2. MAIN NAVBAR */}
       <header className="bg-[#131921] text-white p-3 md:p-4 sticky top-0 z-40 shadow-lg">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-3 md:gap-6">
           
@@ -369,7 +391,9 @@ const staticInventory = [
           </button>
 
         </div>
-      </header>{/* 3. CATEGORY NAVIGATION MENU */}
+      </header>
+
+      {/* 3. CATEGORY NAVIGATION MENU */}
       <nav className="bg-[#232F3E] text-white text-sm py-2 px-2 md:px-4 shadow-md overflow-x-auto whitespace-nowrap hide-scrollbar">
         <div className="max-w-7xl mx-auto flex gap-4 md:gap-6 px-2">
           {categories.map((category) => (
@@ -384,7 +408,9 @@ const staticInventory = [
             </button>
           ))}
         </div>
-      </nav>{/* 4. MAIN PRODUCT DISPLAY HEADER & LIVE PRICE SORTING */}
+      </nav>
+
+      {/* 4. MAIN PRODUCT DISPLAY HEADER & LIVE PRICE SORTING */}
       <main className="max-w-7xl mx-auto p-3 md:p-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 md:mb-6 border-b-2 border-gray-200 pb-3">
           <h2 className="text-lg md:text-2xl font-bold text-gray-800">
@@ -424,7 +450,8 @@ const staticInventory = [
         {filteredInventory.length === 0 ? (
           <div className="text-center text-gray-500 py-20 text-lg md:text-xl">No matching products found.</div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">{filteredInventory.map((item) => {
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+            {filteredInventory.map((item) => {
               const qty = getItemQuantity(item.id);
               const isOutOfStock = item.in_stock === false;
 
@@ -445,14 +472,20 @@ const staticInventory = [
                       </div>
                     )}
 
-                    <div className="text-gray-400 text-[10px] md:text-xs text-center border-2 border-dashed border-gray-200 p-2 md:p-8 rounded-lg w-full h-full flex items-center justify-center group-hover:border-yellow-400 transition-colors">
-                      [Img: {item.image}]
-                    </div>
+                    {/* REPLACED WITH REAL IMAGE TAG */}
+                    <img 
+                      src={item.image || '/images/default.jpg'} 
+                      alt={item.name}
+                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                      onError={(e) => { e.target.src = 'https://via.placeholder.com/300?text=PC+Component'; }}
+                    />
                     
                     <span className="absolute bottom-2 right-2 bg-gray-900/80 text-white text-[10px] px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">
                       🔍 View Details
                     </span>
-                  </div><div className="p-3 md:p-5 flex flex-col flex-1">
+                  </div>
+
+                  <div className="p-3 md:p-5 flex flex-col flex-1">
                     <span className="text-[10px] md:text-xs font-bold text-blue-500 uppercase tracking-wider mb-1 line-clamp-1">{item.category}</span>
                     <h3 
                       onClick={() => openDetailModal(item)}
@@ -490,7 +523,9 @@ const staticInventory = [
             })}
           </div>
         )}
-      </main>{/* MOBILE-ONLY STICKY BOTTOM CART BAR */}
+      </main>
+
+      {/* MOBILE-ONLY STICKY BOTTOM CART BAR */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 px-4 flex justify-between items-center z-40 shadow-[0_-5px_15px_rgba(0,0,0,0.1)]">
         <div className="flex flex-col">
           <span className="text-xs text-gray-500 font-medium">{cartCount} {cartCount === 1 ? 'item' : 'items'} in cart</span>
@@ -543,7 +578,8 @@ const staticInventory = [
                       </div>
                     ))
                   )}
-                </div>) : (
+                </div>
+              ) : (
                 <form id="checkout-form" onSubmit={submitOrder} className="space-y-4 md:space-y-5">
                   <div>
                     <label className="block text-xs md:text-sm font-bold text-gray-700 mb-1">Full Name</label>
@@ -590,7 +626,9 @@ const staticInventory = [
             </div>
           </div>
         </div>
-      )}{/* 6. PRODUCT DETAIL & MULTI-PICTURE MODAL */}
+      )}
+
+      {/* 6. PRODUCT DETAIL & MULTI-PICTURE MODAL */}
       {selectedProduct && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
           <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
@@ -614,9 +652,13 @@ const staticInventory = [
               {/* Left: Main Image & Gallery Thumbnails */}
               <div className="flex flex-col gap-3">
                 <div className="h-64 bg-gray-100 rounded-xl overflow-hidden border border-gray-200 flex items-center justify-center p-4 relative">
-                  <div className="text-gray-400 text-xs text-center border-2 border-dashed border-gray-300 p-8 rounded-lg w-full h-full flex items-center justify-center">
-                    [Img: {activeImage}]
-                  </div>
+                  {/* REPLACED WITH REAL IMAGE TAG */}
+                  <img 
+                    src={activeImage || '/images/default.jpg'} 
+                    alt={selectedProduct.name}
+                    className="w-full h-full object-contain"
+                    onError={(e) => { e.target.src = 'https://via.placeholder.com/300?text=PC+Component'; }}
+                  />
                 </div>
 
                 {/* Additional Picture Thumbnails */}
@@ -633,7 +675,9 @@ const staticInventory = [
                     </button>
                   ))}
                 </div>
-              </div>{/* Right: Product Details & Actions */}
+              </div>
+
+              {/* Right: Product Details & Actions */}
               <div className="flex flex-col justify-between">
                 <div>
                   <h2 className="text-xl font-bold text-gray-900 mb-2">
