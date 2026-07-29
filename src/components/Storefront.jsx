@@ -1,9 +1,10 @@
 "use client";
 import React, { useState, useMemo } from 'react';
 
-// Categories matching uploaded PDF inventory
+// Categories matching uploaded PDF inventory & new images
 const categories = [
   'All', 
+  'CPUs',
   'Motherboards', 
   'PC Cases', 
   'Power Supplies', 
@@ -119,7 +120,7 @@ const inventoryPart8 = [
   { id: 'chair-2', category: 'Chairs & Accessories', name: 'Darkflash Ergonomic Chair EA100 RED', price: 176, image: '/images/ea100r.jpg' },
   { id: 'chair-3', category: 'Chairs & Accessories', name: 'Darkflash Ergonomic Chair EA100 WHITE', price: 176, image: '/images/ea100w.jpg' },
   { id: 'chair-4', category: 'Chairs & Accessories', name: 'Darkflash Ergonomic Chair EA100 BLUE', price: 176, image: '/images/ea100b.jpg' },
-];// Master Inventory Part 9: MSI Gaming Monitors & ASUS Motherboard
+];// Master Inventory Part 9: Monitors, AMD CPUs & Motherboards
 const inventoryPart9 = [
   // --- MSI GAMING MONITORS ---
   { id: 'mon-1', category: 'Monitors', name: 'MSI MAG 271QPX QD-OLED X28', price: 590, image: '/images/msi271.jpg' },
@@ -131,8 +132,22 @@ const inventoryPart9 = [
   { id: 'mon-7', category: 'Monitors', name: 'MSI MAG 274UPDF E16M', price: 565, image: '/images/msi274updf.jpg' },
   { id: 'mon-8', category: 'Monitors', name: 'MSI MAG 274QPF X30MV', price: 440, image: '/images/msi274qpf.jpg' },
 
-  // --- MOTHERBOARDS ---
+  // --- AMD CPUS (NEW ADDITIONS) ---
+  { id: 'cpu-amd-1', category: 'CPUs', name: 'Ryzen 5 7500F', price: 138, image: '/images/r5-7500f.jpg' },
+  { id: 'cpu-amd-2', category: 'CPUs', name: 'Ryzen 5 9600X', price: 205, image: '/images/r5-9600x.jpg' },
+  { id: 'cpu-amd-3', category: 'CPUs', name: 'Ryzen 7 7800X3D', price: 315, image: '/images/r7-7800x3d.jpg' },
+  { id: 'cpu-amd-4', category: 'CPUs', name: 'Ryzen 7 9700X', price: 285, image: '/images/r7-9700x.jpg' },
+  { id: 'cpu-amd-5', category: 'CPUs', name: 'Ryzen 7 9800X3D', price: 420, image: '/images/r7-9800x3d.jpg' },
+  { id: 'cpu-amd-6', category: 'CPUs', name: 'Ryzen 9 9900X', price: 410, image: '/images/r9-9900x.jpg' },
+  { id: 'cpu-amd-7', category: 'CPUs', name: 'Ryzen 9 9950X3D', price: 690, image: '/images/r9-9950x3d.jpg' },
+
+  // --- MOTHERBOARDS (NEW & EXISTING ADDITIONS) ---
   { id: 'mb-1', category: 'Motherboards', name: 'ASUS Main GAMING Motherboard', price: 89, image: '/images/asus-mb.jpg' },
+  { id: 'mb-2', category: 'Motherboards', name: 'ASUS B850M AYW GAMING WIFI', price: 185, image: '/images/asus-b850m.jpg' },
+  { id: 'mb-3', category: 'Motherboards', name: 'GigaByte B650M-D2HP', price: 121, image: '/images/gb-b650m-d2hp.jpg' },
+  { id: 'mb-4', category: 'Motherboards', name: 'MSI H610M-E', price: 80, image: '/images/msi-h610m-e.jpg' },
+  { id: 'mb-5', category: 'Motherboards', name: 'GigaByte B650M Gaming WIFI', price: 147, image: '/images/gb-b650m-wifi.jpg' },
+  { id: 'mb-6', category: 'Motherboards', name: 'GigaByte X870 AORUS ELITE WIFI7', price: 315, image: '/images/gb-x870-aorus.jpg' },
 ];// Consolidate all parts into single master inventory
 const inventory = [
   ...inventoryPart1, 
