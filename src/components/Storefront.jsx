@@ -1,10 +1,9 @@
 "use client";
 import React, { useState, useMemo } from 'react';
 
-// Categories strictly based on catalog files
+// Categories matching uploaded PDF inventory
 const categories = [
   'All', 
-  'CPUs', 
   'Motherboards', 
   'PC Cases', 
   'Power Supplies', 
@@ -14,9 +13,8 @@ const categories = [
   'Chairs & Accessories'
 ];
 
-// Master Inventory Part 1: Power Supplies & Air Coolers
+// Master Inventory Part 1: ThermalRight Power Supplies
 const inventoryPart1 = [
-  // --- POWER SUPPLIES (PSUs) ---
   { id: 'psu-1', category: 'Power Supplies', name: 'ThermalRight TR-TB650S 650W 80 PLUS', price: 58, image: '/images/tr-tb650s.jpg' },
   { id: 'psu-2', category: 'Power Supplies', name: 'ThermalRight TR-TB750S 750W', price: 76, image: '/images/tr-tb750s.jpg' },
   { id: 'psu-3', category: 'Power Supplies', name: 'ThermalRight TR-SP750 750W 80 PLUS', price: 100, image: '/images/tr-sp750.jpg' },
@@ -24,14 +22,14 @@ const inventoryPart1 = [
   { id: 'psu-5', category: 'Power Supplies', name: 'ThermalRight TR-SP850-W 850W White', price: 118, image: '/images/tr-sp850-w.jpg' },
   { id: 'psu-6', category: 'Power Supplies', name: 'ThermalRight TR-SP1000 1000W', price: 130, image: '/images/tr-sp1000.jpg' },
   { id: 'psu-7', category: 'Power Supplies', name: 'ThermalRight TR-SP1000-W 1000W White', price: 135, image: '/images/tr-sp1000-w.jpg' },
-
+];// Master Inventory Part 2: ThermalRight Air & Aqua Elite Liquid Coolers
+const inventoryPart2 = [
   // --- AIR COOLERS ---
   { id: 'cool-1', category: 'Liquid & Air Cooling', name: 'ThermalRight Assassin X 120 Refined SE ARGB (AM4,AM5)', price: 18, image: '/images/cool1.jpg' },
   { id: 'cool-2', category: 'Liquid & Air Cooling', name: 'ThermalRight Burst Assassin 120 SE ARGB', price: 24, image: '/images/burst120.jpg' },
   { id: 'cool-3', category: 'Liquid & Air Cooling', name: 'ThermalRight Phantom Spirit 120 SE ARGB', price: 40, image: '/images/phantom120.jpg' },
-];// Master Inventory Part 2: Aqua & Frozen Series AIO Coolers
-const inventoryPart2 = [
-  // --- AIO LIQUID COOLERS (Aqua & Frozen) ---
+
+  // --- AQUA ELITE AIO COOLERS ---
   { id: 'cool-4', category: 'Liquid & Air Cooling', name: 'ThermalRight Aqua Elite 240 V3', price: 57, image: '/images/aqua240.jpg' },
   { id: 'cool-5', category: 'Liquid & Air Cooling', name: 'ThermalRight Aqua Elite 240 WHITE V3', price: 60, image: '/images/aqua240w.jpg' },
   { id: 'cool-6', category: 'Liquid & Air Cooling', name: 'ThermalRight Aqua Elite 240 ARGB BLACK V6', price: 57, image: '/images/aqua240v6.jpg' },
@@ -40,15 +38,16 @@ const inventoryPart2 = [
   { id: 'cool-9', category: 'Liquid & Air Cooling', name: 'ThermalRight Aqua Elite 360 WHITE V3', price: 73, image: '/images/aqua360w.jpg' },
   { id: 'cool-10', category: 'Liquid & Air Cooling', name: 'ThermalRight Aqua Elite 360 ARGB BLACK V6', price: 70, image: '/images/aqua360v6.jpg' },
   { id: 'cool-11', category: 'Liquid & Air Cooling', name: 'ThermalRight Aqua Elite 360 ARGB WHITE V6', price: 73, image: '/images/aqua360v6w.jpg' },
+];// Master Inventory Part 3: ThermalRight Frozen Series Coolers
+const inventoryPart3 = [
   { id: 'cool-12', category: 'Liquid & Air Cooling', name: 'ThermalRight Frozen Infinity 360 BLACK', price: 82, image: '/images/frozinf360.jpg' },
   { id: 'cool-13', category: 'Liquid & Air Cooling', name: 'ThermalRight Frozen Infinity 360 WHITE', price: 85, image: '/images/frozinf360w.jpg' },
   { id: 'cool-14', category: 'Liquid & Air Cooling', name: 'ThermalRight Frozen Notte 240 BLACK ARGB V2', price: 68, image: '/images/froz240argb.jpg' },
   { id: 'cool-15', category: 'Liquid & Air Cooling', name: 'ThermalRight Frozen Notte 240 WHITE ARGB V2', price: 68, image: '/images/froz240argbw.jpg' },
   { id: 'cool-16', category: 'Liquid & Air Cooling', name: 'ThermalRight Frozen Notte 360 BLACK ARGB V2', price: 90, image: '/images/froz360argb.jpg' },
   { id: 'cool-17', category: 'Liquid & Air Cooling', name: 'ThermalRight Frozen Notte 360 WHITE ARGB V2', price: 90, image: '/images/froz360argbw.jpg' },
-];// Master Inventory Part 3: Vision Liquid Coolers & ThermalRight Cases
-const inventoryPart3 = [
-  // --- AIO LIQUID COOLERS (Vision Series) ---
+];// Master Inventory Part 4: Vision Series Liquid Coolers
+const inventoryPart4 = [
   { id: 'cool-18', category: 'Liquid & Air Cooling', name: 'ThermalRight Peerless Vision 240 ARGB BLACK', price: 108, image: '/images/pv240.jpg' },
   { id: 'cool-19', category: 'Liquid & Air Cooling', name: 'ThermalRight Peerless Vision 240 ARGB WHITE', price: 110, image: '/images/pv240w.jpg' },
   { id: 'cool-20', category: 'Liquid & Air Cooling', name: 'ThermalRight Peerless Vision 360 ARGB BLACK', price: 125, image: '/images/pv360.jpg' },
@@ -59,15 +58,15 @@ const inventoryPart3 = [
   { id: 'cool-25', category: 'Liquid & Air Cooling', name: 'ThermalRight Trofeo Vision 360 ARGB WHITE', price: 180, image: '/images/trof360w.jpg' },
   { id: 'cool-26', category: 'Liquid & Air Cooling', name: 'ThermalRight Levita Vision 360 ARGB BLACK', price: 230, image: '/images/lev360.jpg' },
   { id: 'cool-27', category: 'Liquid & Air Cooling', name: 'ThermalRight Levita Vision 360 ARGB WHITE', price: 235, image: '/images/lev360w.jpg' },
-
-  // --- THERMALRIGHT PC CASES ---
+];// Master Inventory Part 5: ThermalRight Cases, Fans, Hubs & Accessories
+const inventoryPart5 = [
+  // --- THERMALRIGHT CASES ---
   { id: 'case-1', category: 'PC Cases', name: 'ThermalRight A70 VISION', price: 160, image: '/images/a70.jpg' },
   { id: 'case-2', category: 'PC Cases', name: 'ThermalRight A70 VISION WHITE', price: 165, image: '/images/a70w.jpg' },
   { id: 'case-3', category: 'PC Cases', name: 'ThermalRight TL-M10 VISION', price: 123, image: '/images/tlm10.jpg' },
   { id: 'case-4', category: 'PC Cases', name: 'ThermalRight TL-M10W VISION', price: 129, image: '/images/tlm10w.jpg' },
-];// Master Inventory Part 4: ThermalRight Fans, Hubs & Darkflash Cases 1
-const inventoryPart4 = [
-  // --- THERMALRIGHT CASE FANS & HUBS ---
+
+  // --- CASE FANS & HUBS ---
   { id: 'fan-1', category: 'Case Fans & Hubs', name: 'ThermalRight TL-C12C-S X5', price: 28, image: '/images/tlc12c.jpg' },
   { id: 'fan-2', category: 'Case Fans & Hubs', name: 'ThermalRight TL-C12CW-S X5', price: 28, image: '/images/tlc12cw.jpg' },
   { id: 'fan-3', category: 'Case Fans & Hubs', name: 'ThermalRight TL-M12Q-S X3', price: 25, image: '/images/tlm12q.jpg' },
@@ -79,8 +78,8 @@ const inventoryPart4 = [
   { id: 'hub-5', category: 'Case Fans & Hubs', name: 'ThermalRight TL-ARGB and FAN HUB x12 IR BLACK', price: 14, image: '/images/fanhub12.jpg' },
   { id: 'hub-6', category: 'Case Fans & Hubs', name: 'ThermalRight TL-ARGB and FAN HUB x12 IR WHITE', price: 14, image: '/images/fanhub12w.jpg' },
   { id: 'acc-1', category: 'Case Fans & Hubs', name: 'ThermalRight TR-GCSF ARGB VGA Holder', price: 10, image: '/images/vgaholder.jpg' },
-
-  // --- DARKFLASH PC CASES (PART 1) ---
+];// Master Inventory Part 6: Darkflash PC Cases (Part 1)
+const inventoryPart6 = [
   { id: 'case-5', category: 'PC Cases', name: 'Darkflash DY470 Black with 4 argb fans', price: 145, image: '/images/dy470.jpg' },
   { id: 'case-6', category: 'PC Cases', name: 'Darkflash DY470 White with 4 argb fans', price: 148, image: '/images/dy470w.jpg' },
   { id: 'case-7', category: 'PC Cases', name: 'Darkflash DS950 Black with 6 argb fans', price: 88, image: '/images/ds950.jpg' },
@@ -91,9 +90,8 @@ const inventoryPart4 = [
   { id: 'case-12', category: 'PC Cases', name: 'Darkflash F1 White with 6 argb fans', price: 138, image: '/images/f1w.jpg' },
   { id: 'case-13', category: 'PC Cases', name: 'Darkflash C280 Black with 7 argb fans', price: 84, image: '/images/c280.jpg' },
   { id: 'case-14', category: 'PC Cases', name: 'Darkflash C280 White with 7 argb fans', price: 86, image: '/images/c280w.jpg' },
-];// Master Inventory Part 5: Darkflash Cases 2, Fans, Pads & Chairs
-const inventoryPart5 = [
-  // --- DARKFLASH PC CASES (PART 2) ---
+];// Master Inventory Part 7: Darkflash PC Cases (Part 2)
+const inventoryPart7 = [
   { id: 'case-15', category: 'PC Cases', name: 'Darkflash DK431 Mesh Black with 4 argb fans', price: 70, image: '/images/dk431m.jpg' },
   { id: 'case-16', category: 'PC Cases', name: 'Darkflash DK431 Glass Black with 4 argb fans', price: 73, image: '/images/dk431g.jpg' },
   { id: 'case-17', category: 'PC Cases', name: 'Darkflash B275 PRO Black with 6 argb fans', price: 54, image: '/images/b275.jpg' },
@@ -104,7 +102,8 @@ const inventoryPart5 = [
   { id: 'case-22', category: 'PC Cases', name: 'Darkflash DB330M Glass Black with 3 argb fans', price: 45, image: '/images/db330m.jpg' },
   { id: 'case-23', category: 'PC Cases', name: 'Darkflash DB330M Glass White with 3 argb fans', price: 47, image: '/images/db330mw.jpg' },
   { id: 'case-24', category: 'PC Cases', name: 'Darkflash DK361 Black with 4 argb fans', price: 58, image: '/images/dk361.jpg' },
-
+];// Master Inventory Part 8: Darkflash Fans, Pads & Chairs
+const inventoryPart8 = [
   // --- DARKFLASH CASE FANS ---
   { id: 'fan-5', category: 'Case Fans & Hubs', name: 'Darkflash INF34 3IN1 Black', price: 26, image: '/images/inf34.jpg' },
   { id: 'fan-6', category: 'Case Fans & Hubs', name: 'Darkflash INF34 3IN1 White', price: 27, image: '/images/inf34w.jpg' },
@@ -115,13 +114,13 @@ const inventoryPart5 = [
   { id: 'pad-3', category: 'Chairs & Accessories', name: 'Darkflash Mouse Pad M5 Black', price: 10, image: '/images/m5black.jpg' },
   { id: 'pad-4', category: 'Chairs & Accessories', name: 'Darkflash Mouse Pad M5 Brown', price: 10, image: '/images/m5brown.jpg' },
 
-  // --- DARKFLASH GAMING & ERGONOMIC CHAIRS ---
+  // --- DARKFLASH GAMING CHAIRS ---
   { id: 'chair-1', category: 'Chairs & Accessories', name: 'Darkflash Gaming Chair RC400', price: 166, image: '/images/rc400.jpg' },
   { id: 'chair-2', category: 'Chairs & Accessories', name: 'Darkflash Ergonomic Chair EA100 RED', price: 176, image: '/images/ea100r.jpg' },
   { id: 'chair-3', category: 'Chairs & Accessories', name: 'Darkflash Ergonomic Chair EA100 WHITE', price: 176, image: '/images/ea100w.jpg' },
   { id: 'chair-4', category: 'Chairs & Accessories', name: 'Darkflash Ergonomic Chair EA100 BLUE', price: 176, image: '/images/ea100b.jpg' },
-];// Master Inventory Part 6: MSI Monitors
-const inventoryPart6 = [
+];// Master Inventory Part 9: MSI Gaming Monitors & ASUS Motherboard
+const inventoryPart9 = [
   // --- MSI GAMING MONITORS ---
   { id: 'mon-1', category: 'Monitors', name: 'MSI MAG 271QPX QD-OLED X28', price: 590, image: '/images/msi271.jpg' },
   { id: 'mon-2', category: 'Monitors', name: 'MSI MAG 244F', price: 125, image: '/images/msi244.jpg' },
@@ -131,26 +130,32 @@ const inventoryPart6 = [
   { id: 'mon-6', category: 'Monitors', name: 'MSI MAG 345CQR', price: 390, image: '/images/msi345cqr.jpg' },
   { id: 'mon-7', category: 'Monitors', name: 'MSI MAG 274UPDF E16M', price: 565, image: '/images/msi274updf.jpg' },
   { id: 'mon-8', category: 'Monitors', name: 'MSI MAG 274QPF X30MV', price: 440, image: '/images/msi274qpf.jpg' },
-];
 
-// Combine all 6 parts into the master inventory array
+  // --- MOTHERBOARDS ---
+  { id: 'mb-1', category: 'Motherboards', name: 'ASUS Main GAMING Motherboard', price: 89, image: '/images/asus-mb.jpg' },
+];// Consolidate all parts into single master inventory
 const inventory = [
   ...inventoryPart1, 
   ...inventoryPart2, 
   ...inventoryPart3, 
   ...inventoryPart4, 
   ...inventoryPart5, 
-  ...inventoryPart6
-];export default function Storefront() {
+  ...inventoryPart6,
+  ...inventoryPart7,
+  ...inventoryPart8,
+  ...inventoryPart9
+];
+
+export default function Storefront() {
   const [cart, setCart] = useState([]);
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('default'); // 'default', 'low-high', 'high-low'
   
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [drawerView, setDrawerView] = useState('cart'); 
   const [customerInfo, setCustomerInfo] = useState({ name: '', phone: '', address: '' });
   
-  // Interactive Toast Notification State
   const [toastMessage, setToastMessage] = useState('');
 
   const showToast = (msg) => {
@@ -158,15 +163,22 @@ const inventory = [
     setTimeout(() => {
       setToastMessage('');
     }, 2200);
-  };
-
+  };// Filter & Price Sorting Memo
   const filteredInventory = useMemo(() => {
-    return inventory.filter(item => {
+    let items = inventory.filter(item => {
       const matchesCategory = activeCategory === 'All' || item.category === activeCategory;
       const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     });
-  }, [activeCategory, searchQuery]);
+
+    if (sortBy === 'low-high') {
+      items = [...items].sort((a, b) => a.price - b.price);
+    } else if (sortBy === 'high-low') {
+      items = [...items].sort((a, b) => b.price - a.price);
+    }
+
+    return items;
+  }, [activeCategory, searchQuery, sortBy]);
 
   const addToCart = (product) => {
     setCart(prev => {
@@ -289,7 +301,7 @@ const inventory = [
             {searchQuery && (
               <button 
                 onClick={() => setSearchQuery('')}
-                className="absolute right-14 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 text-sm font-bold p-1"
+                className="absolute right-14 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 text-sm font-bold p-1 cursor-pointer"
               >
                 ✕
               </button>
@@ -317,16 +329,14 @@ const inventory = [
           </button>
 
         </div>
-      </header>
-
-      {/* 3. CATEGORY NAVIGATION MENU */}
+      </header>{/* 3. CATEGORY NAVIGATION MENU */}
       <nav className="bg-[#232F3E] text-white text-sm py-2 px-2 md:px-4 shadow-md overflow-x-auto whitespace-nowrap hide-scrollbar">
         <div className="max-w-7xl mx-auto flex gap-4 md:gap-6 px-2">
           {categories.map((category) => (
             <button 
               key={category}
               onClick={() => setActiveCategory(category)}
-              className={`transition-all pb-1 border-b-2 text-sm md:text-base ${
+              className={`transition-all pb-1 border-b-2 text-sm md:text-base cursor-pointer ${
                 activeCategory === category ? 'border-yellow-400 text-yellow-400 font-bold' : 'border-transparent hover:border-gray-300 text-gray-300'
               }`}
             >
@@ -336,29 +346,42 @@ const inventory = [
         </div>
       </nav>
 
-      {/* 4. PRODUCT GRID & INTERACTIVE FILTER PILL */}
+      {/* 4. MAIN PRODUCT DISPLAY HEADER & LIVE PRICE SORTING */}
       <main className="max-w-7xl mx-auto p-3 md:p-6">
-        <div className="flex justify-between items-center mb-4 md:mb-6 border-b-2 border-gray-200 pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 md:mb-6 border-b-2 border-gray-200 pb-3">
           <h2 className="text-lg md:text-2xl font-bold text-gray-800">
             {searchQuery ? `Search: "${searchQuery}"` : activeCategory}
           </h2>
           
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-500 font-medium">
+          <div className="flex items-center justify-between sm:justify-end gap-3">
+            <span className="text-xs md:text-sm text-gray-500 font-medium">
               {filteredInventory.length} items
             </span>
+
+            {/* LIVE PRICE SORTING DROPDOWN */}
+            <div className="flex items-center gap-1.5 bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 shadow-sm">
+              <span className="text-xs text-gray-500 font-medium">Sort:</span>
+              <select 
+                value={sortBy} 
+                onChange={(e) => setSortBy(e.target.value)}
+                className="bg-transparent text-xs md:text-sm font-semibold text-gray-800 outline-none cursor-pointer"
+              >
+                <option value="default">Featured</option>
+                <option value="low-high">Price: Low to High</option>
+                <option value="high-low">Price: High to Low</option>
+              </select>
+            </div>
+
             {(activeCategory !== 'All' || searchQuery) && (
               <button 
                 onClick={() => { setActiveCategory('All'); setSearchQuery(''); }}
-                className="text-xs bg-yellow-100 hover:bg-yellow-200 text-yellow-800 px-2.5 py-1 rounded-full font-semibold transition"
+                className="text-xs bg-yellow-100 hover:bg-yellow-200 text-yellow-800 px-2.5 py-1.5 rounded-lg font-semibold transition cursor-pointer"
               >
-                Reset Filter ✕
+                Reset ✕
               </button>
             )}
           </div>
-        </div>
-        
-        {filteredInventory.length === 0 ? (
+        </div>{filteredInventory.length === 0 ? (
           <div className="text-center text-gray-500 py-20 text-lg md:text-xl">No matching products found.</div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
@@ -395,14 +418,14 @@ const inventory = [
                         <div className="flex items-center bg-gray-100 rounded-full border border-gray-300 p-0.5 shadow-inner">
                           <button 
                             onClick={() => updateQuantity(item.id, -1)}
-                            className="bg-white hover:bg-gray-200 text-black font-bold h-7 w-7 rounded-full flex items-center justify-center text-xs shadow active:scale-90"
+                            className="bg-white hover:bg-gray-200 text-black font-bold h-7 w-7 rounded-full flex items-center justify-center text-xs shadow active:scale-90 cursor-pointer"
                           >
                             -
                           </button>
                           <span className="px-2 font-black text-xs text-gray-800">{qty}</span>
                           <button 
                             onClick={() => updateQuantity(item.id, 1)}
-                            className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold h-7 w-7 rounded-full flex items-center justify-center text-xs shadow active:scale-90"
+                            className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold h-7 w-7 rounded-full flex items-center justify-center text-xs shadow active:scale-90 cursor-pointer"
                           >
                             +
                           </button>
@@ -415,9 +438,7 @@ const inventory = [
             })}
           </div>
         )}
-      </main>
-
-      {/* MOBILE-ONLY STICKY BOTTOM CART BAR */}
+      </main>{/* MOBILE-ONLY STICKY BOTTOM CART BAR */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 px-4 flex justify-between items-center z-40 shadow-[0_-5px_15px_rgba(0,0,0,0.1)]">
         <div className="flex flex-col">
           <span className="text-xs text-gray-500 font-medium">{cartCount} {cartCount === 1 ? 'item' : 'items'} in cart</span>
@@ -458,11 +479,10 @@ const inventory = [
                           <h4 className="font-bold text-gray-800 text-xs md:text-sm line-clamp-2">{item.name}</h4>
                           <p className="text-gray-500 text-xs md:text-sm mt-1">${item.price} each</p>
                           
-                          {/* DRAWER STEPPER */}
                           <div className="flex items-center gap-2 mt-2">
-                            <button onClick={() => updateQuantity(item.id, -1)} className="bg-gray-100 hover:bg-gray-200 text-black font-bold h-6 w-6 rounded flex items-center justify-center text-xs">-</button>
+                            <button onClick={() => updateQuantity(item.id, -1)} className="bg-gray-100 hover:bg-gray-200 text-black font-bold h-6 w-6 rounded flex items-center justify-center text-xs cursor-pointer">-</button>
                             <span className="font-bold text-xs">{item.quantity}</span>
-                            <button onClick={() => updateQuantity(item.id, 1)} className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold h-6 w-6 rounded flex items-center justify-center text-xs">+</button>
+                            <button onClick={() => updateQuantity(item.id, 1)} className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold h-6 w-6 rounded flex items-center justify-center text-xs cursor-pointer">+</button>
                           </div>
                         </div>
 
