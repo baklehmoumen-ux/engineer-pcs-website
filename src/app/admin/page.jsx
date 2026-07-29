@@ -133,6 +133,9 @@ export default function AdminDashboard() {
   const [dbProducts, setDbProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingItem, setEditingItem] = useState(null);
+  
+  // NEW: Search Engine State
+  const [adminSearch, setAdminSearch] = useState('');
 
   const [formData, setFormData] = useState({
     id: '',
@@ -161,6 +164,16 @@ export default function AdminDashboard() {
     const remainingStatic = staticInventory.filter(item => !dbIds.has(item.id));
     return [...dbProducts, ...remainingStatic].sort((a, b) => a.name.localeCompare(b.name));
   }, [dbProducts]);
+
+  // NEW: Filter items based on the admin search bar
+  const displayedProducts = useMemo(() => {
+    if (!adminSearch) return allProducts;
+    const lowerSearch = adminSearch.toLowerCase();
+    return allProducts.filter(item => 
+      item.name.toLowerCase().includes(lowerSearch) || 
+      item.category.toLowerCase().includes(lowerSearch)
+    );
+  }, [allProducts, adminSearch]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -238,8 +251,9 @@ export default function AdminDashboard() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-600 mb-1">Image Path / URL</label>
-                <input type="text" className="w-full p-2.5 border rounded-lg outline-none text-sm text-black" value={formData.image} onChange={(e) => setFormData({...formData, image: e.target.value})} placeholder="/images/ryzen7.jpg" />
+                {/* UPDATED: Multiple Images prompt */}
+                <label className="block text-xs font-bold text-gray-600 mb-1">Image Path(s) / URL(s) - Separate with commas</label>
+                <input type="text" className="w-full p-2.5 border rounded-lg outline-none text-sm text-black" value={formData.image} onChange={(e) => setFormData({...formData, image: e.target.value})} placeholder="url1.jpg, url2.jpg" />
               </div>
 
               <div>
@@ -270,13 +284,24 @@ export default function AdminDashboard() {
           <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-md">
             <h2 className="text-xl font-bold mb-4 text-gray-800">📦 All Store Catalog ({allProducts.length})</h2>
             
+            {/* NEW: Admin Search Bar */}
+            <div className="mb-4">
+              <input 
+                type="text" 
+                placeholder="Search products by name or category..." 
+                className="w-full p-2.5 border border-gray-300 rounded-lg outline-none text-sm text-black focus:border-yellow-500 transition-colors"
+                value={adminSearch}
+                onChange={(e) => setAdminSearch(e.target.value)}
+              />
+            </div>
+
             {loading ? (
               <div className="text-center py-10 text-gray-500">Loading catalog...</div>
-            ) : allProducts.length === 0 ? (
-              <div className="text-center py-10 text-gray-500">No items found.</div>
+            ) : displayedProducts.length === 0 ? (
+              <div className="text-center py-10 text-gray-500">No items found matching your search.</div>
             ) : (
-              <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
-                {allProducts.map(item => (
+              <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
+                {displayedProducts.map(item => (
                   <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg hover:border-gray-300 transition">
                     <div>
                       <div className="flex items-center gap-2">
@@ -287,8 +312,10 @@ export default function AdminDashboard() {
                       </div>
                       <p className="text-xs text-blue-600 font-medium">{item.category} — <span className="text-gray-900 font-bold">${item.price}</span></p>
                     </div>
+                    
                     <div className="flex gap-2">
-                      <button onClick={() => handleEdit(item)} className="bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1 rounded text-xs font-bold cursor-pointer">Edit Price / Status</button>
+                      <button onClick={() => handleEdit(item)} className="bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1 rounded text-xs font-bold cursor-pointer">Edit</button>
+                      <button onClick={() => handleDelete(item.id)} className="bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1 rounded text-xs font-bold cursor-pointer">Delete</button>
                     </div>
                   </div>
                 ))}
