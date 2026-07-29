@@ -1,38 +1,123 @@
 "use client";
 import React, { useState, useMemo } from 'react';
 
-// The Master Inventory
+// Master Inventory Array using RETAIL PRICING ONLY
 const inventory = [
-  // --- POWER SUPPLIES ---
-  { id: 'psu-1', category: 'Power Supplies', name: 'TR-TB650S 650W 80 PLUS', price: 58, image: '/images/tr-tb650s.jpg' },
-  { id: 'psu-2', category: 'Power Supplies', name: 'TR-TB750S 750W', price: 76, image: '/images/tr-tb750s.jpg' },
-  { id: 'psu-4', category: 'Power Supplies', name: 'TR-SP850 850W', price: 115, image: '/images/tr-sp850.jpg' },
-  { id: 'psu-6', category: 'Power Supplies', name: 'TR-SP1000 1000W', price: 130, image: '/images/tr-sp1000.jpg' },
+  // --- POWER SUPPLIES (PSUs) ---
+  { id: 'psu-1', category: 'Power Supplies', name: 'ThermalRight TR-TB650S 650W 80 PLUS', price: 58, image: '/images/tr-tb650s.jpg' },
+  { id: 'psu-2', category: 'Power Supplies', name: 'ThermalRight TR-TB750S 750W', price: 76, image: '/images/tr-tb750s.jpg' },
+  { id: 'psu-3', category: 'Power Supplies', name: 'ThermalRight TR-SP750 750W 80 PLUS', price: 100, image: '/images/tr-sp750.jpg' },
+  { id: 'psu-4', category: 'Power Supplies', name: 'ThermalRight TR-SP850 850W', price: 115, image: '/images/tr-sp850.jpg' },
+  { id: 'psu-5', category: 'Power Supplies', name: 'ThermalRight TR-SP850-W 850W White', price: 118, image: '/images/tr-sp850-w.jpg' },
+  { id: 'psu-6', category: 'Power Supplies', name: 'ThermalRight TR-SP1000 1000W', price: 130, image: '/images/tr-sp1000.jpg' },
+  { id: 'psu-7', category: 'Power Supplies', name: 'ThermalRight TR-SP1000-W 1000W White', price: 135, image: '/images/tr-sp1000-w.jpg' },
 
   // --- AIR & LIQUID COOLING ---
   { id: 'cool-1', category: 'Liquid & Air Cooling', name: 'Assassin X 120 Refined SE ARGB', price: 18, image: '/images/cool1.jpg' },
-  { id: 'cool-5', category: 'Liquid & Air Cooling', name: 'Aqua Elite 240 V3 AIO', price: 57, image: '/images/aqua240.jpg' },
-  { id: 'cool-9', category: 'Liquid & Air Cooling', name: 'Frozen Notte 360 BLACK ARGB V2', price: 90, image: '/images/froz360argb.jpg' },
+  { id: 'cool-2', category: 'Liquid & Air Cooling', name: 'Burst Assassin 120 SE ARGB', price: 24, image: '/images/burst120.jpg' },
+  { id: 'cool-3', category: 'Liquid & Air Cooling', name: 'Phantom Spirit 120 SE ARGB', price: 40, image: '/images/phantom120.jpg' },
+  { id: 'cool-4', category: 'Liquid & Air Cooling', name: 'Aqua Elite 240 V3 AIO', price: 57, image: '/images/aqua240.jpg' },
+  { id: 'cool-5', category: 'Liquid & Air Cooling', name: 'Aqua Elite 240 WHITE V3 AIO', price: 60, image: '/images/aqua240w.jpg' },
+  { id: 'cool-6', category: 'Liquid & Air Cooling', name: 'Aqua Elite 240 ARGB BLACK V6', price: 57, image: '/images/aqua240v6.jpg' },
+  { id: 'cool-7', category: 'Liquid & Air Cooling', name: 'Aqua Elite 240 ARGB WHITE V6', price: 60, image: '/images/aqua240v6w.jpg' },
+  { id: 'cool-8', category: 'Liquid & Air Cooling', name: 'Aqua Elite 360 V3 AIO', price: 70, image: '/images/aqua360.jpg' },
+  { id: 'cool-9', category: 'Liquid & Air Cooling', name: 'Aqua Elite 360 WHITE V3 AIO', price: 73, image: '/images/aqua360w.jpg' },
+  { id: 'cool-10', category: 'Liquid & Air Cooling', name: 'Aqua Elite 360 ARGB BLACK V6', price: 70, image: '/images/aqua360v6.jpg' },
+  { id: 'cool-11', category: 'Liquid & Air Cooling', name: 'Aqua Elite 360 ARGB WHITE V6', price: 73, image: '/images/aqua360v6w.jpg' },
+  { id: 'cool-12', category: 'Liquid & Air Cooling', name: 'Frozen Infinity 360 BLACK', price: 82, image: '/images/frozinf360.jpg' },
+  { id: 'cool-13', category: 'Liquid & Air Cooling', name: 'Frozen Infinity 360 WHITE', price: 85, image: '/images/frozinf360w.jpg' },
+  { id: 'cool-14', category: 'Liquid & Air Cooling', name: 'Frozen Notte 240 BLACK ARGB V2', price: 68, image: '/images/froz240argb.jpg' },
+  { id: 'cool-15', category: 'Liquid & Air Cooling', name: 'Frozen Notte 240 WHITE ARGB V2', price: 68, image: '/images/froz240argbw.jpg' },
+  { id: 'cool-16', category: 'Liquid & Air Cooling', name: 'Frozen Notte 360 BLACK ARGB V2', price: 90, image: '/images/froz360argb.jpg' },
+  { id: 'cool-17', category: 'Liquid & Air Cooling', name: 'Frozen Notte 360 WHITE ARGB V2', price: 90, image: '/images/froz360argbw.jpg' },
+  { id: 'cool-18', category: 'Liquid & Air Cooling', name: 'Peerless Vision 240 ARGB BLACK', price: 108, image: '/images/pv240.jpg' },
+  { id: 'cool-19', category: 'Liquid & Air Cooling', name: 'Peerless Vision 240 ARGB WHITE', price: 110, image: '/images/pv240w.jpg' },
+  { id: 'cool-20', category: 'Liquid & Air Cooling', name: 'Peerless Vision 360 ARGB BLACK', price: 125, image: '/images/pv360.jpg' },
+  { id: 'cool-21', category: 'Liquid & Air Cooling', name: 'Peerless Vision 360 ARGB WHITE', price: 127, image: '/images/pv360w.jpg' },
+  { id: 'cool-22', category: 'Liquid & Air Cooling', name: 'Peerless Vision 360 UB ARGB BLACK', price: 134, image: '/images/pv360ub.jpg' },
+  { id: 'cool-23', category: 'Liquid & Air Cooling', name: 'Peerless Vision 360 UB ARGB WHITE', price: 137, image: '/images/pv360ubw.jpg' },
+  { id: 'cool-24', category: 'Liquid & Air Cooling', name: 'Trofeo Vision 360 ARGB BLACK', price: 177, image: '/images/trof360.jpg' },
+  { id: 'cool-25', category: 'Liquid & Air Cooling', name: 'Trofeo Vision 360 ARGB WHITE', price: 180, image: '/images/trof360w.jpg' },
+  { id: 'cool-26', category: 'Liquid & Air Cooling', name: 'Levita Vision 360 ARGB BLACK', price: 230, image: '/images/lev360.jpg' },
+  { id: 'cool-27', category: 'Liquid & Air Cooling', name: 'Levita Vision 360 ARGB WHITE', price: 235, image: '/images/lev360w.jpg' },
 
   // --- PC CASES ---
-  { id: 'case-3', category: 'PC Cases', name: 'Darkflash DY470 Black with 4 argb fans', price: 145, image: '/images/dy470.jpg' },
-  { id: 'case-5', category: 'PC Cases', name: 'Darkflash DS950 Black with 6 argb fans', price: 88, image: '/images/ds950.jpg' },
-  { id: 'case-8', category: 'PC Cases', name: 'Darkflash C280 Black with 7 argb fans', price: 84, image: '/images/c280.jpg' },
-  { id: 'case-12', category: 'PC Cases', name: 'Majesty RAAD Gaming Case', price: 85, image: '/images/majesty.jpg' },
+  { id: 'case-1', category: 'PC Cases', name: 'ThermalRight A70 VISION', price: 160, image: '/images/a70.jpg' },
+  { id: 'case-2', category: 'PC Cases', name: 'ThermalRight A70 VISION WHITE', price: 165, image: '/images/a70w.jpg' },
+  { id: 'case-3', category: 'PC Cases', name: 'ThermalRight TL-M10 VISION', price: 123, image: '/images/tlm10.jpg' },
+  { id: 'case-4', category: 'PC Cases', name: 'ThermalRight TL-M10W VISION', price: 129, image: '/images/tlm10w.jpg' },
+  { id: 'case-5', category: 'PC Cases', name: 'Darkflash DY470 Black with 4 argb fans', price: 145, image: '/images/dy470.jpg' },
+  { id: 'case-6', category: 'PC Cases', name: 'Darkflash DY470 White with 4 argb fans', price: 148, image: '/images/dy470w.jpg' },
+  { id: 'case-7', category: 'PC Cases', name: 'Darkflash DS950 Black with 6 argb fans', price: 88, image: '/images/ds950.jpg' },
+  { id: 'case-8', category: 'PC Cases', name: 'Darkflash DS950 White with 6 argb fans', price: 91, image: '/images/ds950w.jpg' },
+  { id: 'case-9', category: 'PC Cases', name: 'Darkflash DS950V Black with 6 argb fans (Screen)', price: 118, image: '/images/ds950v.jpg' },
+  { id: 'case-10', category: 'PC Cases', name: 'Darkflash DS950V White with 6 argb fans (Screen)', price: 120, image: '/images/ds950vw.jpg' },
+  { id: 'case-11', category: 'PC Cases', name: 'Darkflash F1 Black with 6 argb fans', price: 136, image: '/images/f1.jpg' },
+  { id: 'case-12', category: 'PC Cases', name: 'Darkflash F1 White with 6 argb fans', price: 138, image: '/images/f1w.jpg' },
+  { id: 'case-13', category: 'PC Cases', name: 'Darkflash C280 Black with 7 argb fans', price: 84, image: '/images/c280.jpg' },
+  { id: 'case-14', category: 'PC Cases', name: 'Darkflash C280 White with 7 argb fans', price: 86, image: '/images/c280w.jpg' },
+  { id: 'case-15', category: 'PC Cases', name: 'Darkflash DK431 Mesh Black with 4 argb fans', price: 70, image: '/images/dk431m.jpg' },
+  { id: 'case-16', category: 'PC Cases', name: 'Darkflash DK431 Glass Black with 4 argb fans', price: 73, image: '/images/dk431g.jpg' },
+  { id: 'case-17', category: 'PC Cases', name: 'Darkflash B275 PRO Black with 6 argb fans', price: 54, image: '/images/b275.jpg' },
+  { id: 'case-18', category: 'PC Cases', name: 'Darkflash B275 PRO White with 6 argb fans', price: 58, image: '/images/b275w.jpg' },
+  { id: 'case-19', category: 'PC Cases', name: 'Darkflash DRX70 Mesh White with 4 rgb fans', price: 66, image: '/images/drx70.jpg' },
+  { id: 'case-20', category: 'PC Cases', name: 'Darkflash FT418 PRO Black with 7 argb fans', price: 105, image: '/images/ft418.jpg' },
+  { id: 'case-21', category: 'PC Cases', name: 'Darkflash FT418 PRO White with 7 argb fans', price: 109, image: '/images/ft418w.jpg' },
+  { id: 'case-22', category: 'PC Cases', name: 'Darkflash DB330M Glass Black with 3 argb fans', price: 45, image: '/images/db330m.jpg' },
+  { id: 'case-23', category: 'PC Cases', name: 'Darkflash DB330M Glass White with 3 argb fans', price: 47, image: '/images/db330mw.jpg' },
+  { id: 'case-24', category: 'PC Cases', name: 'Darkflash DK361 Black with 4 argb fans', price: 58, image: '/images/dk361.jpg' },
+
+  // --- CASE FANS & HUBS ---
+  { id: 'fan-1', category: 'Case Fans & Hubs', name: 'ThermalRight TL-C12C-S X5 Pack', price: 28, image: '/images/tlc12c.jpg' },
+  { id: 'fan-2', category: 'Case Fans & Hubs', name: 'ThermalRight TL-C12CW-S X5 White Pack', price: 28, image: '/images/tlc12cw.jpg' },
+  { id: 'fan-3', category: 'Case Fans & Hubs', name: 'ThermalRight TL-M12Q-S X3 Pack', price: 25, image: '/images/tlm12q.jpg' },
+  { id: 'fan-4', category: 'Case Fans & Hubs', name: 'ThermalRight TL-M12QW-S X3 White Pack', price: 25, image: '/images/tlm12qw.jpg' },
+  { id: 'fan-5', category: 'Case Fans & Hubs', name: 'Darkflash INF34 3IN1 Black', price: 26, image: '/images/inf34.jpg' },
+  { id: 'fan-6', category: 'Case Fans & Hubs', name: 'Darkflash INF34 3IN1 White', price: 27, image: '/images/inf34w.jpg' },
+  { id: 'hub-1', category: 'Case Fans & Hubs', name: 'USB 2.0 HUB X5 BLACK', price: 11, image: '/images/usbhub.jpg' },
+  { id: 'hub-2', category: 'Case Fans & Hubs', name: 'USB 2.0 HUB X5 WHITE', price: 11, image: '/images/usbhubw.jpg' },
+  { id: 'hub-3', category: 'Case Fans & Hubs', name: 'FAN Argb-HUB Controller REV.A', price: 9, image: '/images/fanhub.jpg' },
+  { id: 'hub-4', category: 'Case Fans & Hubs', name: 'FAN-ARGB HUB X8', price: 11, image: '/images/fanhubx8.jpg' },
+  { id: 'hub-5', category: 'Case Fans & Hubs', name: 'TL-ARGB and FAN HUB x12 IR BLACK', price: 14, image: '/images/fanhub12.jpg' },
+  { id: 'hub-6', category: 'Case Fans & Hubs', name: 'TL-ARGB and FAN HUB x12 IR WHITE', price: 14, image: '/images/fanhub12w.jpg' },
+  { id: 'acc-1', category: 'Case Fans & Hubs', name: 'TR-GCSF ARGB VGA Holder', price: 10, image: '/images/vgaholder.jpg' },
 
   // --- MONITORS ---
   { id: 'mon-1', category: 'Monitors', name: 'MSI MAG 271QPX QD-OLED X28 27" 280Hz', price: 590, image: '/images/msi271.jpg' },
   { id: 'mon-2', category: 'Monitors', name: 'MSI MAG 244F 24" FHD 200Hz', price: 125, image: '/images/msi244.jpg' },
+  { id: 'mon-3', category: 'Monitors', name: 'MSI MAG 272QPF E20 27" WQHD 200Hz', price: 240, image: '/images/msi272qpf.jpg' },
+  { id: 'mon-4', category: 'Monitors', name: 'MSI MAG 275QPF X30 27" WQHD 300Hz', price: 290, image: '/images/msi275qpf.jpg' },
+  { id: 'mon-5', category: 'Monitors', name: 'MSI MAG 272URDF E16 27" DUAL MODE 4K/FHD', price: 385, image: '/images/msi272urdf.jpg' },
+  { id: 'mon-6', category: 'Monitors', name: 'MSI MAG 345CQR 34" UWQHD 180Hz', price: 390, image: '/images/msi345cqr.jpg' },
+  { id: 'mon-7', category: 'Monitors', name: 'MSI MAG 274UPDF E16M 27" DUAL MODE 4K/FHD', price: 565, image: '/images/msi274updf.jpg' },
+  { id: 'mon-8', category: 'Monitors', name: 'MSI MAG 274QPF X30MV 27" WQHD 300Hz', price: 440, image: '/images/msi274qpf.jpg' },
+
+  // --- CHAIRS & ACCESSORIES ---
+  { id: 'chair-1', category: 'Chairs & Accessories', name: 'Darkflash Gaming Chair RC400', price: 166, image: '/images/rc400.jpg' },
+  { id: 'chair-2', category: 'Chairs & Accessories', name: 'Darkflash Ergonomic Chair EA100 RED', price: 176, image: '/images/ea100r.jpg' },
+  { id: 'chair-3', category: 'Chairs & Accessories', name: 'Darkflash Ergonomic Chair EA100 WHITE', price: 176, image: '/images/ea100w.jpg' },
+  { id: 'chair-4', category: 'Chairs & Accessories', name: 'Darkflash Ergonomic Chair EA100 BLUE', price: 176, image: '/images/ea100b.jpg' },
+  { id: 'pad-1', category: 'Chairs & Accessories', name: 'Darkflash Mouse Pad M2 Grey', price: 8, image: '/images/m2grey.jpg' },
+  { id: 'pad-2', category: 'Chairs & Accessories', name: 'Darkflash Mouse Pad M2 Black', price: 8, image: '/images/m2black.jpg' },
+  { id: 'pad-3', category: 'Chairs & Accessories', name: 'Darkflash Mouse Pad M5 Black Leather', price: 10, image: '/images/m5black.jpg' },
+  { id: 'pad-4', category: 'Chairs & Accessories', name: 'Darkflash Mouse Pad M5 Brown Leather', price: 10, image: '/images/m5brown.jpg' },
 
   // --- PROCESSORS & CORE PARTS ---
   { id: 'core-1', category: 'Processors & Core Parts', name: 'Intel Core i5 12400F 6P+0E/12T 4.4GHz', price: 145, image: '/images/i5.jpg' },
   { id: 'core-2', category: 'Processors & Core Parts', name: 'ASUS PRIME H610M-K D4 LGA 1700', price: 89, image: '/images/h610m.jpg' },
-  { id: 'core-4', category: 'Processors & Core Parts', name: 'GainWard RTX 3060 12GB Ghost Edition', price: 289, image: '/images/rtx3060.jpg' },
+  { id: 'core-3', category: 'Processors & Core Parts', name: 'GainWard RTX 3060 12GB Ghost Edition', price: 289, image: '/images/rtx3060.jpg' },
 ];
 
-const categories = ['All', 'PC Cases', 'Power Supplies', 'Liquid & Air Cooling', 'Monitors', 'Processors & Core Parts'];
-
-export default function Storefront() {
+const categories = [
+  'All', 
+  'PC Cases', 
+  'Power Supplies', 
+  'Liquid & Air Cooling', 
+  'Case Fans & Hubs', 
+  'Monitors', 
+  'Chairs & Accessories', 
+  'Processors & Core Parts'
+];export default function Storefront() {
   const [cart, setCart] = useState([]);
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -111,7 +196,7 @@ export default function Storefront() {
             className="hover:text-white flex items-center gap-1.5 transition font-semibold group"
           >
             <svg className="w-3.5 h-3.5 fill-pink-500 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
-              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
             </svg>
             Instagram
           </a>
@@ -129,7 +214,7 @@ export default function Storefront() {
             </h1>
           </div>
 
-          {/* Cleaned & Fixed Search Bar */}
+          {/* Cleaned & Fixed High-Contrast Search Bar */}
           <div className="flex-1 w-full flex bg-white rounded-lg overflow-hidden border-2 border-transparent focus-within:border-yellow-500 transition-all shadow-md">
             <select 
               value={activeCategory} 
@@ -170,7 +255,7 @@ export default function Storefront() {
         </div>
       </header>
 
-      {/* 3. CATEGORY MENU */}
+      {/* 3. CATEGORY NAVIGATION MENU */}
       <nav className="bg-[#232F3E] text-white text-sm py-2 px-2 md:px-4 shadow-md overflow-x-auto whitespace-nowrap hide-scrollbar">
         <div className="max-w-7xl mx-auto flex gap-4 md:gap-6 px-2">
           {categories.map((category) => (
