@@ -8,9 +8,9 @@ const categories = [
   'All', 
   'CPUs',
   'Motherboards', 
-  'GPUs',               // NEW
-  'RAM',                // NEW
-  'Storage',            // NEW
+  'GPUs',
+  'RAM',
+  'Storage',
   'PC Cases', 
   'Power Supplies', 
   'Liquid & Air Cooling', 
@@ -19,16 +19,16 @@ const categories = [
   'Chairs & Accessories'
 ];
 
-// PC Builder Checklist Definition
+// PC Builder Checklist Definition (with Icons for the Part Picker feel)
 const requiredParts = [
-  { key: 'CPUs', label: 'CPU (Processor)', required: true },
-  { key: 'Motherboards', label: 'Motherboard', required: true },
-  { key: 'RAM', label: 'Memory (RAM)', required: true },
-  { key: 'Storage', label: 'Storage (SSD/HDD)', required: true },
-  { key: 'GPUs', label: 'Graphics Card (GPU)', required: false },
-  { key: 'Power Supplies', label: 'Power Supply', required: true },
-  { key: 'PC Cases', label: 'PC Case', required: true },
-  { key: 'Liquid & Air Cooling', label: 'CPU Cooler', required: false },
+  { key: 'CPUs', label: 'CPU (Processor)', icon: '🧠', required: true },
+  { key: 'Motherboards', label: 'Motherboard', icon: '🎛️', required: true },
+  { key: 'RAM', label: 'Memory (RAM)', icon: '🐏', required: true },
+  { key: 'Storage', label: 'Storage (SSD/HDD)', icon: '💾', required: true },
+  { key: 'GPUs', label: 'Graphics Card (GPU)', icon: '🎮', required: false },
+  { key: 'Power Supplies', label: 'Power Supply', icon: '⚡', required: true },
+  { key: 'PC Cases', label: 'PC Case', icon: '🖥️', required: true },
+  { key: 'Liquid & Air Cooling', label: 'CPU Cooler', icon: '❄️', required: false },
 ];
 
 // Master Inventory Part 1: ThermalRight Power Supplies
@@ -193,11 +193,14 @@ export default function Storefront() {
   
   const [toastMessage, setToastMessage] = useState('');
 
-  // Detail Modal State (For viewing further pictures & details)
+  // NEW: State to track if the user is currently hunting for a specific builder part
+  const [selectingFor, setSelectingFor] = useState(null);
+
+  // Detail Modal State
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [activeImage, setActiveImage] = useState('');
 
-  // 1. Fetch live products from Supabase on mount
+  // 1. Fetch live products from Supabase
   useEffect(() => {
     async function fetchLiveProducts() {
       try {
@@ -212,7 +215,7 @@ export default function Storefront() {
     fetchLiveProducts();
   }, []);
 
-  // 2. Combine Supabase items with static inventory (Supabase items override matching IDs)
+  // 2. Combine Supabase items with static inventory
   const masterInventory = useMemo(() => {
     const dbIds = new Set(dbProducts.map(p => p.id));
     const remainingStatic = staticInventory.filter(item => !dbIds.has(item.id));
@@ -226,7 +229,7 @@ export default function Storefront() {
     }, 2200);
   };
 
-  // Filter & Price Sorting Memo
+  // Filter & Price Sorting
   const filteredInventory = useMemo(() => {
     let items = masterInventory.filter(item => {
       const matchesCategory = activeCategory === 'All' || item.category === activeCategory;
@@ -245,14 +248,32 @@ export default function Storefront() {
 
   const addToCart = (product) => {
     if (product.in_stock === false) return;
+    
+    // If the user was in "Selection Mode" for this exact category, auto-return them to the builder!
+    const isBuilderSelection = selectingFor === product.category;
+    
     setCart(prev => {
-      const existing = prev.find(item => item.id === product.id);
-      if (existing) {
-        return prev.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
+      // If selecting for builder, remove any previously selected part of this exact category first to keep it a true 1-part slot
+      let newCart = prev;
+      if (isBuilderSelection) {
+        newCart = prev.filter(item => item.category !== product.category);
       }
-      return [...prev, { ...product, quantity: 1 }];
+      
+      const existing = newCart.find(item => item.id === product.id);
+      if (existing) {
+        return newCart.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
+      }
+      return [...newCart, { ...product, quantity: 1 }];
     });
+    
     showToast(`Added ${product.name.slice(0, 22)}... to cart!`);
+
+    // Auto-open builder if we fulfilled a selection
+    if (isBuilderSelection) {
+      setSelectingFor(null);
+      setDrawerView('builder');
+      setIsDrawerOpen(true);
+    }
   };
 
   const updateQuantity = (id, delta) => {
@@ -279,25 +300,37 @@ export default function Storefront() {
     return found ? found.quantity : 0;
   };
 
-  // PC Builder Validation Logic
+  // Advanced PC Builder Validation Logic
   const buildStatus = useMemo(() => {
+    let requiredCount = 0;
+    let fulfilledCount = 0;
     const missing = [];
+    
     requiredParts.forEach(part => {
-      if (part.required && !cart.some(item => item.category === part.key)) {
-        missing.push(part.label.split(' ')[0]); // Extrapolate short name (e.g., 'CPU', 'Motherboard')
-      }
+      if (part.required) requiredCount++;
+      const hasItem = cart.some(item => item.category === part.key);
+      if (hasItem && part.required) fulfilledCount++;
+      if (!hasItem && part.required) missing.push(part.label.split(' ')[0]);
     });
+
     return {
       isComplete: missing.length === 0,
-      missing
+      missing,
+      progress: Math.round((fulfilledCount / requiredCount) * 100)
     };
   }, [cart]);
 
-  // Updated to handle array of images for the initial active image view
   const openDetailModal = (product) => {
     setSelectedProduct(product);
     const firstImg = product.image ? product.image.split(',')[0].trim() : '/images/default.jpg';
     setActiveImage(firstImg);
+  };
+
+  const startSelectingPart = (category) => {
+    setActiveCategory(category);
+    setSelectingFor(category);
+    setIsDrawerOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const submitOrder = (e) => {
@@ -324,6 +357,24 @@ export default function Storefront() {
       {toastMessage && (
         <div className="fixed top-16 left-1/2 transform -translate-x-1/2 z-50 bg-gray-900 text-white px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 border border-yellow-400 text-xs md:text-sm font-semibold animate-bounce">
           <span className="text-yellow-400">✨</span> {toastMessage}
+        </div>
+      )}
+
+      {/* STICKY SELECTION BANNER (Shows when picking a part for the builder) */}
+      {selectingFor && (
+        <div className="bg-blue-600 text-white p-3 sticky top-[68px] md:top-[76px] z-30 shadow-md flex justify-between items-center px-4 md:px-6">
+          <span className="text-xs md:text-sm font-bold flex items-center gap-2">
+            <span className="animate-pulse text-lg">🔍</span> Select a <span className="text-yellow-300 underline underline-offset-4">{selectingFor}</span> for your build
+          </span>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => { setSelectingFor(null); setIsDrawerOpen(true); setDrawerView('builder'); }} 
+              className="bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-md text-xs font-bold transition cursor-pointer shadow-sm border border-blue-400/50 whitespace-nowrap"
+            >
+              Back to Builder
+            </button>
+            <button onClick={() => setSelectingFor(null)} className="text-white hover:text-gray-200 px-2 font-bold cursor-pointer text-lg leading-none">✕</button>
+          </div>
         </div>
       )}
 
@@ -606,53 +657,81 @@ export default function Storefront() {
 
             <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
               
-              {/* BUILDER VIEW */}
+              {/* BUILDER VIEW (Part Picker Experience) */}
               {drawerView === 'builder' && (
                 <div className="space-y-4 pb-20 md:pb-0">
-                  <div className={`p-4 rounded-xl border shadow-sm ${buildStatus.isComplete ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}`}>
-                    <h3 className={`font-black text-lg ${buildStatus.isComplete ? 'text-green-800' : 'text-yellow-800'}`}>
-                      {buildStatus.isComplete ? '✅ PC Build is Complete!' : '⚠️ Missing Core Components'}
-                    </h3>
+                  {/* Progress Header */}
+                  <div className={`p-4 rounded-xl border shadow-sm ${buildStatus.isComplete ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'}`}>
+                    <div className="flex justify-between items-end mb-2">
+                      <h3 className={`font-black text-lg ${buildStatus.isComplete ? 'text-green-800' : 'text-gray-800'}`}>
+                        {buildStatus.isComplete ? '✅ Build Complete!' : '⚠️ Missing Components'}
+                      </h3>
+                      <span className="text-xs font-bold text-gray-500">{buildStatus.progress}%</span>
+                    </div>
+                    {/* Progress Bar */}
+                    <div className="w-full bg-gray-200 rounded-full h-2.5 mb-2 overflow-hidden shadow-inner">
+                      <div className={`h-2.5 rounded-full transition-all duration-500 ${buildStatus.isComplete ? 'bg-green-500' : 'bg-yellow-400'}`} style={{ width: `${buildStatus.progress}%` }}></div>
+                    </div>
                     {!buildStatus.isComplete && (
-                      <p className="text-sm text-yellow-700 mt-1 font-medium">
-                        You need to add the following categories to complete your build: <br/>
-                        <span className="font-bold">{buildStatus.missing.join(', ')}</span>.
+                      <p className="text-xs text-gray-500 font-medium mt-2 leading-relaxed">
+                        Required: <span className="font-bold text-gray-700">{buildStatus.missing.join(', ')}</span>.
                       </p>
                     )}
                   </div>
                   
+                  {/* Interactive Component List */}
                   <div className="space-y-2">
                     {requiredParts.map(part => {
-                      const itemsInCart = cart.filter(item => item.category === part.key);
-                      const isAdded = itemsInCart.length > 0;
+                      // Grab the first item in the cart that matches this category to represent the "slotted" item
+                      const selectedItem = cart.find(item => item.category === part.key);
+                      const isAdded = !!selectedItem;
+                      const thumb = selectedItem?.image ? selectedItem.image.split(',')[0].trim() : '/images/default.jpg';
+
                       return (
-                        <div key={part.key} className="flex flex-col bg-white p-3 rounded-lg shadow-sm border border-gray-100 transition-colors hover:border-gray-300">
-                          <div className="flex justify-between items-center">
-                            <span className="font-bold text-gray-800 text-sm flex items-center gap-1.5">
-                              {part.label} 
-                              {!part.required && <span className="text-[10px] text-gray-400 font-normal">(Optional)</span>}
-                            </span>
-                            {isAdded ? (
-                              <span className="text-green-600 font-bold text-xs bg-green-50 border border-green-200 px-2 py-1 rounded shadow-sm">Added ✅</span>
-                            ) : (
+                        <div key={part.key} className={`flex flex-col bg-white p-3 rounded-xl shadow-sm border transition-colors ${isAdded ? 'border-green-200' : 'border-gray-200 hover:border-blue-300'}`}>
+                          
+                          {/* Slot Header */}
+                          <div className="flex justify-between items-center mb-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xl bg-gray-100 p-1.5 rounded-lg shadow-inner">{part.icon}</span>
+                              <div className="flex flex-col">
+                                <span className="font-bold text-gray-800 text-xs md:text-sm flex items-center gap-1.5">
+                                  {part.label} 
+                                  {!part.required && <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider bg-gray-100 px-1.5 rounded">(Optional)</span>}
+                                </span>
+                              </div>
+                            </div>
+                            
+                            {!isAdded && (
                               <button 
-                                onClick={() => {
-                                  setActiveCategory(part.key);
-                                  setIsDrawerOpen(false);
-                                }}
-                                className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 px-3 py-1 rounded font-bold transition cursor-pointer shadow-sm"
+                                onClick={() => startSelectingPart(part.key)}
+                                className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-md font-bold transition shadow-sm cursor-pointer"
                               >
-                                + Select
+                                + Choose
                               </button>
                             )}
                           </div>
+
+                          {/* Selected Item Data */}
                           {isAdded && (
-                            <div className="mt-2 pl-2 border-l-2 border-green-400 space-y-1">
-                              {itemsInCart.map(i => (
-                                <div key={i.id} className="text-xs text-gray-600 truncate font-medium">
-                                  {i.quantity}x {i.name}
+                            <div className="mt-2 ml-10 pl-3 border-l-2 border-green-300 flex items-center justify-between gap-3">
+                              <div className="flex items-center gap-3 overflow-hidden">
+                                <img src={thumb} alt={selectedItem.name} className="w-10 h-10 object-cover rounded shadow-sm border border-gray-100 shrink-0" onError={(e) => { e.target.src = 'https://via.placeholder.com/50?text=PC'; }} />
+                                <div className="flex flex-col overflow-hidden">
+                                  <span className="text-xs text-gray-700 font-bold truncate block w-[120px] sm:w-[150px]">{selectedItem.name}</span>
+                                  <span className="text-sm font-black text-gray-900">${selectedItem.price}</span>
                                 </div>
-                              ))}
+                              </div>
+                              
+                              {/* Slot Actions */}
+                              <div className="flex items-center gap-1 shrink-0">
+                                <button onClick={() => startSelectingPart(part.key)} className="text-[10px] text-blue-600 font-bold bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded cursor-pointer transition">
+                                  Swap
+                                </button>
+                                <button onClick={() => removeFromCart(selectedItem.id)} className="text-[10px] text-red-500 font-bold bg-red-50 hover:bg-red-100 p-1.5 rounded cursor-pointer transition" title="Remove from build">
+                                  🗑️
+                                </button>
+                              </div>
                             </div>
                           )}
                         </div>
@@ -671,23 +750,27 @@ export default function Storefront() {
                       <p className="text-lg md:text-xl font-medium">Your cart is empty.</p>
                     </div>
                   ) : (
-                    cart.map(item => (
-                      <div key={item.id} className="flex gap-3 items-center bg-white p-3 md:p-4 rounded-lg shadow-sm border border-gray-100">
-                        <div className="flex-1">
-                          <h4 className="font-bold text-gray-800 text-xs md:text-sm line-clamp-2">{item.name}</h4>
-                          <p className="text-gray-500 text-xs md:text-sm mt-1">${item.price} each</p>
-                          
-                          <div className="flex items-center gap-2 mt-2">
-                            <button onClick={() => updateQuantity(item.id, -1)} className="bg-gray-100 hover:bg-gray-200 text-black font-bold h-6 w-6 rounded flex items-center justify-center text-xs cursor-pointer">-</button>
-                            <span className="font-bold text-xs">{item.quantity}</span>
-                            <button onClick={() => updateQuantity(item.id, 1)} className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold h-6 w-6 rounded flex items-center justify-center text-xs cursor-pointer">+</button>
+                    cart.map(item => {
+                      const cartThumb = item.image ? item.image.split(',')[0].trim() : '/images/default.jpg';
+                      return (
+                        <div key={item.id} className="flex gap-3 items-center bg-white p-3 md:p-4 rounded-lg shadow-sm border border-gray-100">
+                          <img src={cartThumb} className="w-12 h-12 object-cover rounded shrink-0 border border-gray-100" onError={(e) => { e.target.src = 'https://via.placeholder.com/50?text=PC'; }} />
+                          <div className="flex-1 overflow-hidden">
+                            <h4 className="font-bold text-gray-800 text-xs md:text-sm truncate">{item.name}</h4>
+                            <p className="text-gray-500 text-xs md:text-sm mt-1">${item.price} each</p>
+                            
+                            <div className="flex items-center gap-2 mt-2">
+                              <button onClick={() => updateQuantity(item.id, -1)} className="bg-gray-100 hover:bg-gray-200 text-black font-bold h-6 w-6 rounded flex items-center justify-center text-xs cursor-pointer">-</button>
+                              <span className="font-bold text-xs">{item.quantity}</span>
+                              <button onClick={() => updateQuantity(item.id, 1)} className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold h-6 w-6 rounded flex items-center justify-center text-xs cursor-pointer">+</button>
+                            </div>
                           </div>
-                        </div>
 
-                        <div className="text-base md:text-lg font-black text-gray-900">${item.price * item.quantity}</div>
-                        <button onClick={() => removeFromCart(item.id)} className="text-red-500 hover:text-red-700 bg-red-50 p-2 rounded-md transition text-sm md:text-base cursor-pointer">🗑️</button>
-                      </div>
-                    ))
+                          <div className="text-base md:text-lg font-black text-gray-900">${item.price * item.quantity}</div>
+                          <button onClick={() => removeFromCart(item.id)} className="text-red-500 hover:text-red-700 bg-red-50 p-2 rounded-md transition text-sm md:text-base cursor-pointer">🗑️</button>
+                        </div>
+                      )
+                    })
                   )}
                 </div>
               )}
@@ -717,7 +800,7 @@ export default function Storefront() {
             {/* Bottom Drawer Action Bar */}
             <div className="p-4 md:p-6 bg-white border-t border-gray-200 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)]">
               <div className="flex justify-between text-lg md:text-xl mb-4 md:mb-6">
-                <span className="font-medium text-gray-600">Total</span>
+                <span className="font-medium text-gray-600">Total Due</span>
                 <span className="font-black text-gray-900">${cartTotal.toFixed(2)}</span>
               </div>
               
@@ -774,7 +857,6 @@ export default function Storefront() {
               {/* Left: Main Image & Gallery Thumbnails */}
               <div className="flex flex-col gap-3">
                 <div className="h-64 bg-gray-100 rounded-xl overflow-hidden border border-gray-200 flex items-center justify-center p-4 relative">
-                  {/* REPLACED WITH REAL IMAGE TAG */}
                   <img 
                     src={activeImage || '/images/default.jpg'} 
                     alt={selectedProduct.name}
@@ -783,7 +865,6 @@ export default function Storefront() {
                   />
                 </div>
 
-                {/* Additional Picture Thumbnails - Split array if multiple images were added via commas */}
                 <div className="flex gap-2 overflow-x-auto pb-1">
                   {(selectedProduct.image ? selectedProduct.image.split(',').map(s => s.trim()) : ['/images/default.jpg']).map((img, idx) => (
                     <button
@@ -829,14 +910,12 @@ export default function Storefront() {
 
                   <div className="mb-6">
                     <span className="text-xs font-bold text-gray-500 uppercase block mb-1">Description & Specifications</span>
-                    {/* UPDATED: Will show the custom description you type, or fall back to the default message! */}
                     <p className="text-xs text-gray-600 leading-relaxed bg-gray-50 p-3 rounded-lg border border-gray-200 whitespace-pre-wrap">
                       {selectedProduct.description || `Official ${selectedProduct.category} component by EngineerPCs. Verified for high performance, compatibility, and full manufacturer warranty.`}
                     </p>
                   </div>
                 </div>
 
-                {/* Action Buttons */}
                 <div className="flex gap-3 pt-4 border-t border-gray-100">
                   {selectedProduct.in_stock === false ? (
                     <button disabled className="w-full bg-gray-200 text-gray-500 font-bold py-3 rounded-xl text-sm">
@@ -850,7 +929,7 @@ export default function Storefront() {
                       }}
                       className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-extrabold py-3 rounded-xl text-sm shadow-md transition-transform active:scale-95 cursor-pointer"
                     >
-                      ➕ Add to Cart
+                      {selectingFor === selectedProduct.category ? '✅ Add to Build' : '➕ Add to Cart'}
                     </button>
                   )}
                 </div>
