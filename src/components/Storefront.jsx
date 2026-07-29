@@ -1,8 +1,39 @@
 "use client";
 import React, { useState, useMemo } from 'react';
 
-// Master Inventory Array using RETAIL PRICING ONLY
-const inventory = [
+const categories = [
+  'All', 
+  'CPUs', 
+  'Motherboards', 
+  'PC Cases', 
+  'Power Supplies', 
+  'Liquid & Air Cooling', 
+  'Case Fans & Hubs', 
+  'Monitors', 
+  'Chairs & Accessories', 
+  'Graphics Cards & Components'
+];
+
+// Master Inventory (Part 1: CPUs, Motherboards, PSUs, Cooling)
+const inventoryPart1 = [
+  // --- CPUs ---
+  { id: 'cpu-1', category: 'CPUs', name: 'Intel Core i5 12400F 6P+0E/12T 4.4GHz', price: 145, image: '/images/i5.jpg' },
+  { id: 'cpu-2', category: 'CPUs', name: 'Intel Core i5 13400F 10-Cores 4.6GHz', price: 195, image: '/images/i5-13400f.jpg' },
+  { id: 'cpu-3', category: 'CPUs', name: 'Intel Core i5 14400F 10-Cores 4.7GHz', price: 210, image: '/images/i5-14400f.jpg' },
+  { id: 'cpu-4', category: 'CPUs', name: 'Intel Core i7 13700KF 16-Cores 5.4GHz', price: 380, image: '/images/i7-13700kf.jpg' },
+  { id: 'cpu-5', category: 'CPUs', name: 'Intel Core i7 14700KF 20-Cores 5.6GHz', price: 410, image: '/images/i7-14700kf.jpg' },
+  { id: 'cpu-6', category: 'CPUs', name: 'AMD Ryzen 5 5600 6-Cores 4.4GHz', price: 135, image: '/images/r5-5600.jpg' },
+  { id: 'cpu-7', category: 'CPUs', name: 'AMD Ryzen 5 7600X 6-Cores 5.3GHz', price: 225, image: '/images/r5-7600x.jpg' },
+  { id: 'cpu-8', category: 'CPUs', name: 'AMD Ryzen 7 7800X3D 8-Cores 5.0GHz', price: 450, image: '/images/r7-7800x3d.jpg' },
+
+  // --- MOTHERBOARDS ---
+  { id: 'mb-1', category: 'Motherboards', name: 'ASUS PRIME H610M-K D4 LGA 1700', price: 89, image: '/images/h610m.jpg' },
+  { id: 'mb-2', category: 'Motherboards', name: 'ASUS TUF GAMING B760M-PLUS WIFI D4', price: 185, image: '/images/b760m.jpg' },
+  { id: 'mb-3', category: 'Motherboards', name: 'ASUS ROG STRIX B650-A GAMING WIFI', price: 230, image: '/images/b650a.jpg' },
+  { id: 'mb-4', category: 'Motherboards', name: 'MSI PRO B760M-A WIFI DDR4', price: 155, image: '/images/msi-b760m.jpg' },
+  { id: 'mb-5', category: 'Motherboards', name: 'MSI MAG B650 TOMAHAWK WIFI', price: 215, image: '/images/b650-tomahawk.jpg' },
+  { id: 'mb-6', category: 'Motherboards', name: 'Gigabyte B650 AORUS ELITE AX', price: 220, image: '/images/b650-aorus.jpg' },
+
   // --- POWER SUPPLIES (PSUs) ---
   { id: 'psu-1', category: 'Power Supplies', name: 'ThermalRight TR-TB650S 650W 80 PLUS', price: 58, image: '/images/tr-tb650s.jpg' },
   { id: 'psu-2', category: 'Power Supplies', name: 'ThermalRight TR-TB750S 750W', price: 76, image: '/images/tr-tb750s.jpg' },
@@ -40,7 +71,8 @@ const inventory = [
   { id: 'cool-25', category: 'Liquid & Air Cooling', name: 'Trofeo Vision 360 ARGB WHITE', price: 180, image: '/images/trof360w.jpg' },
   { id: 'cool-26', category: 'Liquid & Air Cooling', name: 'Levita Vision 360 ARGB BLACK', price: 230, image: '/images/lev360.jpg' },
   { id: 'cool-27', category: 'Liquid & Air Cooling', name: 'Levita Vision 360 ARGB WHITE', price: 235, image: '/images/lev360w.jpg' },
-
+];// Master Inventory (Part 2: Cases, Fans, Monitors, Chairs, GPUs)
+const inventoryPart2 = [
   // --- PC CASES ---
   { id: 'case-1', category: 'PC Cases', name: 'ThermalRight A70 VISION', price: 160, image: '/images/a70.jpg' },
   { id: 'case-2', category: 'PC Cases', name: 'ThermalRight A70 VISION WHITE', price: 165, image: '/images/a70w.jpg' },
@@ -102,22 +134,15 @@ const inventory = [
   { id: 'pad-3', category: 'Chairs & Accessories', name: 'Darkflash Mouse Pad M5 Black Leather', price: 10, image: '/images/m5black.jpg' },
   { id: 'pad-4', category: 'Chairs & Accessories', name: 'Darkflash Mouse Pad M5 Brown Leather', price: 10, image: '/images/m5brown.jpg' },
 
-  // --- PROCESSORS & CORE PARTS ---
-  { id: 'core-1', category: 'Processors & Core Parts', name: 'Intel Core i5 12400F 6P+0E/12T 4.4GHz', price: 145, image: '/images/i5.jpg' },
-  { id: 'core-2', category: 'Processors & Core Parts', name: 'ASUS PRIME H610M-K D4 LGA 1700', price: 89, image: '/images/h610m.jpg' },
-  { id: 'core-3', category: 'Processors & Core Parts', name: 'GainWard RTX 3060 12GB Ghost Edition', price: 289, image: '/images/rtx3060.jpg' },
+  // --- GRAPHICS CARDS & COMPONENTS ---
+  { id: 'gpu-1', category: 'Graphics Cards & Components', name: 'GainWard RTX 3060 12GB Ghost Edition', price: 289, image: '/images/rtx3060.jpg' },
+  { id: 'gpu-2', category: 'Graphics Cards & Components', name: 'GainWard RTX 4060 8GB Ghost Edition', price: 325, image: '/images/rtx4060.jpg' },
+  { id: 'gpu-3', category: 'Graphics Cards & Components', name: 'GainWard RTX 4070 Super 12GB Ghost', price: 650, image: '/images/rtx4070s.jpg' },
 ];
 
-const categories = [
-  'All', 
-  'PC Cases', 
-  'Power Supplies', 
-  'Liquid & Air Cooling', 
-  'Case Fans & Hubs', 
-  'Monitors', 
-  'Chairs & Accessories', 
-  'Processors & Core Parts'
-];export default function Storefront() {
+// Combined Full Master Inventory
+const inventory = [...inventoryPart1, ...inventoryPart2];
+export default function Storefront() {
   const [cart, setCart] = useState([]);
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -214,7 +239,7 @@ const categories = [
             </h1>
           </div>
 
-          {/* Cleaned & Fixed High-Contrast Search Bar */}
+          {/* High-Contrast Search Bar */}
           <div className="flex-1 w-full flex bg-white rounded-lg overflow-hidden border-2 border-transparent focus-within:border-yellow-500 transition-all shadow-md">
             <select 
               value={activeCategory} 
