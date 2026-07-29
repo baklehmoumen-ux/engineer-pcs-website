@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useMemo } from 'react';
 
-// The Massive Master Inventory
+// The Master Inventory
 const inventory = [
   // --- POWER SUPPLIES ---
   { id: 'psu-1', category: 'Power Supplies', name: 'TR-TB650S 650W 80 PLUS', price: 58, image: '/images/tr-tb650s.jpg' },
@@ -86,7 +86,7 @@ export default function Storefront() {
   return (
     <div className="min-h-screen bg-gray-50 font-sans pb-20 md:pb-0">
       
-      {/* 1. TOP UTILITY BAR (Clean Vector Icons & Direct Instagram Link) */}
+      {/* 1. TOP UTILITY BAR */}
       <div className="bg-gray-900 text-gray-300 text-[11px] md:text-xs py-2 px-3 md:px-6 flex justify-between items-center z-50 relative border-b border-gray-800">
         <span className="font-semibold tracking-wide flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
@@ -118,38 +118,23 @@ export default function Storefront() {
         </div>
       </div>
 
-      {/* 2. THE NAVBAR */}
+      {/* 2. MAIN NAVBAR */}
       <header className="bg-[#131921] text-white p-3 md:p-4 sticky top-0 z-40 shadow-lg">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-3 md:gap-4">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-3 md:gap-6">
           
+          {/* Logo */}
           <div className="flex justify-between w-full md:w-auto items-center">
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight cursor-pointer hover:text-yellow-400 transition">
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight cursor-pointer hover:text-yellow-400 transition whitespace-nowrap">
               Engineer<span className="text-yellow-500">PCs</span>
             </h1>
-            
-            {/* Cart Button for Desktop (Hidden on Mobile) */}
-            <button 
-              onClick={() => { setDrawerView('cart'); setIsDrawerOpen(true); }}
-              className="hidden md:flex items-center gap-2 bg-[#232F3E] hover:bg-gray-700 border border-transparent hover:border-white px-4 py-2 rounded transition relative"
-            >
-              <span className="text-3xl">🛒</span>
-              <div className="flex flex-col text-left">
-                <span className="text-xs text-gray-300">My Cart</span>
-                <span className="font-bold text-yellow-400">${cartTotal.toFixed(2)}</span>
-              </div>
-              {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full h-6 w-6 flex items-center justify-center font-bold text-sm shadow animate-pulse">
-                  {cartCount}
-                </span>
-              )}
-            </button>
           </div>
 
-          <div className="flex-1 w-full flex rounded-lg overflow-hidden border border-transparent focus-within:border-yellow-400 transition-all shadow-inner">
+          {/* Cleaned & Fixed Search Bar */}
+          <div className="flex-1 w-full flex bg-white rounded-lg overflow-hidden border-2 border-transparent focus-within:border-yellow-500 transition-all shadow-md">
             <select 
               value={activeCategory} 
               onChange={(e) => setActiveCategory(e.target.value)}
-              className="hidden md:block bg-gray-100 text-black px-4 outline-none text-sm cursor-pointer hover:bg-gray-200 border-r border-gray-300"
+              className="hidden md:block bg-gray-100 text-gray-800 font-medium px-3 outline-none text-sm cursor-pointer hover:bg-gray-200 border-r border-gray-300 transition-colors"
             >
               {categories.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
@@ -157,17 +142,35 @@ export default function Storefront() {
               type="text" 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-3 py-2 md:py-3 text-black outline-none text-sm md:text-base" 
+              className="w-full bg-white text-gray-900 placeholder-gray-500 px-4 py-2 md:py-2.5 outline-none text-sm md:text-base font-normal" 
               placeholder="Search products..." 
             />
-            <button className="bg-[#FEBD69] hover:bg-[#F3A847] px-4 md:px-6 text-black font-bold text-lg md:text-xl transition-colors">
+            <button className="bg-[#FEBD69] hover:bg-[#F3A847] px-5 md:px-6 text-black font-bold text-lg md:text-xl transition-colors flex items-center justify-center cursor-pointer">
               🔍
             </button>
           </div>
+
+          {/* Desktop Cart Button */}
+          <button 
+            onClick={() => { setDrawerView('cart'); setIsDrawerOpen(true); }}
+            className="hidden md:flex items-center gap-3 bg-[#232F3E] hover:bg-gray-700 border border-transparent hover:border-white px-4 py-2 rounded-lg transition relative cursor-pointer whitespace-nowrap"
+          >
+            <span className="text-2xl">🛒</span>
+            <div className="flex flex-col text-left">
+              <span className="text-xs text-gray-300 font-medium">My Cart</span>
+              <span className="font-bold text-yellow-400 text-sm">${cartTotal.toFixed(2)}</span>
+            </div>
+            {cartCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full h-5 w-5 flex items-center justify-center font-bold text-xs shadow animate-pulse">
+                {cartCount}
+              </span>
+            )}
+          </button>
+
         </div>
       </header>
 
-      {/* 3. THE CATEGORY MENU */}
+      {/* 3. CATEGORY MENU */}
       <nav className="bg-[#232F3E] text-white text-sm py-2 px-2 md:px-4 shadow-md overflow-x-auto whitespace-nowrap hide-scrollbar">
         <div className="max-w-7xl mx-auto flex gap-4 md:gap-6 px-2">
           {categories.map((category) => (
@@ -184,7 +187,7 @@ export default function Storefront() {
         </div>
       </nav>
 
-      {/* 4. THE PRODUCT GRID */}
+      {/* 4. PRODUCT GRID */}
       <main className="max-w-7xl mx-auto p-3 md:p-6">
         <h2 className="text-xl md:text-3xl font-bold text-gray-800 mb-4 md:mb-8 border-b-2 border-gray-200 pb-2">
           {searchQuery ? `Results for "${searchQuery}"` : activeCategory}
@@ -213,7 +216,7 @@ export default function Storefront() {
                     <div className="text-lg md:text-2xl font-black text-gray-900">${item.price}</div>
                     <button 
                       onClick={() => addToCart(item)}
-                      className="bg-yellow-400 hover:bg-yellow-500 active:bg-yellow-600 text-black font-bold h-8 w-8 md:h-12 md:w-12 flex items-center justify-center rounded-full shadow transition-transform transform active:scale-95 text-sm md:text-lg"
+                      className="bg-yellow-400 hover:bg-yellow-500 active:bg-yellow-600 text-black font-bold h-8 w-8 md:h-12 md:w-12 flex items-center justify-center rounded-full shadow transition-transform transform active:scale-95 text-sm md:text-lg cursor-pointer"
                     >
                       ➕
                     </button>
@@ -233,13 +236,13 @@ export default function Storefront() {
         </div>
         <button 
           onClick={() => { setDrawerView('cart'); setIsDrawerOpen(true); }}
-          className="bg-yellow-400 hover:bg-yellow-500 font-bold px-6 py-3 rounded-full text-black shadow-md flex items-center gap-2"
+          className="bg-yellow-400 hover:bg-yellow-500 font-bold px-6 py-3 rounded-full text-black shadow-md flex items-center gap-2 cursor-pointer"
         >
           <span>🛒</span> View Cart
         </button>
       </div>
 
-      {/* 5. THE INTERACTIVE MULTI-STEP DRAWER */}
+      {/* 5. INTERACTIVE MULTI-STEP DRAWER */}
       {isDrawerOpen && (
         <div className="fixed inset-0 z-50 flex justify-end bg-black bg-opacity-60 backdrop-blur-sm transition-opacity">
           <div className="w-full max-w-md bg-white h-full shadow-2xl flex flex-col animate-slide-in-right">
@@ -248,7 +251,7 @@ export default function Storefront() {
               <h2 className="text-xl md:text-2xl font-bold flex items-center gap-2">
                 {drawerView === 'cart' ? '🛒 Your Cart' : '📝 Checkout'}
               </h2>
-              <button onClick={() => setIsDrawerOpen(false)} className="text-gray-400 hover:text-white text-3xl font-bold leading-none">&times;</button>
+              <button onClick={() => setIsDrawerOpen(false)} className="text-gray-400 hover:text-white text-3xl font-bold leading-none cursor-pointer">&times;</button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
@@ -267,7 +270,7 @@ export default function Storefront() {
                           <p className="text-gray-500 text-xs md:text-sm mt-1">Qty: {item.quantity} × ${item.price}</p>
                         </div>
                         <div className="text-base md:text-lg font-black text-gray-900">${item.price * item.quantity}</div>
-                        <button onClick={() => removeFromCart(item.id)} className="text-red-500 hover:text-red-700 bg-red-50 p-2 rounded-md transition text-sm md:text-base">🗑️</button>
+                        <button onClick={() => removeFromCart(item.id)} className="text-red-500 hover:text-red-700 bg-red-50 p-2 rounded-md transition text-sm md:text-base cursor-pointer">🗑️</button>
                       </div>
                     ))
                   )}
@@ -286,7 +289,7 @@ export default function Storefront() {
                     <label className="block text-xs md:text-sm font-bold text-gray-700 mb-1">Delivery Address</label>
                     <textarea required rows="3" placeholder="City, Street, Building..." className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-yellow-500 text-sm md:text-base" value={customerInfo.address} onChange={(e) => setCustomerInfo({...customerInfo, address: e.target.value})}></textarea>
                   </div>
-                  <button type="button" onClick={() => setDrawerView('cart')} className="text-sm text-blue-600 font-bold hover:underline">
+                  <button type="button" onClick={() => setDrawerView('cart')} className="text-sm text-blue-600 font-bold hover:underline cursor-pointer">
                     ← Back to Cart
                   </button>
                 </form>
@@ -303,7 +306,7 @@ export default function Storefront() {
                 <button 
                   disabled={cart.length === 0}
                   onClick={() => setDrawerView('checkout')}
-                  className="w-full bg-yellow-400 hover:bg-yellow-500 disabled:bg-gray-300 text-black font-extrabold py-3 md:py-4 rounded-xl text-base md:text-lg shadow-lg transition-transform transform active:scale-95"
+                  className="w-full bg-yellow-400 hover:bg-yellow-500 disabled:bg-gray-300 text-black font-extrabold py-3 md:py-4 rounded-xl text-base md:text-lg shadow-lg transition-transform transform active:scale-95 cursor-pointer"
                 >
                   Proceed to Checkout
                 </button>
@@ -311,7 +314,7 @@ export default function Storefront() {
                 <button 
                   type="submit"
                   form="checkout-form"
-                  className="w-full bg-green-500 hover:bg-green-600 text-white font-extrabold py-3 md:py-4 rounded-xl text-base md:text-lg shadow-lg transition-transform transform active:scale-95 flex items-center justify-center gap-2"
+                  className="w-full bg-green-500 hover:bg-green-600 text-white font-extrabold py-3 md:py-4 rounded-xl text-base md:text-lg shadow-lg transition-transform transform active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <span>💬</span> Send Order
                 </button>
