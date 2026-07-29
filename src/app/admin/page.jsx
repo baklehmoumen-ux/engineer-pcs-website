@@ -26,7 +26,8 @@ export default function AdminDashboard() {
     name: '',
     category: 'Motherboards',
     price: '',
-    image: ''
+    image: '',
+    in_stock: true
   });
 
   const fetchProducts = async () => {
@@ -48,7 +49,8 @@ export default function AdminDashboard() {
       name: formData.name,
       category: formData.category,
       price: parseFloat(formData.price),
-      image: formData.image || '/images/default.jpg'
+      image: formData.image || '/images/default.jpg',
+      in_stock: formData.in_stock
     };
 
     if (editingItem) {
@@ -57,14 +59,17 @@ export default function AdminDashboard() {
       await supabase.from('products').insert([itemData]);
     }
 
-    setFormData({ id: '', name: '', category: 'Motherboards', price: '', image: '' });
+    setFormData({ id: '', name: '', category: 'Motherboards', price: '', image: '', in_stock: true });
     setEditingItem(null);
     fetchProducts();
   };
 
   const handleEdit = (product) => {
     setEditingItem(product);
-    setFormData(product);
+    setFormData({
+      ...product,
+      in_stock: product.in_stock !== undefined ? product.in_stock : true
+    });
   };
 
   const handleDelete = async (id) => {
@@ -112,12 +117,24 @@ export default function AdminDashboard() {
                 <input type="text" className="w-full p-2.5 border rounded-lg outline-none text-sm text-black" value={formData.image} onChange={(e) => setFormData({...formData, image: e.target.value})} placeholder="/images/ryzen7.jpg" />
               </div>
 
+              <div>
+                <label className="block text-xs font-bold text-gray-600 mb-1">Availability Status</label>
+                <select 
+                  className="w-full p-2.5 border rounded-lg outline-none text-sm text-black bg-white font-medium" 
+                  value={formData.in_stock ? 'true' : 'false'} 
+                  onChange={(e) => setFormData({...formData, in_stock: e.target.value === 'true'})}
+                >
+                  <option value="true">In Stock ✅</option>
+                  <option value="false">Out of Stock ❌</option>
+                </select>
+              </div>
+
               <div className="flex gap-2 pt-2">
                 <button type="submit" className="flex-1 bg-yellow-400 hover:bg-yellow-500 font-bold py-2.5 rounded-lg text-black cursor-pointer">
                   {editingItem ? 'Update Item' : 'Add Item'}
                 </button>
                 {editingItem && (
-                  <button type="button" onClick={() => { setEditingItem(null); setFormData({ id: '', name: '', category: 'Motherboards', price: '', image: '' }); }} className="bg-gray-300 hover:bg-gray-400 px-4 py-2.5 rounded-lg font-bold text-gray-700 cursor-pointer">
+                  <button type="button" onClick={() => { setEditingItem(null); setFormData({ id: '', name: '', category: 'Motherboards', price: '', image: '', in_stock: true }); }} className="bg-gray-300 hover:bg-gray-400 px-4 py-2.5 rounded-lg font-bold text-gray-700 cursor-pointer">
                     Cancel
                   </button>
                 )}
@@ -137,7 +154,12 @@ export default function AdminDashboard() {
                 {products.map(item => (
                   <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg hover:border-gray-300 transition">
                     <div>
-                      <h4 className="font-bold text-gray-800 text-sm">{item.name}</h4>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-bold text-gray-800 text-sm">{item.name}</h4>
+                        {item.in_stock === false && (
+                          <span className="text-[10px] bg-red-100 text-red-600 font-bold px-1.5 py-0.5 rounded">Out of Stock</span>
+                        )}
+                      </div>
                       <p className="text-xs text-blue-600 font-medium">{item.category} — <span className="text-gray-900 font-bold">${item.price}</span></p>
                     </div>
                     <div className="flex gap-2">
