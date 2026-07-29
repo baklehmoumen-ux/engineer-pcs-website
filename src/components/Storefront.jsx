@@ -8,12 +8,27 @@ const categories = [
   'All', 
   'CPUs',
   'Motherboards', 
+  'GPUs',               // NEW
+  'RAM',                // NEW
+  'Storage',            // NEW
   'PC Cases', 
   'Power Supplies', 
   'Liquid & Air Cooling', 
   'Case Fans & Hubs', 
   'Monitors', 
   'Chairs & Accessories'
+];
+
+// PC Builder Checklist Definition
+const requiredParts = [
+  { key: 'CPUs', label: 'CPU (Processor)', required: true },
+  { key: 'Motherboards', label: 'Motherboard', required: true },
+  { key: 'RAM', label: 'Memory (RAM)', required: true },
+  { key: 'Storage', label: 'Storage (SSD/HDD)', required: true },
+  { key: 'GPUs', label: 'Graphics Card (GPU)', required: false },
+  { key: 'Power Supplies', label: 'Power Supply', required: true },
+  { key: 'PC Cases', label: 'PC Case', required: true },
+  { key: 'Liquid & Air Cooling', label: 'CPU Cooler', required: false },
 ];
 
 // Master Inventory Part 1: ThermalRight Power Supplies
@@ -173,7 +188,7 @@ export default function Storefront() {
   const [sortBy, setSortBy] = useState('default');
   
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [drawerView, setDrawerView] = useState('cart'); 
+  const [drawerView, setDrawerView] = useState('cart'); // 'cart', 'checkout', or 'builder'
   const [customerInfo, setCustomerInfo] = useState({ name: '', phone: '', address: '' });
   
   const [toastMessage, setToastMessage] = useState('');
@@ -263,6 +278,20 @@ export default function Storefront() {
     const found = cart.find(item => item.id === id);
     return found ? found.quantity : 0;
   };
+
+  // PC Builder Validation Logic
+  const buildStatus = useMemo(() => {
+    const missing = [];
+    requiredParts.forEach(part => {
+      if (part.required && !cart.some(item => item.category === part.key)) {
+        missing.push(part.label.split(' ')[0]); // Extrapolate short name (e.g., 'CPU', 'Motherboard')
+      }
+    });
+    return {
+      isComplete: missing.length === 0,
+      missing
+    };
+  }, [cart]);
 
   // Updated to handle array of images for the initial active image view
   const openDetailModal = (product) => {
@@ -375,22 +404,37 @@ export default function Storefront() {
             </button>
           </div>
 
-          {/* Desktop Cart Button */}
-          <button 
-            onClick={() => { setDrawerView('cart'); setIsDrawerOpen(true); }}
-            className="hidden md:flex items-center gap-3 bg-[#232F3E] hover:bg-gray-700 border border-transparent hover:border-white px-4 py-2 rounded-lg transition relative cursor-pointer whitespace-nowrap"
-          >
-            <span className="text-2xl">🛒</span>
-            <div className="flex flex-col text-left">
-              <span className="text-xs text-gray-300 font-medium">My Cart</span>
-              <span className="font-bold text-yellow-400 text-sm">${cartTotal.toFixed(2)}</span>
-            </div>
-            {cartCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full h-5 w-5 flex items-center justify-center font-bold text-xs shadow animate-pulse">
-                {cartCount}
-              </span>
-            )}
-          </button>
+          {/* Desktop Builder & Cart Buttons */}
+          <div className="hidden md:flex items-center gap-4">
+            <button 
+              onClick={() => { setDrawerView('builder'); setIsDrawerOpen(true); }}
+              className="flex items-center gap-3 bg-[#232F3E] hover:bg-gray-700 border border-transparent hover:border-white px-4 py-2 rounded-lg transition relative cursor-pointer whitespace-nowrap"
+            >
+              <span className="text-2xl">🛠️</span>
+              <div className="flex flex-col text-left">
+                <span className="text-xs text-gray-300 font-medium">PC Builder</span>
+                <span className={`font-bold text-sm ${buildStatus.isComplete ? 'text-green-400' : 'text-yellow-400'}`}>
+                  {buildStatus.isComplete ? 'Ready' : 'Incomplete'}
+                </span>
+              </div>
+            </button>
+
+            <button 
+              onClick={() => { setDrawerView('cart'); setIsDrawerOpen(true); }}
+              className="flex items-center gap-3 bg-[#232F3E] hover:bg-gray-700 border border-transparent hover:border-white px-4 py-2 rounded-lg transition relative cursor-pointer whitespace-nowrap"
+            >
+              <span className="text-2xl">🛒</span>
+              <div className="flex flex-col text-left">
+                <span className="text-xs text-gray-300 font-medium">My Cart</span>
+                <span className="font-bold text-yellow-400 text-sm">${cartTotal.toFixed(2)}</span>
+              </div>
+              {cartCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full h-5 w-5 flex items-center justify-center font-bold text-xs shadow animate-pulse">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          </div>
 
         </div>
       </header>
@@ -529,35 +573,98 @@ export default function Storefront() {
         )}
       </main>
 
-      {/* MOBILE-ONLY STICKY BOTTOM CART BAR */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 px-4 flex justify-between items-center z-40 shadow-[0_-5px_15px_rgba(0,0,0,0.1)]">
-        <div className="flex flex-col">
-          <span className="text-xs text-gray-500 font-medium">{cartCount} {cartCount === 1 ? 'item' : 'items'} in cart</span>
-          <span className="text-xl font-black text-gray-900">${cartTotal.toFixed(2)}</span>
-        </div>
+      {/* MOBILE-ONLY STICKY BOTTOM BAR (Builder + Cart) */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-2 px-4 flex justify-between items-center z-40 shadow-[0_-5px_15px_rgba(0,0,0,0.1)] gap-2">
+        <button 
+          onClick={() => { setDrawerView('builder'); setIsDrawerOpen(true); }}
+          className={`flex-1 flex flex-col items-center justify-center py-2 rounded-lg font-bold text-xs transition-colors shadow-sm border ${buildStatus.isComplete ? 'bg-green-50 border-green-200 text-green-800' : 'bg-yellow-50 border-yellow-200 text-yellow-800'}`}
+        >
+          <span className="text-lg">🛠️</span>
+          {buildStatus.isComplete ? 'Build Ready' : 'Build PC'}
+        </button>
+
         <button 
           onClick={() => { setDrawerView('cart'); setIsDrawerOpen(true); }}
-          className="bg-yellow-400 hover:bg-yellow-500 active:scale-95 transition-transform font-bold px-6 py-3 rounded-full text-black shadow-md flex items-center gap-2 cursor-pointer"
+          className="flex-1 bg-gray-900 hover:bg-black text-white font-bold py-2 rounded-lg text-xs shadow-md flex flex-col items-center justify-center transition-colors"
         >
-          <span>🛒</span> View Cart
+          <span className="text-lg">🛒</span>
+          ${cartTotal.toFixed(2)}
         </button>
       </div>
 
-      {/* 5. INTERACTIVE MULTI-STEP CHECKOUT DRAWER */}
+      {/* 5. INTERACTIVE MULTI-STEP CHECKOUT & BUILDER DRAWER */}
       {isDrawerOpen && (
         <div className="fixed inset-0 z-50 flex justify-end bg-black bg-opacity-60 backdrop-blur-sm transition-opacity">
           <div className="w-full max-w-md bg-white h-full shadow-2xl flex flex-col animate-slide-in-right">
             
             <div className="p-4 md:p-6 bg-gray-900 text-white flex justify-between items-center shadow-md">
               <h2 className="text-xl md:text-2xl font-bold flex items-center gap-2">
-                {drawerView === 'cart' ? '🛒 Your Cart' : '📝 Checkout'}
+                {drawerView === 'cart' ? '🛒 Your Cart' : drawerView === 'checkout' ? '📝 Checkout' : '🛠️ PC Builder'}
               </h2>
               <button onClick={() => setIsDrawerOpen(false)} className="text-gray-400 hover:text-white text-3xl font-bold leading-none cursor-pointer">&times;</button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
-              {drawerView === 'cart' ? (
-                <div className="space-y-3 md:space-y-4">
+              
+              {/* BUILDER VIEW */}
+              {drawerView === 'builder' && (
+                <div className="space-y-4 pb-20 md:pb-0">
+                  <div className={`p-4 rounded-xl border shadow-sm ${buildStatus.isComplete ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}`}>
+                    <h3 className={`font-black text-lg ${buildStatus.isComplete ? 'text-green-800' : 'text-yellow-800'}`}>
+                      {buildStatus.isComplete ? '✅ PC Build is Complete!' : '⚠️ Missing Core Components'}
+                    </h3>
+                    {!buildStatus.isComplete && (
+                      <p className="text-sm text-yellow-700 mt-1 font-medium">
+                        You need to add the following categories to complete your build: <br/>
+                        <span className="font-bold">{buildStatus.missing.join(', ')}</span>.
+                      </p>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-2">
+                    {requiredParts.map(part => {
+                      const itemsInCart = cart.filter(item => item.category === part.key);
+                      const isAdded = itemsInCart.length > 0;
+                      return (
+                        <div key={part.key} className="flex flex-col bg-white p-3 rounded-lg shadow-sm border border-gray-100 transition-colors hover:border-gray-300">
+                          <div className="flex justify-between items-center">
+                            <span className="font-bold text-gray-800 text-sm flex items-center gap-1.5">
+                              {part.label} 
+                              {!part.required && <span className="text-[10px] text-gray-400 font-normal">(Optional)</span>}
+                            </span>
+                            {isAdded ? (
+                              <span className="text-green-600 font-bold text-xs bg-green-50 border border-green-200 px-2 py-1 rounded shadow-sm">Added ✅</span>
+                            ) : (
+                              <button 
+                                onClick={() => {
+                                  setActiveCategory(part.key);
+                                  setIsDrawerOpen(false);
+                                }}
+                                className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 px-3 py-1 rounded font-bold transition cursor-pointer shadow-sm"
+                              >
+                                + Select
+                              </button>
+                            )}
+                          </div>
+                          {isAdded && (
+                            <div className="mt-2 pl-2 border-l-2 border-green-400 space-y-1">
+                              {itemsInCart.map(i => (
+                                <div key={i.id} className="text-xs text-gray-600 truncate font-medium">
+                                  {i.quantity}x {i.name}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* CART VIEW */}
+              {drawerView === 'cart' && (
+                <div className="space-y-3 md:space-y-4 pb-20 md:pb-0">
                   {cart.length === 0 ? (
                     <div className="text-center text-gray-500 mt-20 flex flex-col items-center">
                       <span className="text-5xl md:text-6xl mb-4">🪹</span>
@@ -583,8 +690,11 @@ export default function Storefront() {
                     ))
                   )}
                 </div>
-              ) : (
-                <form id="checkout-form" onSubmit={submitOrder} className="space-y-4 md:space-y-5">
+              )}
+
+              {/* CHECKOUT VIEW */}
+              {drawerView === 'checkout' && (
+                <form id="checkout-form" onSubmit={submitOrder} className="space-y-4 md:space-y-5 pb-20 md:pb-0">
                   <div>
                     <label className="block text-xs md:text-sm font-bold text-gray-700 mb-1">Full Name</label>
                     <input required type="text" placeholder="John Doe" className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-yellow-500 text-sm md:text-base" value={customerInfo.name} onChange={(e) => setCustomerInfo({...customerInfo, name: e.target.value})} />
@@ -604,13 +714,21 @@ export default function Storefront() {
               )}
             </div>
 
+            {/* Bottom Drawer Action Bar */}
             <div className="p-4 md:p-6 bg-white border-t border-gray-200 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)]">
               <div className="flex justify-between text-lg md:text-xl mb-4 md:mb-6">
                 <span className="font-medium text-gray-600">Total</span>
                 <span className="font-black text-gray-900">${cartTotal.toFixed(2)}</span>
               </div>
               
-              {drawerView === 'cart' ? (
+              {drawerView === 'builder' ? (
+                <button 
+                  onClick={() => setDrawerView('cart')}
+                  className="w-full bg-gray-800 hover:bg-gray-900 text-white font-extrabold py-3 md:py-4 rounded-xl text-base md:text-lg shadow-lg transition-transform transform active:scale-95 cursor-pointer"
+                >
+                  Review Cart 🛒
+                </button>
+              ) : drawerView === 'cart' ? (
                 <button 
                   disabled={cart.length === 0}
                   onClick={() => setDrawerView('checkout')}
