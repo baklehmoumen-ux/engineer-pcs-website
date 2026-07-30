@@ -1,8 +1,49 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import HeroBanner from './HeroBanner';
+
+// =========================================================================
+// 🌟 NEW: SCROLL REVEAL ANIMATION COMPONENT
+// Automatically fades items in/out smoothly as you scroll past them
+// =========================================================================
+const ScrollFadeItem = ({ children }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const domRef = useRef();
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          setIsVisible(entry.isIntersecting);
+        });
+      },
+      { threshold: 0.1, rootMargin: "0px 0px -50px 0px" }
+    );
+
+    const currentRef = domRef.current;
+    if (currentRef) observer.observe(currentRef);
+    
+    return () => {
+      if (currentRef) observer.unobserve(currentRef);
+    };
+  }, []);
+
+  return (
+    <div
+      ref={domRef}
+      style={{ willChange: 'opacity, transform' }}
+      className={`transition-all duration-[700ms] ease-out w-full h-full ${
+        isVisible 
+          ? 'opacity-100 translate-y-0 scale-100' 
+          : 'opacity-0 translate-y-12 scale-[0.96]'
+      }`}
+    >
+      {children}
+    </div>
+  );
+};
 
 // Dictionary Translations for UI, Categories, & New Features
 const dictionary = {
@@ -105,8 +146,7 @@ const dictionary = {
       'Case': 'Case',
       'Power Supply': 'Power Supply'
     }
-  },
-  ar: {
+  },ar: {
     proBuilders: 'خبراء تجميع الحاسوب',
     selectPartPrefix: 'اختر',
     selectPartSuffix: 'لتجميعتك',
@@ -206,7 +246,9 @@ const dictionary = {
       'Power Supply': 'مزود الطاقة'
     }
   }
-};const categories = [
+};
+
+const categories = [
   'All', 
   'CPUs',
   'Motherboards', 
@@ -230,9 +272,7 @@ const requiredParts = [
   { key: 'GPUs', labelKey: 'Video Card', icon: <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" strokeWidth="2" fill="none"><rect x="2" y="7" width="20" height="10" rx="2"></rect></svg>, required: true },
   { key: 'PC Cases', labelKey: 'Case', icon: <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" strokeWidth="2" fill="none"><rect x="5" y="3" width="14" height="18" rx="2"></rect></svg>, required: true },
   { key: 'Power Supplies', labelKey: 'Power Supply', icon: <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="6" width="18" height="12" rx="2"></rect></svg>, required: true }
-];
-
-// Master Starter Inventory with Pre-Populated PCPartPicker Specs
+];// Master Starter Inventory with Pre-Populated PCPartPicker Specs
 const staticInventory = [
   // Power Supplies
   { id: 'psu-1', category: 'Power Supplies', name: 'ThermalRight TR-TB650S 650W 80 PLUS', price: 58, image: '/images/tr-tb650s.jpg', specs: { type: 'ATX', efficiency: '80+ Gold', wattage: '650 W', modular: 'Full', color: 'Black' } },
@@ -503,7 +543,7 @@ const staticInventory = [
       missing,
       progress: Math.round((fulfilledCount / requiredCount) * 100)
     };
-  }, [cart, compatibilityErrors, t]);const generateShareBuildText = () => {
+  }, [cart, compatibilityErrors, t]); const generateShareBuildText = () => {
     let text = `⚡ *${t.shareBuildTitle} - EngineerPCs*\n\n`;
     text += `🎯 *${t.expectedPerf}:*\n${expectedPerformance}\n\n`;
     text += `⚡ *${t.estWattage}:* ~${wattageInfo.estimated}W ${wattageInfo.psu ? `(PSU: ${wattageInfo.psu}W)` : ''}\n\n`;
@@ -668,7 +708,9 @@ const staticInventory = [
         {item.description || `Official ${item.category} component verified by EngineerPCs.`}
       </p>
     );
-  };return (
+  };
+
+  return (
     <div className="min-h-screen bg-gray-50 font-sans pb-24 md:pb-0 relative" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       
       {/* FLOATING TOAST NOTIFICATION */}
@@ -754,9 +796,7 @@ const staticInventory = [
             </button>
           ))}
         </div>
-      </nav>
-
-      {/* 4. MAIN PRODUCT DISPLAY HEADER & SIDEBAR FILTERS */}
+      </nav>{/* 4. MAIN PRODUCT DISPLAY HEADER & SIDEBAR FILTERS */}
       <main className="max-w-7xl mx-auto p-3 md:p-6 flex flex-col lg:flex-row gap-6">
         
         {/* SIDEBAR FILTER */}
@@ -791,7 +831,9 @@ const staticInventory = [
               )}
             </div>
           </div>
-        </aside><div className="flex-1">
+        </aside>
+
+        <div className="flex-1">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 md:mb-6 border-b-2 border-gray-200 pb-3 pt-4">
             <h2 className="text-lg md:text-2xl font-bold text-gray-800">
               {searchQuery ? `${t.search} "${searchQuery}"` : (t.categories[activeCategory] || activeCategory)}
@@ -832,68 +874,70 @@ const staticInventory = [
                 const images = item.image ? item.image.split(',').map(i => i.trim()) : ['/images/default.jpg'];
 
                 return (
-                  <div key={item.id} className="bg-white rounded-2xl p-4 md:p-6 border border-gray-200 shadow-sm hover:shadow-md transition flex flex-col gap-4 relative">
-                    
-                    {/* Compare Checkbox */}
-                    <div className="absolute top-4 left-4 z-20 bg-white/90 p-1.5 rounded-lg shadow-sm backdrop-blur">
-                      <input type="checkbox" className="w-4 h-4 cursor-pointer accent-blue-600" checked={compareItems.some(i => i.id === item.id)} onChange={(e) => { e.stopPropagation(); handleToggleCompare(item); }} title="Compare this item" />
-                    </div>
-
-                    {/* IMAGE CAROUSEL (TOP) */}
-                    <div className="flex overflow-x-auto snap-x snap-mandatory gap-3 pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                      {images.map((img, idx) => (
-                        <div key={idx} className="w-[85%] sm:w-[45%] md:w-[30%] shrink-0 snap-start relative border border-gray-100 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center p-2">
-                          <img 
-                            src={img} 
-                            alt={`${item.name} - View ${idx + 1}`} 
-                            className="h-40 md:h-56 w-full object-contain cursor-pointer hover:scale-105 transition-transform"
-                            onClick={() => openDetailModal(item)}
-                            onError={(e) => { e.target.src = 'https://via.placeholder.com/300?text=PC+Component'; }}
-                          />
-                          {isOutOfStock && idx === 0 && (
-                            <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center z-10 pointer-events-none">
-                              <span className="bg-red-600 text-white font-black text-xs uppercase tracking-widest px-3 py-1.5 rounded-md shadow-lg">{t.outOfStockBadge}</span>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* INFO SECTION */}
-                    <div className="flex flex-col">
-                      <span className="text-[10px] md:text-xs font-black text-blue-600 uppercase tracking-widest mb-1 pl-10 md:pl-0">{t.categories[item.category] || item.category}</span>
-                      <h3 className="font-extrabold text-gray-900 text-base md:text-xl leading-snug cursor-pointer hover:text-blue-600 transition" onClick={() => openDetailModal(item)}>
-                        {item.name}
-                      </h3>
+                  <ScrollFadeItem key={item.id}>
+                    <div className="bg-white rounded-2xl p-4 md:p-6 border border-gray-200 shadow-sm hover:shadow-md transition flex flex-col gap-4 relative">
                       
-                      <div className="flex items-center gap-1 text-xs text-yellow-500 font-bold mt-1.5">
-                        ★★★★★ <span className="text-gray-400 text-[10px] font-medium">(48)</span>
+                      {/* Compare Checkbox */}
+                      <div className="absolute top-4 left-4 z-20 bg-white/90 p-1.5 rounded-lg shadow-sm backdrop-blur">
+                        <input type="checkbox" className="w-4 h-4 cursor-pointer accent-blue-600" checked={compareItems.some(i => i.id === item.id)} onChange={(e) => { e.stopPropagation(); handleToggleCompare(item); }} title="Compare this item" />
                       </div>
 
-                      {renderProductSpecs(item)}
-                    </div>
+                      {/* IMAGE CAROUSEL (TOP) */}
+                      <div className="flex overflow-x-auto snap-x snap-mandatory gap-3 pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                        {images.map((img, idx) => (
+                          <div key={idx} className="w-[85%] sm:w-[45%] md:w-[30%] shrink-0 snap-start relative border border-gray-100 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center p-2">
+                            <img 
+                              src={img} 
+                              alt={`${item.name} - View ${idx + 1}`} 
+                              className="h-40 md:h-56 w-full object-contain cursor-pointer hover:scale-105 transition-transform"
+                              onClick={() => openDetailModal(item)}
+                              onError={(e) => { e.target.src = 'https://via.placeholder.com/300?text=PC+Component'; }}
+                            />
+                            {isOutOfStock && idx === 0 && (
+                              <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center z-10 pointer-events-none">
+                                <span className="bg-red-600 text-white font-black text-xs uppercase tracking-widest px-3 py-1.5 rounded-md shadow-lg">{t.outOfStockBadge}</span>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
 
-                    {/* FOOTER SECTION */}
-                    <div className="flex items-center justify-between border-t border-gray-100 pt-4 mt-2">
-                      <div className="text-2xl md:text-3xl font-black text-gray-900">${item.price}</div>
-                      
-                      {isOutOfStock ? (
-                        <button onClick={(e) => { e.stopPropagation(); setNotifyModalOpen(true); }} className="bg-gray-800 hover:bg-gray-900 text-white font-bold px-4 md:px-6 py-2.5 rounded-xl text-sm shadow-md transition cursor-pointer flex items-center gap-2">
-                          {t.notifyMe}
-                        </button>
-                      ) : qty === 0 ? (
-                        <button onClick={() => addToCart(item)} className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-extrabold px-6 md:px-8 py-2.5 md:py-3 rounded-xl text-sm shadow-md transition transform active:scale-95 cursor-pointer flex items-center gap-2">
-                          + {t.add}
-                        </button>
-                      ) : (
-                        <div className="flex items-center bg-gray-100 rounded-xl border border-gray-300 p-1 shadow-inner h-10 md:h-12">
-                          <button onClick={() => updateQuantity(item.id, -1)} className="bg-white hover:bg-gray-200 text-black font-bold h-full w-10 md:w-12 rounded-lg flex items-center justify-center text-sm shadow-sm cursor-pointer transition">-</button>
-                          <span className="px-4 font-black text-sm md:text-base text-gray-800">{qty}</span>
-                          <button onClick={() => updateQuantity(item.id, 1)} className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold h-full w-10 md:w-12 rounded-lg flex items-center justify-center text-sm shadow-sm cursor-pointer transition">+</button>
+                      {/* INFO SECTION */}
+                      <div className="flex flex-col">
+                        <span className="text-[10px] md:text-xs font-black text-blue-600 uppercase tracking-widest mb-1 pl-10 md:pl-0">{t.categories[item.category] || item.category}</span>
+                        <h3 className="font-extrabold text-gray-900 text-base md:text-xl leading-snug cursor-pointer hover:text-blue-600 transition" onClick={() => openDetailModal(item)}>
+                          {item.name}
+                        </h3>
+                        
+                        <div className="flex items-center gap-1 text-xs text-yellow-500 font-bold mt-1.5">
+                          ★★★★★ <span className="text-gray-400 text-[10px] font-medium">(48)</span>
                         </div>
-                      )}
+
+                        {renderProductSpecs(item)}
+                      </div>
+
+                      {/* FOOTER SECTION */}
+                      <div className="flex items-center justify-between border-t border-gray-100 pt-4 mt-2">
+                        <div className="text-2xl md:text-3xl font-black text-gray-900">${item.price}</div>
+                        
+                        {isOutOfStock ? (
+                          <button onClick={(e) => { e.stopPropagation(); setNotifyModalOpen(true); }} className="bg-gray-800 hover:bg-gray-900 text-white font-bold px-4 md:px-6 py-2.5 rounded-xl text-sm shadow-md transition cursor-pointer flex items-center gap-2">
+                            {t.notifyMe}
+                          </button>
+                        ) : qty === 0 ? (
+                          <button onClick={() => addToCart(item)} className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-extrabold px-6 md:px-8 py-2.5 md:py-3 rounded-xl text-sm shadow-md transition transform active:scale-95 cursor-pointer flex items-center gap-2">
+                            + {t.add}
+                          </button>
+                        ) : (
+                          <div className="flex items-center bg-gray-100 rounded-xl border border-gray-300 p-1 shadow-inner h-10 md:h-12">
+                            <button onClick={() => updateQuantity(item.id, -1)} className="bg-white hover:bg-gray-200 text-black font-bold h-full w-10 md:w-12 rounded-lg flex items-center justify-center text-sm shadow-sm cursor-pointer transition">-</button>
+                            <span className="px-4 font-black text-sm md:text-base text-gray-800">{qty}</span>
+                            <button onClick={() => updateQuantity(item.id, 1)} className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold h-full w-10 md:w-12 rounded-lg flex items-center justify-center text-sm shadow-sm cursor-pointer transition">+</button>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  </ScrollFadeItem>
                 );
               })}
             </div>
@@ -908,42 +952,44 @@ const staticInventory = [
                 const firstImage = item.image ? item.image.split(',')[0].trim() : '/images/default.jpg';
 
                 return (
-                  <div key={item.id} className={`group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col overflow-hidden relative ${isOutOfStock ? 'opacity-75' : ''}`}>
-                    
-                    <div className="absolute top-2 left-2 z-30 bg-white/90 p-1 rounded shadow-sm backdrop-blur">
-                      <input type="checkbox" className="w-4 h-4 cursor-pointer accent-blue-600" checked={compareItems.some(i => i.id === item.id)} onChange={(e) => { e.stopPropagation(); handleToggleCompare(item); }} />
-                    </div>
-
-                    <div onClick={() => openDetailModal(item)} className="h-32 md:h-56 bg-gray-50 flex items-center justify-center p-2 md:p-4 relative overflow-hidden cursor-pointer">
-                      {isOutOfStock && (
-                        <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px] flex items-center justify-center z-20">
-                          <span className="bg-red-600 text-white font-black text-xs md:text-sm uppercase tracking-widest px-3 py-1.5 rounded-md shadow-lg border border-red-400">{t.outOfStock}</span>
-                        </div>
-                      )}
-                      <img src={firstImage} alt={item.name} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" onError={(e) => { e.target.src = 'https://via.placeholder.com/300?text=PC+Component'; }} />
-                    </div>
-
-                    <div className="p-3 md:p-5 flex flex-col flex-1">
-                      <span className="text-[10px] md:text-xs font-bold text-blue-500 uppercase tracking-wider mb-1 line-clamp-1 pl-6 md:pl-0">{t.categories[item.category] || item.category}</span>
-                      <h3 onClick={() => openDetailModal(item)} className="text-gray-900 font-semibold text-xs md:text-sm line-clamp-2 mb-2 md:mb-3 cursor-pointer hover:text-blue-600 transition">{item.name}</h3>
+                  <ScrollFadeItem key={item.id}>
+                    <div className={`group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col h-full overflow-hidden relative ${isOutOfStock ? 'opacity-75' : ''}`}>
                       
-                      <div className="mt-auto flex items-center justify-between gap-2">
-                        <div className="text-base md:text-xl font-black text-gray-900">${item.price}</div>
-                        
-                        {isOutOfStock ? (
-                          <button onClick={(e) => { e.stopPropagation(); setNotifyModalOpen(true); }} className="bg-gray-800 text-white font-bold px-2 py-1 rounded-lg text-xs cursor-pointer">{t.notifyMe}</button>
-                        ) : qty === 0 ? (
-                          <button onClick={() => addToCart(item)} className="bg-yellow-400 hover:bg-yellow-500 active:bg-yellow-600 text-black font-bold h-8 w-8 md:h-10 md:w-10 flex items-center justify-center rounded-full shadow transition-transform active:scale-90 text-sm md:text-base cursor-pointer">➕</button>
-                        ) : (
-                          <div className="flex items-center bg-gray-100 rounded-full border border-gray-300 p-0.5 shadow-inner">
-                            <button onClick={() => updateQuantity(item.id, -1)} className="bg-white hover:bg-gray-200 text-black font-bold h-7 w-7 rounded-full flex items-center justify-center text-xs shadow cursor-pointer">-</button>
-                            <span className="px-2 font-black text-xs text-gray-800">{qty}</span>
-                            <button onClick={() => updateQuantity(item.id, 1)} className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold h-7 w-7 rounded-full flex items-center justify-center text-xs shadow cursor-pointer">+</button>
+                      <div className="absolute top-2 left-2 z-30 bg-white/90 p-1 rounded shadow-sm backdrop-blur">
+                        <input type="checkbox" className="w-4 h-4 cursor-pointer accent-blue-600" checked={compareItems.some(i => i.id === item.id)} onChange={(e) => { e.stopPropagation(); handleToggleCompare(item); }} />
+                      </div>
+
+                      <div onClick={() => openDetailModal(item)} className="h-32 md:h-56 bg-gray-50 flex items-center justify-center p-2 md:p-4 relative overflow-hidden cursor-pointer">
+                        {isOutOfStock && (
+                          <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px] flex items-center justify-center z-20">
+                            <span className="bg-red-600 text-white font-black text-xs md:text-sm uppercase tracking-widest px-3 py-1.5 rounded-md shadow-lg border border-red-400">{t.outOfStock}</span>
                           </div>
                         )}
+                        <img src={firstImage} alt={item.name} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" onError={(e) => { e.target.src = 'https://via.placeholder.com/300?text=PC+Component'; }} />
+                      </div>
+
+                      <div className="p-3 md:p-5 flex flex-col flex-1">
+                        <span className="text-[10px] md:text-xs font-bold text-blue-500 uppercase tracking-wider mb-1 line-clamp-1 pl-6 md:pl-0">{t.categories[item.category] || item.category}</span>
+                        <h3 onClick={() => openDetailModal(item)} className="text-gray-900 font-semibold text-xs md:text-sm line-clamp-2 mb-2 md:mb-3 cursor-pointer hover:text-blue-600 transition">{item.name}</h3>
+                        
+                        <div className="mt-auto flex items-center justify-between gap-2">
+                          <div className="text-base md:text-xl font-black text-gray-900">${item.price}</div>
+                          
+                          {isOutOfStock ? (
+                            <button onClick={(e) => { e.stopPropagation(); setNotifyModalOpen(true); }} className="bg-gray-800 text-white font-bold px-2 py-1 rounded-lg text-xs cursor-pointer">{t.notifyMe}</button>
+                          ) : qty === 0 ? (
+                            <button onClick={() => addToCart(item)} className="bg-yellow-400 hover:bg-yellow-500 active:bg-yellow-600 text-black font-bold h-8 w-8 md:h-10 md:w-10 flex items-center justify-center rounded-full shadow transition-transform active:scale-90 text-sm md:text-base cursor-pointer">➕</button>
+                          ) : (
+                            <div className="flex items-center bg-gray-100 rounded-full border border-gray-300 p-0.5 shadow-inner">
+                              <button onClick={() => updateQuantity(item.id, -1)} className="bg-white hover:bg-gray-200 text-black font-bold h-7 w-7 rounded-full flex items-center justify-center text-xs shadow cursor-pointer">-</button>
+                              <span className="px-2 font-black text-xs text-gray-800">{qty}</span>
+                              <button onClick={() => updateQuantity(item.id, 1)} className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold h-7 w-7 rounded-full flex items-center justify-center text-xs shadow cursor-pointer">+</button>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  </ScrollFadeItem>
                 );
               })}
             </div>
@@ -1026,7 +1072,9 @@ const staticInventory = [
             <button onClick={() => { showToast('Alert saved! We will notify you.'); setNotifyModalOpen(false); }} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-md transition active:scale-95 cursor-pointer">Save Alert</button>
           </div>
         </div>
-      )}{/* INTERACTIVE MULTI-STEP CHECKOUT & BUILDER DRAWER */}
+      )}
+
+      {/* INTERACTIVE MULTI-STEP CHECKOUT & BUILDER DRAWER */}
       {isDrawerOpen && (
         <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm transition-opacity">
           <div className="w-full max-w-md bg-white h-full shadow-2xl flex flex-col animate-slide-in-right">
@@ -1129,8 +1177,8 @@ const staticInventory = [
                                 </div>
                               </div>
                               <div className="flex items-center gap-1 shrink-0">
-                                <button onClick={() => startSelectingPart(part.key)} className="text-[10px] text-blue-600 font-bold bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded cursor-pointer">{t.swap}</button>
-                                <button onClick={() => removeFromCart(selectedItem.id)} className="text-[10px] text-red-500 font-bold bg-red-50 hover:bg-red-100 p-1.5 rounded cursor-pointer">🗑️</button>
+                                <button onClick={() => startSelectingPart(part.key)} className="text-[10px] text-blue-600 font-bold bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded cursor-pointer transition">{t.swap}</button>
+                                <button onClick={() => removeFromCart(selectedItem.id)} className="text-[10px] text-red-500 font-bold bg-red-50 hover:bg-red-100 p-1.5 rounded cursor-pointer transition" title="Remove from build">🗑️</button>
                               </div>
                             </div>
                           )}
@@ -1232,7 +1280,9 @@ const staticInventory = [
             </div>
           </div>
         </div>
-      )}{/* SHARE BUILD SUMMARY MODAL */}
+      )}
+
+      {/* SHARE BUILD SUMMARY MODAL */}
       {isShareModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="bg-gray-900 text-white w-full max-w-lg rounded-2xl p-6 border border-gray-800 shadow-2xl relative">
