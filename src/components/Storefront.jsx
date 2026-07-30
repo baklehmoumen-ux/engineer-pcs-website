@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 import HeroBanner from './HeroBanner';
 
-// Dictionary Translations for UI & Categories
+// Dictionary Translations for UI, Categories, & New Features
 const dictionary = {
   en: {
     proBuilders: 'Pro PC Builders',
@@ -28,7 +28,7 @@ const dictionary = {
     total: 'Total',
     yourCart: '🛒 Your Cart',
     checkout: '📝 Checkout',
-    pcBuilder: '🛠️ PC Builder',
+    pcBuilder: '🛠️ Engineer Your Own PC',
     buildComplete: '✅ Build Complete!',
     missingComponents: '⚠️ Missing Components',
     requiredLabel: 'Required:',
@@ -52,6 +52,19 @@ const dictionary = {
     addToBuild: '✅ Add to Build',
     addToCart: '➕ Add to Cart',
     currentlyUnavailable: 'Currently Unavailable',
+    
+    // NEW BUILDER & SHARE FEATURES (English)
+    estWattage: 'Estimated Wattage',
+    psuCapacity: 'PSU Capacity',
+    fixBtn: '🔧 Fix Item',
+    expectedPerf: '🎮 Expected Performance',
+    shareBuildBtn: '📲 Share Build',
+    shareCartBtn: '📲 Share Cart',
+    shareBuildTitle: '⚡ PC Build Summary',
+    copyLink: '📋 Copy Text Summary',
+    shareWhatsApp: '💬 Share via WhatsApp',
+    close: 'Close',
+    
     categories: {
       'All': 'All', 
       'CPUs': 'CPUs',
@@ -99,7 +112,7 @@ const dictionary = {
     total: 'المجموع',
     yourCart: '🛒 سلة التسوق',
     checkout: '📝 إتمام الطلب',
-    pcBuilder: '🛠️ مُجمع الحاسوب',
+    pcBuilder: '🛠️ صمّم حاسوبك الخاص',
     buildComplete: '✅ التجميعة مكتملة!',
     missingComponents: '⚠️ قطع مفقودة',
     requiredLabel: 'المطلوب:',
@@ -123,6 +136,19 @@ const dictionary = {
     addToBuild: '✅ إضافة للتجميعة',
     addToCart: '➕ إضافة للسلة',
     currentlyUnavailable: 'غير متوفر حالياً',
+
+    // NEW BUILDER & SHARE FEATURES (Arabic)
+    estWattage: 'استهلاك الطاقة المقدر',
+    psuCapacity: 'سعة مزود الطاقة',
+    fixBtn: '🔧 إصلاح القطعة',
+    expectedPerf: '🎮 الأداء المتوقع',
+    shareBuildBtn: '📲 مشاركة التجميعة',
+    shareCartBtn: '📲 مشاركة السلة',
+    shareBuildTitle: '⚡ ملخص التجميعة',
+    copyLink: '📋 نسخ النص',
+    shareWhatsApp: '💬 مشاركة عبر الواتساب',
+    close: 'إغلاق',
+
     categories: {
       'All': 'الكل', 
       'CPUs': 'المعالجات',
@@ -166,57 +192,17 @@ const categories = [
 ];
 
 const requiredParts = [
-  { 
-    key: 'CPUs', 
-    labelKey: 'CPU', 
-    icon: <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>, 
-    required: true 
-  },
-  { 
-    key: 'Liquid & Air Cooling', 
-    labelKey: 'CPU Cooler', 
-    icon: <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="12" cy="12" r="6"></circle><path d="M12 6v3"></path><path d="M12 15v3"></path><path d="M6 12h3"></path><path d="M15 12h3"></path></svg>, 
-    required: true 
-  },
-  { 
-    key: 'Motherboards', 
-    labelKey: 'Motherboard', 
-    icon: <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><rect x="7" y="7" width="6" height="6"></rect><path d="M17 7v10"></path><path d="M7 16h6"></path><path d="M3 9h2"></path><path d="M3 15h2"></path></svg>, 
-    required: true 
-  },
-  { 
-    key: 'RAM', 
-    labelKey: 'Memory', 
-    icon: <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="8" width="20" height="8" rx="2" ry="2"></rect><path d="M6 16v2"></path><path d="M10 16v2"></path><path d="M14 16v2"></path><path d="M18 16v2"></path><path d="M6 8V6"></path><path d="M14 8V6"></path></svg>, 
-    required: true 
-  },
-  { 
-    key: 'Storage', 
-    labelKey: 'Storage', 
-    icon: <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="5" width="16" height="14" rx="2" ry="2"></rect><path d="M4 11h16"></path><circle cx="8" cy="15" r="1"></circle><circle cx="16" cy="15" r="1"></circle></svg>, 
-    required: true 
-  },
-  { 
-    key: 'GPUs', 
-    labelKey: 'Video Card', 
-    icon: <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="10" rx="2" ry="2"></rect><circle cx="8" cy="12" r="3"></circle><circle cx="16" cy="12" r="3"></circle><path d="M4 7V5h16v2"></path></svg>, 
-    required: true 
-  },
-  { 
-    key: 'PC Cases', 
-    labelKey: 'Case', 
-    icon: <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="3" width="14" height="18" rx="2" ry="2"></rect><path d="M5 7h14"></path><path d="M5 18h14"></path><circle cx="12" cy="12" r="3"></circle></svg>, 
-    required: true 
-  },
-  { 
-    key: 'Power Supplies', 
-    labelKey: 'Power Supply', 
-    icon: <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="6" width="18" height="12" rx="2" ry="2"></rect><circle cx="10" cy="12" r="4"></circle><path d="M18 10h.01"></path><path d="M18 14h.01"></path></svg>, 
-    required: true 
-  }
+  { key: 'CPUs', labelKey: 'CPU', icon: <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" strokeWidth="2" fill="none"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect></svg>, required: true },
+  { key: 'Liquid & Air Cooling', labelKey: 'CPU Cooler', icon: <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="12" cy="12" r="6"></circle></svg>, required: true },
+  { key: 'Motherboards', labelKey: 'Motherboard', icon: <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2"></rect></svg>, required: true },
+  { key: 'RAM', labelKey: 'Memory', icon: <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" strokeWidth="2" fill="none"><rect x="2" y="8" width="20" height="8" rx="2"></rect></svg>, required: true },
+  { key: 'Storage', labelKey: 'Storage', icon: <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" strokeWidth="2" fill="none"><rect x="4" y="5" width="16" height="14" rx="2"></rect></svg>, required: true },
+  { key: 'GPUs', labelKey: 'Video Card', icon: <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" strokeWidth="2" fill="none"><rect x="2" y="7" width="20" height="10" rx="2"></rect></svg>, required: true },
+  { key: 'PC Cases', labelKey: 'Case', icon: <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" strokeWidth="2" fill="none"><rect x="5" y="3" width="14" height="18" rx="2"></rect></svg>, required: true },
+  { key: 'Power Supplies', labelKey: 'Power Supply', icon: <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="6" width="18" height="12" rx="2"></rect></svg>, required: true }
 ];
 
-// Master Inventory Collections
+// Master Inventory
 const staticInventory = [
   { id: 'psu-1', category: 'Power Supplies', name: 'ThermalRight TR-TB650S 650W 80 PLUS', price: 58, image: '/images/tr-tb650s.jpg' },
   { id: 'psu-2', category: 'Power Supplies', name: 'ThermalRight TR-TB750S 750W', price: 76, image: '/images/tr-tb750s.jpg' },
@@ -321,7 +307,7 @@ const staticInventory = [
 ];
 
 export default function Storefront() {
-  const [lang, setLang] = useState('en'); // 'en' or 'ar'
+  const [lang, setLang] = useState('en');
   const t = dictionary[lang];
 
   const [dbProducts, setDbProducts] = useState([]);
@@ -336,6 +322,9 @@ export default function Storefront() {
   
   const [toastMessage, setToastMessage] = useState('');
   const [selectingFor, setSelectingFor] = useState(null);
+
+  // Share Build Modal
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   // Detail Modal State
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -438,6 +427,91 @@ export default function Storefront() {
     return found ? found.quantity : 0;
   };
 
+  // =========================================================
+  // ⚡ POWER WATTAGE & COMPATIBILITY CALCULATION ENGINE
+  // =========================================================
+  const wattageInfo = useMemo(() => {
+    let estimatedWattage = 65; // Base MB, RAM, SSD, Fans load
+    let selectedPsuWattage = 0;
+
+    cart.forEach(item => {
+      const name = item.name.toLowerCase();
+      const cat = item.category;
+
+      if (cat === 'CPUs') {
+        if (name.includes('9950x3d') || name.includes('9900x')) estimatedWattage += 170;
+        else if (name.includes('7800x3d') || name.includes('9800x3d') || name.includes('9700x')) estimatedWattage += 120;
+        else if (name.includes('7500f') || name.includes('9600x')) estimatedWattage += 88;
+        else estimatedWattage += 105;
+      } else if (cat === 'GPUs') {
+        if (name.includes('4090') || name.includes('5090')) estimatedWattage += 450;
+        else if (name.includes('4080') || name.includes('5080')) estimatedWattage += 320;
+        else if (name.includes('4070') || name.includes('5070')) estimatedWattage += 240;
+        else estimatedWattage += 180;
+      } else if (cat === 'Power Supplies') {
+        const match = name.match(/(\d{3,4})\s*w/i) || name.match(/(\d{3,4})/);
+        if (match) selectedPsuWattage = parseInt(match[1]);
+      }
+    });
+
+    return { estimated: estimatedWattage, psu: selectedPsuWattage };
+  }, [cart]);
+
+  // Compatibility & Power Deficit Error Checks
+  const compatibilityErrors = useMemo(() => {
+    const errors = [];
+    
+    // 1. Power Supply Check
+    if (wattageInfo.psu > 0 && wattageInfo.psu < wattageInfo.estimated) {
+      errors.push({
+        id: 'insufficient-power',
+        categoryTarget: 'Power Supplies',
+        messageEn: `Insufficient Power Supply! Estimated draw is ~${wattageInfo.estimated}W, but selected PSU is only ${wattageInfo.psu}W.`,
+        messageAr: `عفواً! مزود الطاقة غير كافٍ. الاستهلاك المقدر هو ~${wattageInfo.estimated} واط والمزود الحالي ${wattageInfo.psu} واط فقط.`
+      });
+    }
+
+    // 2. CPU vs Motherboard Socket Alignment Check
+    const cpu = cart.find(i => i.category === 'CPUs');
+    const mb = cart.find(i => i.category === 'Motherboards');
+    if (cpu && mb) {
+      const cpuName = cpu.name.toLowerCase();
+      const mbName = mb.name.toLowerCase();
+      
+      const isAmdCpu = cpuName.includes('ryzen') || cpuName.includes('7500f') || cpuName.includes('7800x3d') || cpuName.includes('9800x3d');
+      const isIntelMb = mbName.includes('h610') || mbName.includes('b760') || mbName.includes('z790') || mbName.includes('z890');
+      
+      if (isAmdCpu && isIntelMb) {
+        errors.push({
+          id: 'socket-mismatch',
+          categoryTarget: 'Motherboards',
+          messageEn: `Incompatible Socket! Your AMD Ryzen CPU will not fit into Intel Motherboard (${mb.name}).`,
+          messageAr: `قطع غير متوافقة! معالج AMD Ryzen لا يعمل مع لوحة أم Intel (${mb.name}).`
+        });
+      }
+    }
+
+    return errors;
+  }, [cart, wattageInfo]);
+
+  // Dynamic Performance Rating Calculation
+  const expectedPerformance = useMemo(() => {
+    const gpu = cart.find(i => i.category === 'GPUs');
+    const cpu = cart.find(i => i.category === 'CPUs');
+
+    if (!gpu && !cpu) return lang === 'ar' ? 'الرجاء اختيار قطع لعرض الأداء المتوقع' : 'Select parts to calculate estimated performance';
+    
+    const gpuName = gpu ? gpu.name.toLowerCase() : '';
+    
+    if (gpuName.includes('4090') || gpuName.includes('5090') || gpuName.includes('4080') || gpuName.includes('5080')) {
+      return lang === 'ar' ? '🚀 أداء خارق: 4K Ultra FPS (120+ FPS) · تتبع الأشعة المتقدم' : '🚀 Extreme Performance: 4K Ultra Gaming (120+ FPS) · Ray Tracing';
+    } else if (gpuName.includes('4070') || gpuName.includes('5070') || gpuName.includes('7800x3d')) {
+      return lang === 'ar' ? '🎮 أداء ممتازة: 1440p Ultra FPS (144+ FPS) · ألعاب تنافسية' : '🎮 High Performance: 1440p Ultra Gaming (144+ FPS) · Esports Ready';
+    }
+    return lang === 'ar' ? '⚡ أداء جيد: 1080p High FPS (100+ FPS) · ألعاب بدقة عالية' : '⚡ Solid Performance: 1080p High FPS (100+ FPS) · Smooth Gaming';
+  }, [cart, lang]);
+
+  // Advanced PC Builder Checklist Validation Logic
   const buildStatus = useMemo(() => {
     let requiredCount = 0;
     let fulfilledCount = 0;
@@ -451,11 +525,34 @@ export default function Storefront() {
     });
 
     return {
-      isComplete: missing.length === 0,
+      isComplete: missing.length === 0 && compatibilityErrors.length === 0,
       missing,
       progress: Math.round((fulfilledCount / requiredCount) * 100)
     };
-  }, [cart, t]);
+  }, [cart, compatibilityErrors, t]);
+
+  // Generate Share Build Text / WhatsApp Summary
+  const generateShareBuildText = () => {
+    let text = `⚡ *${t.shareBuildTitle} - EngineerPCs*\n\n`;
+    text += `🎯 *${t.expectedPerf}:*\n${expectedPerformance}\n\n`;
+    text += `⚡ *${t.estWattage}:* ~${wattageInfo.estimated}W ${wattageInfo.psu ? `(PSU: ${wattageInfo.psu}W)` : ''}\n\n`;
+    text += `📦 *Parts Included:*\n`;
+    cart.forEach(item => {
+      text += `▪️ ${item.name} - $${item.price}\n`;
+    });
+    text += `\n💰 *Total Price: $${cartTotal.toFixed(2)}*`;
+    return text;
+  };
+
+  const handleShareBuildWhatsApp = () => {
+    const encoded = encodeURIComponent(generateShareBuildText());
+    window.open(`https://wa.me/?text=${encoded}`, '_blank');
+  };
+
+  const handleCopyShareText = () => {
+    navigator.clipboard.writeText(generateShareBuildText());
+    showToast(lang === 'ar' ? 'تم نسخ التجميعة إلى الحافظة! 📋' : 'Build summary copied to clipboard! 📋');
+  };
 
   const openDetailModal = (product) => {
     setSelectedProduct(product);
@@ -515,7 +612,7 @@ export default function Storefront() {
         </div>
       )}
 
-      {/* 1. TOP UTILITY BAR WITH LANGUAGE TOGGLE & SOCIALS (NO ADMIN BUTTON) */}
+      {/* 1. TOP UTILITY BAR */}
       <div className="bg-gray-900 text-gray-300 text-[11px] md:text-xs py-2 px-3 md:px-6 flex justify-between items-center z-50 relative border-b border-gray-800">
         <span className="font-semibold tracking-wide flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
@@ -523,7 +620,6 @@ export default function Storefront() {
         </span>
 
         <div className="flex gap-3 md:gap-6 items-center">
-          {/* LANGUAGE TOGGLE BUTTON */}
           <button 
             onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
             className="hover:text-yellow-400 text-white font-bold flex items-center gap-1.5 transition text-xs bg-gray-800 hover:bg-gray-700 px-2.5 py-1 rounded-full border border-gray-700 cursor-pointer shadow-sm"
@@ -531,20 +627,13 @@ export default function Storefront() {
             <span>🌐</span> {lang === 'en' ? 'العربية' : 'English'}
           </button>
 
-          {/* INSTAGRAM BUTTON */}
-          <a 
-            href="https://www.instagram.com/engineer_pcs?igsh=MXA3aTJmZWFmajZsdg==" 
-            target="_blank" 
-            rel="noreferrer" 
-            className="hover:text-white flex items-center gap-1.5 transition font-semibold group"
-          >
+          <a href="https://www.instagram.com/engineer_pcs?igsh=MXA3aTJmZWFmajZsdg==" target="_blank" rel="noreferrer" className="hover:text-white flex items-center gap-1.5 transition font-semibold group">
             <svg className="w-3.5 h-3.5 fill-pink-500 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
               <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
             </svg>
             Instagram
           </a>
 
-          {/* WHATSAPP BUTTON */}
           <a href="https://wa.me/963946508988" target="_blank" rel="noreferrer" className="hover:text-white flex items-center gap-1.5 transition font-semibold group">
             <svg className="w-3.5 h-3.5 fill-green-400 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
               <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
@@ -586,7 +675,6 @@ export default function Storefront() {
               {filteredInventory.length} {t.items}
             </span>
 
-            {/* LIVE PRICE SORTING DROPDOWN */}
             <div className="flex items-center gap-1.5 bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 shadow-sm">
               <span className="text-xs text-gray-500 font-medium">{t.sort}</span>
               <select 
@@ -623,7 +711,6 @@ export default function Storefront() {
               return (
                 <div key={item.id} className={`group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col overflow-hidden relative ${isOutOfStock ? 'opacity-75' : ''}`}>
                   
-                  {/* PRODUCT IMAGE CONTAINER */}
                   <div 
                     onClick={() => openDetailModal(item)}
                     className="h-32 md:h-56 bg-gray-50 flex items-center justify-center p-2 md:p-4 relative overflow-hidden cursor-pointer"
@@ -739,9 +826,65 @@ export default function Storefront() {
 
             <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
               
-              {/* BUILDER VIEW */}
+              {/* BUILDER VIEW (ENGINEER YOUR OWN PC) */}
               {drawerView === 'builder' && (
                 <div className="space-y-4 pb-20 md:pb-0">
+                  
+                  {/* Performance & Wattage Meter Panel */}
+                  <div className="bg-gray-900 text-white p-4 rounded-2xl shadow-lg space-y-3 border border-gray-800">
+                    <div className="flex justify-between items-center border-b border-gray-800 pb-2">
+                      <span className="text-xs font-extrabold text-yellow-400 uppercase tracking-widest">{t.expectedPerf}</span>
+                      <button onClick={() => setIsShareModalOpen(true)} className="bg-yellow-400 hover:bg-yellow-500 text-black text-xs font-black px-2.5 py-1 rounded-lg transition flex items-center gap-1 cursor-pointer">
+                        {t.shareBuildBtn}
+                      </button>
+                    </div>
+
+                    <p className="text-xs md:text-sm font-semibold text-gray-200 leading-snug">
+                      {expectedPerformance}
+                    </p>
+
+                    {/* Wattage Gauge Meter */}
+                    <div className="pt-1">
+                      <div className="flex justify-between text-[11px] font-bold mb-1">
+                        <span className="text-gray-400">{t.estWattage}: <span className="text-white font-black">~{wattageInfo.estimated}W</span></span>
+                        <span className={wattageInfo.psu >= wattageInfo.estimated ? "text-green-400 font-black" : "text-red-400 font-black"}>
+                          {t.psuCapacity}: {wattageInfo.psu ? `${wattageInfo.psu}W` : 'None Selected'}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
+                        <div 
+                          className={`h-2 rounded-full transition-all duration-500 ${
+                            wattageInfo.psu === 0 ? 'bg-yellow-400' : wattageInfo.estimated > wattageInfo.psu ? 'bg-red-500' : 'bg-green-400'
+                          }`} 
+                          style={{ width: `${Math.min(100, wattageInfo.psu ? (wattageInfo.estimated / wattageInfo.psu) * 100 : 50)}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Compatibility Errors & GREEN "FIX" BUTTON */}
+                  {compatibilityErrors.length > 0 && (
+                    <div className="space-y-2">
+                      {compatibilityErrors.map(err => (
+                        <div key={err.id} className="bg-red-500/10 border-2 border-red-500/50 p-3 rounded-xl flex items-center justify-between gap-2 shadow-sm animate-pulse">
+                          <div className="flex items-start gap-2">
+                            <span className="text-lg">🚨</span>
+                            <p className="text-xs text-red-700 font-bold leading-tight">
+                              {lang === 'ar' ? err.messageAr : err.messageEn}
+                            </p>
+                          </div>
+                          <button 
+                            onClick={() => startSelectingPart(err.categoryTarget)}
+                            className="bg-green-500 hover:bg-green-600 active:bg-green-700 text-white font-extrabold text-xs px-3 py-1.5 rounded-lg shadow cursor-pointer whitespace-nowrap shrink-0 transition transform active:scale-95"
+                          >
+                            {t.fixBtn}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Progress Header */}
                   <div className={`p-4 rounded-xl border shadow-sm ${buildStatus.isComplete ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'}`}>
                     <div className="flex justify-between items-end mb-2">
                       <h3 className={`font-black text-lg ${buildStatus.isComplete ? 'text-green-800' : 'text-gray-800'}`}>
@@ -752,13 +895,14 @@ export default function Storefront() {
                     <div className="w-full bg-gray-200 rounded-full h-2.5 mb-2 overflow-hidden shadow-inner">
                       <div className={`h-2.5 rounded-full transition-all duration-500 ${buildStatus.isComplete ? 'bg-green-500' : 'bg-yellow-400'}`} style={{ width: `${buildStatus.progress}%` }}></div>
                     </div>
-                    {!buildStatus.isComplete && (
+                    {!buildStatus.isComplete && buildStatus.missing.length > 0 && (
                       <p className="text-xs text-gray-500 font-medium mt-2 leading-relaxed">
                         {t.requiredLabel} <span className="font-bold text-gray-700">{buildStatus.missing.join(', ')}</span>.
                       </p>
                     )}
                   </div>
                   
+                  {/* Parts List */}
                   <div className="space-y-2">
                     {requiredParts.map(part => {
                       const selectedItem = cart.find(item => item.category === part.key);
@@ -821,6 +965,13 @@ export default function Storefront() {
               {/* CART VIEW */}
               {drawerView === 'cart' && (
                 <div className="space-y-3 md:space-y-4 pb-20 md:pb-0">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs font-bold text-gray-500">{cart.length} {t.items}</span>
+                    <button onClick={handleCopyShareText} className="text-xs bg-gray-800 hover:bg-gray-900 text-yellow-400 font-bold px-3 py-1 rounded-lg transition cursor-pointer">
+                      {t.shareCartBtn}
+                    </button>
+                  </div>
+
                   {cart.length === 0 ? (
                     <div className="text-center text-gray-500 mt-20 flex flex-col items-center">
                       <span className="text-5xl md:text-6xl mb-4">🪹</span>
@@ -910,7 +1061,58 @@ export default function Storefront() {
         </div>
       )}
 
-      {/* 6. PRODUCT DETAIL & MULTI-PICTURE MODAL */}
+      {/* 6. SHARE BUILD SUMMARY MODAL */}
+      {isShareModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className="bg-gray-900 text-white w-full max-w-lg rounded-2xl p-6 border border-gray-800 shadow-2xl relative">
+            <button onClick={() => setIsShareModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl font-bold leading-none cursor-pointer">&times;</button>
+
+            <h2 className="text-xl font-extrabold text-yellow-400 mb-4 flex items-center gap-2">
+              ⚡ {t.shareBuildTitle}
+            </h2>
+
+            {/* Visual Build Card Summary */}
+            <div className="bg-gray-800/80 p-4 rounded-xl border border-gray-700 mb-6 space-y-3 max-h-[300px] overflow-y-auto">
+              <div className="bg-gray-900 p-3 rounded-lg border border-gray-800">
+                <span className="text-[10px] font-black text-yellow-400 uppercase tracking-widest block mb-1">{t.expectedPerf}</span>
+                <p className="text-xs font-bold text-gray-200">{expectedPerformance}</p>
+              </div>
+
+              <div className="text-xs text-gray-300 font-semibold space-y-2">
+                {cart.map((item, idx) => (
+                  <div key={idx} className="flex justify-between items-center border-b border-gray-700/50 pb-1.5">
+                    <span className="truncate max-w-[240px]">{item.name}</span>
+                    <span className="font-black text-yellow-400">${item.price}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex justify-between items-center pt-2 text-sm font-black text-white border-t border-gray-700">
+                <span>{t.totalDue}:</span>
+                <span className="text-yellow-400 text-base">${cartTotal.toFixed(2)}</span>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col gap-2">
+              <button 
+                onClick={handleShareBuildWhatsApp}
+                className="w-full bg-green-500 hover:bg-green-600 text-white font-extrabold py-3 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-lg"
+              >
+                <span>💬</span> {t.shareWhatsApp}
+              </button>
+              <button 
+                onClick={handleCopyShareText}
+                className="w-full bg-gray-800 hover:bg-gray-700 text-yellow-400 font-extrabold py-3 rounded-xl border border-gray-700 transition flex items-center justify-center gap-2 cursor-pointer"
+              >
+                {t.copyLink}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 7. PRODUCT DETAIL & MULTI-PICTURE MODAL */}
       {selectedProduct && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
           <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
@@ -919,12 +1121,7 @@ export default function Storefront() {
               <span className="text-xs font-bold text-yellow-400 uppercase tracking-widest">
                 {t.categories[selectedProduct.category] || selectedProduct.category}
               </span>
-              <button 
-                onClick={() => setSelectedProduct(null)} 
-                className="text-gray-400 hover:text-white text-2xl font-bold cursor-pointer"
-              >
-                ✕
-              </button>
+              <button onClick={() => setSelectedProduct(null)} className="text-gray-400 hover:text-white text-2xl font-bold cursor-pointer">✕</button>
             </div>
 
             <div className="p-6 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -948,12 +1145,7 @@ export default function Storefront() {
                         activeImage === img ? 'border-yellow-500' : 'border-gray-200'
                       }`}
                     >
-                      <img 
-                        src={img} 
-                        alt={`Thumbnail ${idx + 1}`} 
-                        className="w-full h-full object-cover rounded-md" 
-                        onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=Img'; }} 
-                      />
+                      <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover rounded-md" onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=Img'; }} />
                     </button>
                   ))}
                 </div>
@@ -961,23 +1153,15 @@ export default function Storefront() {
 
               <div className="flex flex-col justify-between">
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900 mb-2">
-                    {selectedProduct.name}
-                  </h2>
-                  <div className="text-2xl font-black text-gray-900 mb-4">
-                    ${selectedProduct.price}
-                  </div>
+                  <h2 className="text-xl font-bold text-gray-900 mb-2">{selectedProduct.name}</h2>
+                  <div className="text-2xl font-black text-gray-900 mb-4">${selectedProduct.price}</div>
 
                   <div className="mb-4">
                     <span className="text-xs font-bold text-gray-500 uppercase block mb-1">{t.availability}</span>
                     {selectedProduct.in_stock === false ? (
-                      <span className="inline-block bg-red-100 text-red-600 font-bold text-xs px-2.5 py-1 rounded-md">
-                        {t.outOfStockBadge}
-                      </span>
+                      <span className="inline-block bg-red-100 text-red-600 font-bold text-xs px-2.5 py-1 rounded-md">{t.outOfStockBadge}</span>
                     ) : (
-                      <span className="inline-block bg-green-100 text-green-700 font-bold text-xs px-2.5 py-1 rounded-md">
-                        {t.inStockReady}
-                      </span>
+                      <span className="inline-block bg-green-100 text-green-700 font-bold text-xs px-2.5 py-1 rounded-md">{t.inStockReady}</span>
                     )}
                   </div>
 
@@ -991,9 +1175,7 @@ export default function Storefront() {
 
                 <div className="flex gap-3 pt-4 border-t border-gray-100">
                   {selectedProduct.in_stock === false ? (
-                    <button disabled className="w-full bg-gray-200 text-gray-500 font-bold py-3 rounded-xl text-sm">
-                      {t.currentlyUnavailable}
-                    </button>
+                    <button disabled className="w-full bg-gray-200 text-gray-500 font-bold py-3 rounded-xl text-sm">{t.currentlyUnavailable}</button>
                   ) : (
                     <button 
                       onClick={() => {
