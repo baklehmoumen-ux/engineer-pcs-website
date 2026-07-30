@@ -9,15 +9,20 @@ const slides = [
     subtitle: "RTX Graphics · Fast Memory · Better Gaming",
     tag: "GEFORCE RTX 50 SERIES",
     
-    // PRIMARY GPU
-    gpuImage: "https://dlcdnwebimgs.asus.com/files/media/09b5195d-6d4f-442d-af30-4942b9a2709c/v1/img/kv/pd-front.png",
+    // GPUs
+    image1: "https://dlcdnwebimgs.asus.com/gain/1604342F-835B-4F89-BDC9-9834AF558D5C/w1000/h732",
+    alt1: "Primary GPU",
+    image2: "https://dlcdnwebimgs.asus.com/gain/5f627238-83a2-4886-99ea-0db96c46a489/",
+    alt2: "Secondary GPU",
+    image3: "https://assets.nvidia.partners/images/png/RTX5070-3QTR-Back-Left_small.png",
+    alt3: "Tertiary GPU",
     
-    // 👇 NEW: SLOTS FOR 2 MORE GPUs (You can replace these links with your own!)
-    gpuImage2: "https://dlcdnwebimgs.asus.com/files/media/09b5195d-6d4f-442d-af30-4942b9a2709c/v1/img/kv/pd-front.png", 
-    gpuImage3: "https://dlcdnwebimgs.asus.com/files/media/09b5195d-6d4f-442d-af30-4942b9a2709c/v1/img/kv/pd-front.png",
+    // RAM
+    image4: "https://img.overclockers.co.uk/images/MEM-GSK-04195/379569ed093fbfe1a992d709c6f51fec.jpg",
+    alt4: "G.Skill RAM",
+    image5: "https://assets.corsair.com/image/upload/f_auto,q_auto/pages/Memory%20Matters/VENGEANCE_RGB_DDR5_BLACK_RENDER_07.png",
+    alt5: "Corsair RAM",
     
-    ramImageLeft: "https://img.overclockers.co.uk/images/MEM-GSK-04195/379569ed093fbfe1a992d709c6f51fec.jpg",
-    ramImageRight: "https://assets.corsair.com/image/upload/f_auto,q_auto/pages/Memory%20Matters/VENGEANCE_RGB_DDR5_BLACK_RENDER_07.png",
     buttonText: "Shop Build Parts",
     categoryTarget: "GPUs"
   },
@@ -26,11 +31,23 @@ const slides = [
     title: "Ultimate Cooling Power",
     subtitle: "Liquid & Air Coolers · Low Temps · High FPS",
     tag: "THERMALRIGHT VISION",
-    gpuImage: "/images/aqua360v6.jpg",
-    gpuImage2: "", // Empty so it doesn't show on the cooler slide
-    gpuImage3: "",
-    ramImageLeft: "/images/frozinf360.jpg",
-    ramImageRight: "/images/pv360.jpg",
+    
+    // Main Cooler
+    image1: "/images/aqua360v6.jpg",
+    alt1: "AIO Liquid Cooler",
+    
+    // Empty slots so they don't render on this slide
+    image2: "",
+    alt2: "",
+    image3: "",
+    alt3: "",
+    
+    // Secondary Coolers
+    image4: "/images/frozinf360.jpg",
+    alt4: "Air Cooler",
+    image5: "/images/pv360.jpg",
+    alt5: "RGB Cooler",
+    
     buttonText: "Explore Cooling",
     categoryTarget: "Liquid & Air Cooling"
   }
@@ -85,47 +102,72 @@ export default function HeroBanner({ onSelectCategory }) {
                 {/* LAYERED ANIMATED IMAGES (LEFT COLUMN) */}
                 <div className="relative h-[250px] md:h-full w-full flex items-center justify-center order-2 md:order-1">
                   
-                  {/* GPU 1 (Main) - Slides down, pops in first (delay-100) */}
-                  {slide.gpuImage && (
+                  {/* Image 1 (Main/Top) - Slides down, pops in first (delay-100) */}
+                  {slide.image1 && (
                     <div className={`absolute top-0 md:top-[5%] left-0 md:left-[5%] w-36 md:w-56 z-30 transition-all duration-1000 delay-100 ease-out transform ${isActive ? 'translate-y-0 opacity-100 scale-100' : '-translate-y-16 opacity-0 scale-95'}`}>
                       <div className="anim-float-1">
-                        <img src={slide.gpuImage} alt="GPU 1" className="w-full h-auto object-contain drop-shadow-[0_20px_25px_rgba(0,0,0,0.7)]" onError={(e) => { e.target.src = 'https://via.placeholder.com/300x200?text=GPU+1'; }} />
+                        <img 
+                          src={slide.image1} 
+                          alt={slide.alt1} 
+                          className="w-full h-auto object-contain drop-shadow-[0_20px_25px_rgba(0,0,0,0.7)]" 
+                          onError={(e) => { e.target.src = `https://via.placeholder.com/300x200?text=${encodeURIComponent(slide.alt1)}`; }} 
+                        />
                       </div>
                     </div>
                   )}
 
-                  {/* GPU 2 - Slides down, pops in second (delay-300) */}
-                  {slide.gpuImage2 && (
+                  {/* Image 2 (Secondary/Middle) - Slides down, pops in second (delay-300) */}
+                  {slide.image2 && (
                     <div className={`absolute top-6 md:top-[12%] left-8 md:left-[15%] w-32 md:w-48 z-20 transition-all duration-1000 delay-300 ease-out transform ${isActive ? 'translate-y-0 opacity-100 scale-100' : '-translate-y-16 opacity-0 scale-95'}`}>
                       <div className="anim-float-2">
-                        <img src={slide.gpuImage2} alt="GPU 2" className="w-full h-auto object-contain drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)] brightness-90" onError={(e) => { e.target.src = 'https://via.placeholder.com/300x200?text=GPU+2'; }} />
+                        <img 
+                          src={slide.image2} 
+                          alt={slide.alt2} 
+                          className="w-full h-auto object-contain drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)] brightness-90" 
+                          onError={(e) => { e.target.src = `https://via.placeholder.com/300x200?text=${encodeURIComponent(slide.alt2)}`; }} 
+                        />
                       </div>
                     </div>
                   )}
 
-                  {/* GPU 3 - Slides down, pops in third (delay-500) */}
-                  {slide.gpuImage3 && (
+                  {/* Image 3 (Tertiary/Back) - Slides down, pops in third (delay-500) */}
+                  {slide.image3 && (
                     <div className={`absolute top-12 md:top-[19%] left-16 md:left-[25%] w-28 md:w-40 z-10 transition-all duration-1000 delay-500 ease-out transform ${isActive ? 'translate-y-0 opacity-100 scale-100' : '-translate-y-16 opacity-0 scale-95'}`}>
                       <div className="anim-float-3">
-                        <img src={slide.gpuImage3} alt="GPU 3" className="w-full h-auto object-contain drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] brightness-75" onError={(e) => { e.target.src = 'https://via.placeholder.com/300x200?text=GPU+3'; }} />
+                        <img 
+                          src={slide.image3} 
+                          alt={slide.alt3} 
+                          className="w-full h-auto object-contain drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] brightness-75" 
+                          onError={(e) => { e.target.src = `https://via.placeholder.com/300x200?text=${encodeURIComponent(slide.alt3)}`; }} 
+                        />
                       </div>
                     </div>
                   )}
 
-                  {/* Bottom-Left Image (RAM) - Slides in after GPUs (delay-700) */}
-                  {slide.ramImageLeft && (
+                  {/* Image 4 (Bottom-Left) - Slides in after main images (delay-700) */}
+                  {slide.image4 && (
                     <div className={`absolute bottom-4 md:bottom-[15%] left-0 md:left-[5%] w-36 md:w-56 z-40 transition-all duration-1000 delay-700 ease-out transform ${isActive ? 'translate-x-0 opacity-100 scale-100' : '-translate-x-16 opacity-0 scale-95'}`}>
                       <div className="anim-float-2">
-                        <img src={slide.ramImageLeft} alt="RAM Kit" className="w-full h-auto object-contain -rotate-6 drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)]" onError={(e) => { e.target.src = 'https://via.placeholder.com/200x150?text=RAM+Kit'; }} />
+                        <img 
+                          src={slide.image4} 
+                          alt={slide.alt4} 
+                          className="w-full h-auto object-contain -rotate-6 drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)]" 
+                          onError={(e) => { e.target.src = `https://via.placeholder.com/200x150?text=${encodeURIComponent(slide.alt4)}`; }} 
+                        />
                       </div>
                     </div>
                   )}
 
-                  {/* Bottom-Right Image (RAM) - Slides up last (delay-1000) */}
-                  {slide.ramImageRight && (
+                  {/* Image 5 (Bottom-Right) - Slides up last (delay-1000) */}
+                  {slide.image5 && (
                     <div className={`absolute bottom-0 md:bottom-[5%] right-2 md:right-[15%] w-40 md:w-64 z-50 transition-all duration-1000 delay-1000 ease-out transform ${isActive ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-16 opacity-0 scale-95'}`}>
                       <div className="anim-float-3">
-                        <img src={slide.ramImageRight} alt="Hardware Component" className="w-full h-auto object-contain rotate-3 drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)]" onError={(e) => { e.target.src = 'https://via.placeholder.com/200x150?text=Component'; }} />
+                        <img 
+                          src={slide.image5} 
+                          alt={slide.alt5} 
+                          className="w-full h-auto object-contain rotate-3 drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)]" 
+                          onError={(e) => { e.target.src = `https://via.placeholder.com/200x150?text=${encodeURIComponent(slide.alt5)}`; }} 
+                        />
                       </div>
                     </div>
                   )}
