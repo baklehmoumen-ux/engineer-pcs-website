@@ -53,7 +53,7 @@ const dictionary = {
     addToCart: '➕ Add to Cart',
     currentlyUnavailable: 'Currently Unavailable',
     
-    // NEW BUILDER & SHARE FEATURES (English)
+    // BUILDER, VIEW SWITCHER & SHARE FEATURES
     estWattage: 'Estimated Wattage',
     psuCapacity: 'PSU Capacity',
     fixBtn: '🔧 Fix Item',
@@ -64,6 +64,9 @@ const dictionary = {
     copyLink: '📋 Copy Text Summary',
     shareWhatsApp: '💬 Share via WhatsApp',
     close: 'Close',
+    viewList: '☰ Detailed List',
+    viewGrid: '🔳 Grid',
+    add: 'Add',
     
     categories: {
       'All': 'All', 
@@ -137,7 +140,7 @@ const dictionary = {
     addToCart: '➕ إضافة للسلة',
     currentlyUnavailable: 'غير متوفر حالياً',
 
-    // NEW BUILDER & SHARE FEATURES (Arabic)
+    // BUILDER, VIEW SWITCHER & SHARE FEATURES
     estWattage: 'استهلاك الطاقة المقدر',
     psuCapacity: 'سعة مزود الطاقة',
     fixBtn: '🔧 إصلاح القطعة',
@@ -148,6 +151,9 @@ const dictionary = {
     copyLink: '📋 نسخ النص',
     shareWhatsApp: '💬 مشاركة عبر الواتساب',
     close: 'إغلاق',
+    viewList: '☰ القائمة التفصيلية',
+    viewGrid: '🔳 شبكة',
+    add: 'إضافة',
 
     categories: {
       'All': 'الكل', 
@@ -202,113 +208,42 @@ const requiredParts = [
   { key: 'Power Supplies', labelKey: 'Power Supply', icon: <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="6" width="18" height="12" rx="2"></rect></svg>, required: true }
 ];
 
-// Master Inventory
+// Master Starter Inventory with Pre-Populated PCPartPicker Specs
 const staticInventory = [
-  { id: 'psu-1', category: 'Power Supplies', name: 'ThermalRight TR-TB650S 650W 80 PLUS', price: 58, image: '/images/tr-tb650s.jpg' },
-  { id: 'psu-2', category: 'Power Supplies', name: 'ThermalRight TR-TB750S 750W', price: 76, image: '/images/tr-tb750s.jpg' },
-  { id: 'psu-3', category: 'Power Supplies', name: 'ThermalRight TR-SP750 750W 80 PLUS', price: 100, image: '/images/tr-sp750.jpg' },
-  { id: 'psu-4', category: 'Power Supplies', name: 'ThermalRight TR-SP850 850W', price: 115, image: '/images/tr-sp850.jpg' },
-  { id: 'psu-5', category: 'Power Supplies', name: 'ThermalRight TR-SP850-W 850W White', price: 118, image: '/images/tr-sp850-w.jpg' },
-  { id: 'psu-6', category: 'Power Supplies', name: 'ThermalRight TR-SP1000 1000W', price: 130, image: '/images/tr-sp1000.jpg' },
-  { id: 'psu-7', category: 'Power Supplies', name: 'ThermalRight TR-SP1000-W 1000W White', price: 135, image: '/images/tr-sp1000-w.jpg' },
-  { id: 'cool-1', category: 'Liquid & Air Cooling', name: 'ThermalRight Assassin X 120 Refined SE ARGB (AM4,AM5)', price: 18, image: '/images/cool1.jpg' },
-  { id: 'cool-2', category: 'Liquid & Air Cooling', name: 'ThermalRight Burst Assassin 120 SE ARGB', price: 24, image: '/images/burst120.jpg' },
-  { id: 'cool-3', category: 'Liquid & Air Cooling', name: 'ThermalRight Phantom Spirit 120 SE ARGB', price: 40, image: '/images/phantom120.jpg' },
-  { id: 'cool-4', category: 'Liquid & Air Cooling', name: 'ThermalRight Aqua Elite 240 V3', price: 57, image: '/images/aqua240.jpg' },
-  { id: 'cool-5', category: 'Liquid & Air Cooling', name: 'ThermalRight Aqua Elite 240 WHITE V3', price: 60, image: '/images/aqua240w.jpg' },
-  { id: 'cool-6', category: 'Liquid & Air Cooling', name: 'ThermalRight Aqua Elite 240 ARGB BLACK V6', price: 57, image: '/images/aqua240v6.jpg' },
-  { id: 'cool-7', category: 'Liquid & Air Cooling', name: 'ThermalRight Aqua Elite 240 ARGB WHITE V6', price: 60, image: '/images/aqua240v6w.jpg' },
-  { id: 'cool-8', category: 'Liquid & Air Cooling', name: 'ThermalRight Aqua Elite 360 V3', price: 70, image: '/images/aqua360.jpg' },
-  { id: 'cool-9', category: 'Liquid & Air Cooling', name: 'ThermalRight Aqua Elite 360 WHITE V3', price: 73, image: '/images/aqua360w.jpg' },
-  { id: 'cool-10', category: 'Liquid & Air Cooling', name: 'ThermalRight Aqua Elite 360 ARGB BLACK V6', price: 70, image: '/images/aqua360v6.jpg' },
-  { id: 'cool-11', category: 'Liquid & Air Cooling', name: 'ThermalRight Aqua Elite 360 ARGB WHITE V6', price: 73, image: '/images/aqua360v6w.jpg' },
-  { id: 'cool-12', category: 'Liquid & Air Cooling', name: 'ThermalRight Frozen Infinity 360 BLACK', price: 82, image: '/images/frozinf360.jpg' },
-  { id: 'cool-13', category: 'Liquid & Air Cooling', name: 'ThermalRight Frozen Infinity 360 WHITE', price: 85, image: '/images/frozinf360w.jpg' },
-  { id: 'cool-14', category: 'Liquid & Air Cooling', name: 'ThermalRight Frozen Notte 240 BLACK ARGB V2', price: 68, image: '/images/froz240argb.jpg' },
-  { id: 'cool-15', category: 'Liquid & Air Cooling', name: 'ThermalRight Frozen Notte 240 WHITE ARGB V2', price: 68, image: '/images/froz240argbw.jpg' },
-  { id: 'cool-16', category: 'Liquid & Air Cooling', name: 'ThermalRight Frozen Notte 360 BLACK ARGB V2', price: 90, image: '/images/froz360argb.jpg' },
-  { id: 'cool-17', category: 'Liquid & Air Cooling', name: 'ThermalRight Frozen Notte 360 WHITE ARGB V2', price: 90, image: '/images/froz360argbw.jpg' },
-  { id: 'cool-18', category: 'Liquid & Air Cooling', name: 'ThermalRight Peerless Vision 240 ARGB BLACK', price: 108, image: '/images/pv240.jpg' },
-  { id: 'cool-19', category: 'Liquid & Air Cooling', name: 'ThermalRight Peerless Vision 240 ARGB WHITE', price: 110, image: '/images/pv240w.jpg' },
-  { id: 'cool-20', category: 'Liquid & Air Cooling', name: 'ThermalRight Peerless Vision 360 ARGB BLACK', price: 125, image: '/images/pv360.jpg' },
-  { id: 'cool-21', category: 'Liquid & Air Cooling', name: 'ThermalRight Peerless Vision 360 ARGB WHITE', price: 127, image: '/images/pv360w.jpg' },
-  { id: 'cool-22', category: 'Liquid & Air Cooling', name: 'ThermalRight Peerless Vision 360 UB ARGB BLACK', price: 134, image: '/images/pv360ub.jpg' },
-  { id: 'cool-23', category: 'Liquid & Air Cooling', name: 'ThermalRight Peerless Vision 360 UB ARGB WHITE', price: 137, image: '/images/pv360ubw.jpg' },
-  { id: 'cool-24', category: 'Liquid & Air Cooling', name: 'ThermalRight Trofeo Vision 360 ARGB BLACK', price: 177, image: '/images/trof360.jpg' },
-  { id: 'cool-25', category: 'Liquid & Air Cooling', name: 'ThermalRight Trofeo Vision 360 ARGB WHITE', price: 180, image: '/images/trof360w.jpg' },
-  { id: 'cool-26', category: 'Liquid & Air Cooling', name: 'ThermalRight Levita Vision 360 ARGB BLACK', price: 230, image: '/images/lev360.jpg' },
-  { id: 'cool-27', category: 'Liquid & Air Cooling', name: 'ThermalRight Levita Vision 360 ARGB WHITE', price: 235, image: '/images/lev360w.jpg' },
-  { id: 'case-1', category: 'PC Cases', name: 'ThermalRight A70 VISION', price: 160, image: '/images/a70.jpg' },
-  { id: 'case-2', category: 'PC Cases', name: 'ThermalRight A70 VISION WHITE', price: 165, image: '/images/a70w.jpg' },
-  { id: 'case-3', category: 'PC Cases', name: 'ThermalRight TL-M10 VISION', price: 123, image: '/images/tlm10.jpg' },
-  { id: 'case-4', category: 'PC Cases', name: 'ThermalRight TL-M10W VISION', price: 129, image: '/images/tlm10w.jpg' },
-  { id: 'fan-1', category: 'Case Fans & Hubs', name: 'ThermalRight TL-C12C-S X5', price: 28, image: '/images/tlc12c.jpg' },
-  { id: 'fan-2', category: 'Case Fans & Hubs', name: 'ThermalRight TL-C12CW-S X5', price: 28, image: '/images/tlc12cw.jpg' },
-  { id: 'fan-3', category: 'Case Fans & Hubs', name: 'ThermalRight TL-M12Q-S X3', price: 25, image: '/images/tlm12q.jpg' },
-  { id: 'fan-4', category: 'Case Fans & Hubs', name: 'ThermalRight TL-M12QW-S X3', price: 25, image: '/images/tlm12qw.jpg' },
-  { id: 'hub-1', category: 'Case Fans & Hubs', name: 'ThermalRight USB 2.0 HUB X5 BLACK', price: 11, image: '/images/usbhub.jpg' },
-  { id: 'hub-2', category: 'Case Fans & Hubs', name: 'ThermalRight USB 2.0 HUB X5 WHITE', price: 11, image: '/images/usbhubw.jpg' },
-  { id: 'hub-3', category: 'Case Fans & Hubs', name: 'ThermalRight FANArgb -HUB Controller REV.A', price: 9, image: '/images/fanhub.jpg' },
-  { id: 'hub-4', category: 'Case Fans & Hubs', name: 'ThermalRight FAN-AND Argb HUB X8', price: 11, image: '/images/fanhubx8.jpg' },
-  { id: 'hub-5', category: 'Case Fans & Hubs', name: 'ThermalRight TL-ARGB and FAN HUB x12 IR BLACK', price: 14, image: '/images/fanhub12.jpg' },
-  { id: 'hub-6', category: 'Case Fans & Hubs', name: 'ThermalRight TL-ARGB and FAN HUB x12 IR WHITE', price: 14, image: '/images/fanhub12w.jpg' },
-  { id: 'acc-1', category: 'Case Fans & Hubs', name: 'ThermalRight TR-GCSF ARGB VGA Holder', price: 10, image: '/images/vgaholder.jpg' },
-  { id: 'case-5', category: 'PC Cases', name: 'Darkflash DY470 Black with 4 argb fans', price: 145, image: '/images/dy470.jpg' },
-  { id: 'case-6', category: 'PC Cases', name: 'Darkflash DY470 White with 4 argb fans', price: 148, image: '/images/dy470w.jpg' },
-  { id: 'case-7', category: 'PC Cases', name: 'Darkflash DS950 Black with 6 argb fans', price: 88, image: '/images/ds950.jpg' },
-  { id: 'case-8', category: 'PC Cases', name: 'Darkflash DS950 White with 6 argb fans', price: 91, image: '/images/ds950w.jpg' },
-  { id: 'case-9', category: 'PC Cases', name: 'Darkflash DS950V Black with 6 argb fans(with Screen)', price: 118, image: '/images/ds950v.jpg' },
-  { id: 'case-10', category: 'PC Cases', name: 'Darkflash DS950V White with 6 argb fans(with Screen)', price: 120, image: '/images/ds950vw.jpg' },
-  { id: 'case-11', category: 'PC Cases', name: 'Darkflash F1 Black with 6 argb fans', price: 136, image: '/images/f1.jpg' },
-  { id: 'case-12', category: 'PC Cases', name: 'Darkflash F1 White with 6 argb fans', price: 138, image: '/images/f1w.jpg' },
-  { id: 'case-13', category: 'PC Cases', name: 'Darkflash C280 Black with 7 argb fans', price: 84, image: '/images/c280.jpg' },
-  { id: 'case-14', category: 'PC Cases', name: 'Darkflash C280 White with 7 argb fans', price: 86, image: '/images/c280w.jpg' },
-  { id: 'case-15', category: 'PC Cases', name: 'Darkflash DK431 Mesh Black with 4 argb fans', price: 70, image: '/images/dk431m.jpg' },
-  { id: 'case-16', category: 'PC Cases', name: 'Darkflash DK431 Glass Black with 4 argb fans', price: 73, image: '/images/dk431g.jpg' },
-  { id: 'case-17', category: 'PC Cases', name: 'Darkflash B275 PRO Black with 6 argb fans', price: 54, image: '/images/b275.jpg' },
-  { id: 'case-18', category: 'PC Cases', name: 'Darkflash B275 PRO White with 6 argb fans', price: 58, image: '/images/b275w.jpg' },
-  { id: 'case-19', category: 'PC Cases', name: 'Darkflash DRX70 Mesh White with 4 rgb fans', price: 66, image: '/images/drx70.jpg' },
-  { id: 'case-20', category: 'PC Cases', name: 'Darkflash FT418 PRO Black with 7 argb fans', price: 105, image: '/images/ft418.jpg' },
-  { id: 'case-21', category: 'PC Cases', name: 'Darkflash FT418 PRO White with 7 argb fans', price: 109, image: '/images/ft418w.jpg' },
-  { id: 'case-22', category: 'PC Cases', name: 'Darkflash DB330M Glass Black with 3 argb fans', price: 45, image: '/images/db330m.jpg' },
-  { id: 'case-23', category: 'PC Cases', name: 'Darkflash DB330M Glass White with 3 argb fans', price: 47, image: '/images/db330mw.jpg' },
-  { id: 'case-24', category: 'PC Cases', name: 'Darkflash DK361 Black with 4 argb fans', price: 58, image: '/images/dk361.jpg' },
-  { id: 'fan-5', category: 'Case Fans & Hubs', name: 'Darkflash INF34 3IN1 Black', price: 26, image: '/images/inf34.jpg' },
-  { id: 'fan-6', category: 'Case Fans & Hubs', name: 'Darkflash INF34 3IN1 White', price: 27, image: '/images/inf34w.jpg' },
-  { id: 'pad-1', category: 'Chairs & Accessories', name: 'Darkflash Mouse Pad M2 Grey', price: 8, image: '/images/m2grey.jpg' },
-  { id: 'pad-2', category: 'Chairs & Accessories', name: 'Darkflash Mouse Pad M2 Black', price: 8, image: '/images/m2black.jpg' },
-  { id: 'pad-3', category: 'Chairs & Accessories', name: 'Darkflash Mouse Pad M5 Black', price: 10, image: '/images/m5black.jpg' },
-  { id: 'pad-4', category: 'Chairs & Accessories', name: 'Darkflash Mouse Pad M5 Brown', price: 10, image: '/images/m5brown.jpg' },
-  { id: 'chair-1', category: 'Chairs & Accessories', name: 'Darkflash Gaming Chair RC400', price: 166, image: '/images/rc400.jpg' },
-  { id: 'chair-2', category: 'Chairs & Accessories', name: 'Darkflash Ergonomic Chair EA100 RED', price: 176, image: '/images/ea100r.jpg' },
-  { id: 'chair-3', category: 'Chairs & Accessories', name: 'Darkflash Ergonomic Chair EA100 WHITE', price: 176, image: '/images/ea100w.jpg' },
-  { id: 'chair-4', category: 'Chairs & Accessories', name: 'Darkflash Ergonomic Chair EA100 BLUE', price: 176, image: '/images/ea100b.jpg' },
-  { id: 'mon-1', category: 'Monitors', name: 'MSI MAG 271QPX QD-OLED X28', price: 590, image: '/images/msi271.jpg' },
-  { id: 'mon-2', category: 'Monitors', name: 'MSI MAG 244F', price: 125, image: '/images/msi244.jpg' },
-  { id: 'mon-3', category: 'Monitors', name: 'MSI MAG 272QPF E20', price: 240, image: '/images/msi272qpf.jpg' },
-  { id: 'mon-4', category: 'Monitors', name: 'MSI MAG 275QPF X30', price: 290, image: '/images/msi275qpf.jpg' },
-  { id: 'mon-5', category: 'Monitors', name: 'MSI MAG 272URDF E16', price: 385, image: '/images/msi272urdf.jpg' },
-  { id: 'mon-6', category: 'Monitors', name: 'MSI MAG 345CQR', price: 390, image: '/images/msi345cqr.jpg' },
-  { id: 'mon-7', category: 'Monitors', name: 'MSI MAG 274UPDF E16M', price: 565, image: '/images/msi274updf.jpg' },
-  { id: 'mon-8', category: 'Monitors', name: 'MSI MAG 274QPF X30MV', price: 440, image: '/images/msi274qpf.jpg' },
-  { id: 'cpu-amd-1', category: 'CPUs', name: 'Ryzen 5 7500F', price: 138, image: '/images/r5-7500f.jpg' },
-  { id: 'cpu-amd-2', category: 'CPUs', name: 'Ryzen 5 9600X', price: 205, image: '/images/r5-9600x.jpg' },
-  { id: 'cpu-amd-3', category: 'CPUs', name: 'Ryzen 7 7800X3D', price: 315, image: '/images/r7-7800x3d.jpg' },
-  { id: 'cpu-amd-4', category: 'CPUs', name: 'Ryzen 7 9700X', price: 285, image: '/images/r7-9700x.jpg' },
-  { id: 'cpu-amd-5', category: 'CPUs', name: 'Ryzen 7 9800X3D', price: 420, image: '/images/r7-9800x3d.jpg' },
-  { id: 'cpu-amd-6', category: 'CPUs', name: 'Ryzen 9 9900X', price: 410, image: '/images/r9-9900x.jpg' },
-  { id: 'cpu-amd-7', category: 'CPUs', name: 'Ryzen 9 9950X3D', price: 690, image: '/images/r9-9950x3d.jpg' },
-  { id: 'mb-1', category: 'Motherboards', name: 'ASUS Main GAMING Motherboard', price: 89, image: '/images/asus-mb.jpg' },
-  { id: 'mb-2', category: 'Motherboards', name: 'ASUS B850M AYW GAMING WIFI', price: 185, image: '/images/asus-b850m.jpg' },
-  { id: 'mb-3', category: 'Motherboards', name: 'GigaByte B650M-D2HP', price: 121, image: '/images/gb-b650m-d2hp.jpg' },
-  { id: 'mb-4', category: 'Motherboards', name: 'MSI H610M-E', price: 80, image: '/images/msi-h610m-e.jpg' },
-  { id: 'mb-5', category: 'Motherboards', name: 'GigaByte B650M Gaming WIFI', price: 147, image: '/images/gb-b650m-wifi.jpg' },
-  { id: 'mb-6', category: 'Motherboards', name: 'GigaByte X870 AORUS ELITE WIFI7', price: 315, image: '/images/gb-x870-aorus.jpg' },
+  // Power Supplies
+  { id: 'psu-1', category: 'Power Supplies', name: 'ThermalRight TR-TB650S 650W 80 PLUS', price: 58, image: '/images/tr-tb650s.jpg', specs: { type: 'ATX', efficiency: '80+ Gold', wattage: '650 W', modular: 'Full', color: 'Black' } },
+  { id: 'psu-2', category: 'Power Supplies', name: 'ThermalRight TR-TB750S 750W', price: 76, image: '/images/tr-tb750s.jpg', specs: { type: 'ATX', efficiency: '80+ Gold', wattage: '750 W', modular: 'Full', color: 'Black' } },
+  { id: 'psu-3', category: 'Power Supplies', name: 'ThermalRight TR-SP750 750W 80 PLUS', price: 100, image: '/images/tr-sp750.jpg', specs: { type: 'ATX', efficiency: '80+ Gold', wattage: '750 W', modular: 'Full', color: 'Black' } },
+  { id: 'psu-4', category: 'Power Supplies', name: 'ThermalRight TR-SP850 850W', price: 115, image: '/images/tr-sp850.jpg', specs: { type: 'ATX', efficiency: '80+ Gold', wattage: '850 W', modular: 'Full', color: 'Black' } },
+  { id: 'psu-5', category: 'Power Supplies', name: 'ThermalRight TR-SP850-W 850W White', price: 118, image: '/images/tr-sp850-w.jpg', specs: { type: 'ATX', efficiency: '80+ Gold', wattage: '850 W', modular: 'Full', color: 'White' } },
+  { id: 'psu-6', category: 'Power Supplies', name: 'ThermalRight TR-SP1000 1000W', price: 130, image: '/images/tr-sp1000.jpg', specs: { type: 'ATX', efficiency: '80+ Gold', wattage: '1000 W', modular: 'Full', color: 'Black' } },
+  { id: 'psu-7', category: 'Power Supplies', name: 'ThermalRight TR-SP1000-W 1000W White', price: 135, image: '/images/tr-sp1000-w.jpg', specs: { type: 'ATX', efficiency: '80+ Gold', wattage: '1000 W', modular: 'Full', color: 'White' } },
+
+  // Coolers
+  { id: 'cool-1', category: 'Liquid & Air Cooling', name: 'ThermalRight Assassin X 120 Refined SE ARGB (AM4,AM5)', price: 18, image: '/images/cool1.jpg', specs: { rpm: '1550 RPM', noise: '25.6 dB', color: 'Black / Silver', radSize: '120 mm' } },
+  { id: 'cool-2', category: 'Liquid & Air Cooling', name: 'ThermalRight Burst Assassin 120 SE ARGB', price: 24, image: '/images/burst120.jpg', specs: { rpm: '1550 RPM', noise: '25.6 dB', color: 'Black', radSize: '120 mm' } },
+  { id: 'cool-3', category: 'Liquid & Air Cooling', name: 'ThermalRight Phantom Spirit 120 SE ARGB', price: 40, image: '/images/phantom120.jpg', specs: { rpm: '1500 RPM', noise: '25.6 dB', color: 'Black', radSize: '120 mm' } },
+
+  // PC Cases
+  { id: 'case-1', category: 'PC Cases', name: 'ThermalRight A70 VISION', price: 160, image: '/images/a70.jpg', specs: { type: 'ATX Mid Tower', color: 'Black', sidePanel: 'Tempered Glass', volume: '45.0 L', bays: '2' } },
+  { id: 'case-2', category: 'PC Cases', name: 'ThermalRight A70 VISION WHITE', price: 165, image: '/images/a70w.jpg', specs: { type: 'ATX Mid Tower', color: 'White', sidePanel: 'Tempered Glass', volume: '45.0 L', bays: '2' } },
+
+  // Monitors & CPUs & Motherboards
+  { id: 'mon-1', category: 'Monitors', name: 'MSI MAG 271QPX QD-OLED X28', price: 590, image: '/images/msi271.jpg', specs: { size: '27.0"', resolution: '2560 x 1440', refresh: '360 Hz', response: '0.03 ms', panel: 'QD-OLED', aspect: '16:9' } },
+  { id: 'mon-2', category: 'Monitors', name: 'MSI MAG 244F', price: 125, image: '/images/msi244.jpg', specs: { size: '23.8"', resolution: '1920 x 1080', refresh: '200 Hz', response: '0.5 ms', panel: 'IPS', aspect: '16:9' } },
+  { id: 'cpu-amd-1', category: 'CPUs', name: 'Ryzen 5 7500F', price: 138, image: '/images/r5-7500f.jpg', specs: { cores: '6', clock: '3.7 GHz', boost: '5.0 GHz', arch: 'Zen 4', tdp: '65 W', igpu: 'None' } },
+  { id: 'cpu-amd-2', category: 'CPUs', name: 'Ryzen 5 9600X', price: 205, image: '/images/r5-9600x.jpg', specs: { cores: '6', clock: '3.9 GHz', boost: '5.4 GHz', arch: 'Zen 5', tdp: '65 W', igpu: 'Radeon' } },
+  { id: 'cpu-amd-3', category: 'CPUs', name: 'Ryzen 7 7800X3D', price: 315, image: '/images/r7-7800x3d.jpg', specs: { cores: '8', clock: '4.2 GHz', boost: '5.0 GHz', arch: 'Zen 4', tdp: '120 W', igpu: 'Radeon' } },
+  { id: 'cpu-amd-5', category: 'CPUs', name: 'Ryzen 7 9800X3D', price: 420, image: '/images/r7-9800x3d.jpg', specs: { cores: '8', clock: '4.7 GHz', boost: '5.2 GHz', arch: 'Zen 5', tdp: '120 W', igpu: 'Radeon' } },
+  { id: 'mb-2', category: 'Motherboards', name: 'ASUS B850M AYW GAMING WIFI', price: 185, image: '/images/asus-b850m.jpg', specs: { socket: 'AM5', formFactor: 'Micro ATX', memoryMax: '256 GB', memorySlots: '4', color: 'Black / Silver' } },
 ];
 
 export default function Storefront() {
   const [lang, setLang] = useState('en');
   const t = dictionary[lang];
+
+  // Storefront Layout View State: 'list' (PCPartPicker detailed view) or 'grid' (classic grid)
+  const [viewMode, setViewMode] = useState('list');
 
   const [dbProducts, setDbProducts] = useState([]);
   const [cart, setCart] = useState([]);
@@ -584,6 +519,110 @@ export default function Storefront() {
     window.open(`https://wa.me/963946508988?text=${encodedMessage}`, '_blank');
   };
 
+  // Helper to render PCPartPicker Technical Specs Grid in Detailed List View
+  const renderProductSpecs = (item) => {
+    const s = item.specs || {};
+    const cat = item.category;
+
+    if (cat === 'CPUs') {
+      return (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 text-[11px] text-gray-500 mt-2">
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Core Count</span><span className="font-bold text-gray-800">{s.cores || '8'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Core Clock</span><span className="font-bold text-gray-800">{s.clock || '4.2 GHz'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Boost Clock</span><span className="font-bold text-gray-800">{s.boost || '5.0 GHz'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Microarch</span><span className="font-bold text-gray-800">{s.arch || 'Zen 4'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">TDP</span><span className="font-bold text-gray-800">{s.tdp || '120 W'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">iGPU</span><span className="font-bold text-gray-800">{s.igpu || 'Radeon'}</span></div>
+        </div>
+      );
+    } else if (cat === 'GPUs') {
+      return (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 text-[11px] text-gray-500 mt-2">
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Chipset</span><span className="font-bold text-gray-800">{s.chipset || 'RTX 5070'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Memory (VRAM)</span><span className="font-bold text-gray-800">{s.memory || '12 GB'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Core Clock</span><span className="font-bold text-gray-800">{s.clock || '2160 MHz'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Boost Clock</span><span className="font-bold text-gray-800">{s.boost || '2542 MHz'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Color</span><span className="font-bold text-gray-800">{s.color || 'Black'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Length</span><span className="font-bold text-gray-800">{s.length || '282 mm'}</span></div>
+        </div>
+      );
+    } else if (cat === 'Motherboards') {
+      return (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 text-[11px] text-gray-500 mt-2">
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Socket</span><span className="font-bold text-gray-800">{s.socket || 'AM5'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Form Factor</span><span className="font-bold text-gray-800">{s.formFactor || 'Micro ATX'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Memory Slots</span><span className="font-bold text-gray-800">{s.memorySlots || '4'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Memory Max</span><span className="font-bold text-gray-800">{s.memoryMax || '256 GB'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Color</span><span className="font-bold text-gray-800">{s.color || 'Black'}</span></div>
+        </div>
+      );
+    } else if (cat === 'RAM') {
+      return (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 text-[11px] text-gray-500 mt-2">
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Speed</span><span className="font-bold text-gray-800">{s.speed || 'DDR5-6000'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Modules</span><span className="font-bold text-gray-800">{s.modules || '2 x 16GB'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">CAS Latency</span><span className="font-bold text-gray-800">{s.cas || '30'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">First Word Latency</span><span className="font-bold text-gray-800">{s.latency || '10 ns'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Color</span><span className="font-bold text-gray-800">{s.color || 'Black'}</span></div>
+        </div>
+      );
+    } else if (cat === 'Storage') {
+      return (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 text-[11px] text-gray-500 mt-2">
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Capacity</span><span className="font-bold text-gray-800">{s.capacity || '1 TB'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Type</span><span className="font-bold text-gray-800">{s.type || 'SSD'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Form Factor</span><span className="font-bold text-gray-800">{s.formFactor || 'M.2-2280'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Interface</span><span className="font-bold text-gray-800">{s.interface || 'M.2 PCIe 4.0 X4'}</span></div>
+        </div>
+      );
+    } else if (cat === 'Power Supplies') {
+      return (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 text-[11px] text-gray-500 mt-2">
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Type</span><span className="font-bold text-gray-800">{s.type || 'ATX'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Efficiency</span><span className="font-bold text-gray-800">{s.efficiency || '80+ Gold'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Wattage</span><span className="font-bold text-gray-800">{s.wattage || '850 W'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Modular</span><span className="font-bold text-gray-800">{s.modular || 'Full'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Color</span><span className="font-bold text-gray-800">{s.color || 'Black'}</span></div>
+        </div>
+      );
+    } else if (cat === 'Monitors') {
+      return (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 text-[11px] text-gray-500 mt-2">
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Screen Size</span><span className="font-bold text-gray-800">{s.size || '27.0"'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Resolution</span><span className="font-bold text-gray-800">{s.resolution || '2560 x 1440'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Refresh Rate</span><span className="font-bold text-gray-800">{s.refresh || '240 Hz'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Response Time</span><span className="font-bold text-gray-800">{s.response || '1 ms'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Panel Type</span><span className="font-bold text-gray-800">{s.panel || 'IPS'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Aspect Ratio</span><span className="font-bold text-gray-800">{s.aspect || '16:9'}</span></div>
+        </div>
+      );
+    } else if (cat === 'PC Cases') {
+      return (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 text-[11px] text-gray-500 mt-2">
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Type</span><span className="font-bold text-gray-800">{s.type || 'ATX Mid Tower'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Color</span><span className="font-bold text-gray-800">{s.color || 'Black'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Side Panel</span><span className="font-bold text-gray-800">{s.sidePanel || 'Tempered Glass'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">External Volume</span><span className="font-bold text-gray-800">{s.volume || '45.0 L'}</span></div>
+        </div>
+      );
+    } else if (cat === 'Liquid & Air Cooling') {
+      return (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 text-[11px] text-gray-500 mt-2">
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Fan RPM</span><span className="font-bold text-gray-800">{s.rpm || '1550 RPM'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Noise Level</span><span className="font-bold text-gray-800">{s.noise || '25.6 dB'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Radiator Size</span><span className="font-bold text-gray-800">{s.radSize || '360 mm'}</span></div>
+          <div><span className="block text-[9px] text-gray-400 font-bold uppercase">Color</span><span className="font-bold text-gray-800">{s.color || 'Black'}</span></div>
+        </div>
+      );
+    }
+
+    return (
+      <p className="text-xs text-gray-500 mt-1 line-clamp-1">
+        {item.description || `Official ${item.category} component verified by EngineerPCs.`}
+      </p>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 font-sans pb-24 md:pb-0 relative" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       
@@ -663,18 +702,36 @@ export default function Storefront() {
         </div>
       </nav>
 
-      {/* 4. MAIN PRODUCT DISPLAY HEADER & LIVE PRICE SORTING */}
+      {/* 4. MAIN PRODUCT DISPLAY HEADER, VIEW SWITCHER & LIVE PRICE SORTING */}
       <main className="max-w-7xl mx-auto p-3 md:p-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 md:mb-6 border-b-2 border-gray-200 pb-3">
           <h2 className="text-lg md:text-2xl font-bold text-gray-800">
             {searchQuery ? `${t.search} "${searchQuery}"` : (t.categories[activeCategory] || activeCategory)}
           </h2>
           
-          <div className="flex items-center justify-between sm:justify-end gap-3">
+          <div className="flex items-center justify-between sm:justify-end gap-3 flex-wrap">
+            
+            {/* STOREFRONT VIEW MODE TOGGLE BUTTONS */}
+            <div className="flex bg-gray-200 p-1 rounded-lg border border-gray-300">
+              <button 
+                onClick={() => setViewMode('list')} 
+                className={`px-3 py-1 rounded-md text-xs font-bold transition cursor-pointer ${viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600'}`}
+              >
+                {t.viewList}
+              </button>
+              <button 
+                onClick={() => setViewMode('grid')} 
+                className={`px-3 py-1 rounded-md text-xs font-bold transition cursor-pointer ${viewMode === 'grid' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600'}`}
+              >
+                {t.viewGrid}
+              </button>
+            </div>
+
             <span className="text-xs md:text-sm text-gray-500 font-medium">
               {filteredInventory.length} {t.items}
             </span>
 
+            {/* LIVE PRICE SORTING DROPDOWN */}
             <div className="flex items-center gap-1.5 bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 shadow-sm">
               <span className="text-xs text-gray-500 font-medium">{t.sort}</span>
               <select 
@@ -701,7 +758,68 @@ export default function Storefront() {
 
         {filteredInventory.length === 0 ? (
           <div className="text-center text-gray-500 py-20 text-lg md:text-xl">{t.noProducts}</div>
+        ) : viewMode === 'list' ? (
+          
+          /* 1. PCPARTPICKER DETAILED LIST VIEW */
+          <div className="space-y-3">
+            {filteredInventory.map(item => {
+              const qty = getItemQuantity(item.id);
+              const isOutOfStock = item.in_stock === false;
+              const firstImage = item.image ? item.image.split(',')[0].trim() : '/images/default.jpg';
+
+              return (
+                <div key={item.id} className="bg-white rounded-xl p-3 md:p-4 border border-gray-200 shadow-sm hover:border-blue-300 transition flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-start gap-4 w-full sm:w-auto flex-1">
+                    <img 
+                      src={firstImage} 
+                      alt={item.name} 
+                      className="w-16 h-16 sm:w-20 sm:h-20 object-contain rounded border bg-gray-50 p-1 shrink-0 cursor-pointer"
+                      onClick={() => openDetailModal(item)}
+                      onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=PC'; }}
+                    />
+                    <div className="flex-1 overflow-hidden">
+                      <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider block">{t.categories[item.category] || item.category}</span>
+                      <h3 
+                        className="font-bold text-gray-900 text-sm sm:text-base leading-snug hover:text-blue-600 cursor-pointer truncate" 
+                        onClick={() => openDetailModal(item)}
+                      >
+                        {item.name}
+                      </h3>
+                      
+                      {/* PCPartPicker Star Rating Graphic */}
+                      <div className="flex items-center gap-1 text-xs text-yellow-500 font-bold mt-0.5">
+                        ★★★★★ <span className="text-gray-400 text-[10px] font-normal">(48)</span>
+                      </div>
+
+                      {/* Technical Specs Layout */}
+                      {renderProductSpecs(item)}
+                    </div>
+                  </div>
+
+                  <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto border-t sm:border-t-0 pt-2 sm:pt-0 border-gray-100 shrink-0 gap-2">
+                    <div className="text-lg sm:text-xl font-black text-gray-900">${item.price}</div>
+                    
+                    {isOutOfStock ? (
+                      <span className="text-xs font-bold text-red-500 bg-red-50 px-2.5 py-1 rounded">
+                        {t.unavailable}
+                      </span>
+                    ) : (
+                      <button 
+                        onClick={() => addToCart(item)}
+                        className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-extrabold px-5 py-2 rounded-lg text-xs shadow transition cursor-pointer"
+                      >
+                        + {t.add}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
         ) : (
+
+          /* 2. CLASSIC GRID VIEW */
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
             {filteredInventory.map((item) => {
               const qty = getItemQuantity(item.id);
