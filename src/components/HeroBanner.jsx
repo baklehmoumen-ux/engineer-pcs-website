@@ -7,7 +7,7 @@ const slides = [
     id: 1,
     title: "Next-Level Performance",
     subtitle: "RTX Graphics · Fast Memory · Better Gaming",
-    tag: "GEFORCE RTX 50 SERIES",
+    tag: "GEFORCE RTX 40 SERIES",
     
     // GPUs
     image1: "https://dlcdnwebimgs.asus.com/gain/1604342F-835B-4F89-BDC9-9834AF558D5C/w1000/h732",
@@ -32,20 +32,21 @@ const slides = [
     subtitle: "Liquid & Air Coolers · Low Temps · High FPS",
     tag: "THERMALRIGHT VISION",
     
-    // Main Cooler
-    image1: "/images/aqua360v6.jpg",
-    alt1: "AIO Liquid Cooler",
+    // Empty slots (Left and Right Top)
+    image1: "",
+    alt1: "",
     
-    // Empty slots so they don't render on this slide
-    image2: "",
-    alt2: "",
+    // Main Cooler (Center Top)
+    image2: "https://www.thermalright.com/wp-content/uploads/2025/06/TV-B-%E4%B8%BB%E5%9B%BE1500.jpg",
+    alt2: "AIO Liquid Cooler",
+    
     image3: "",
     alt3: "",
     
-    // Secondary Coolers
-    image4: "/images/frozinf360.jpg",
+    // Secondary Coolers (Bottom Left & Right)
+    image4: "https://www.thermalright.com/wp-content/uploads/2024/04/1-5-600x600.jpg",
     alt4: "Air Cooler",
-    image5: "/images/pv360.jpg",
+    image5: "https://www.thermalright.com/wp-content/uploads/2023/01/1.jpg",
     alt5: "RGB Cooler",
     
     buttonText: "Explore Cooling",
@@ -118,7 +119,7 @@ export default function HeroBanner({ onSelectCategory }) {
                     </div>
                   )}
 
-                  {/* Image 2 (Secondary GPU) - Center */}
+                  {/* Image 2 (Secondary GPU / Main Cooler) - Center */}
                   {slide.image2 && (
                     <div className="absolute top-[5%] md:top-[12%] left-1/2 -translate-x-1/2 w-28 sm:w-36 md:w-44 z-20">
                       <div className={`w-full transition-all duration-1000 delay-300 ease-out transform ${isActive ? 'translate-y-0 opacity-100 scale-100' : '-translate-y-8 md:-translate-y-16 opacity-0 scale-95'}`}>
@@ -150,7 +151,7 @@ export default function HeroBanner({ onSelectCategory }) {
                     </div>
                   )}
 
-                  {/* Image 4 (Left RAM) - Same Size, Bottom Left */}
+                  {/* Image 4 (Left RAM / Left Air Cooler) - Same Size, Bottom Left */}
                   {slide.image4 && (
                     <div className="absolute bottom-[5%] md:bottom-[10%] left-[10%] md:left-[15%] w-32 sm:w-40 md:w-56 z-40">
                       <div className={`w-full transition-all duration-1000 delay-700 ease-out transform ${isActive ? 'translate-x-0 opacity-100 scale-100' : '-translate-x-8 md:-translate-x-16 opacity-0 scale-95'}`}>
@@ -166,7 +167,7 @@ export default function HeroBanner({ onSelectCategory }) {
                     </div>
                   )}
 
-                  {/* Image 5 (Right RAM) - Same Size, Bottom Right */}
+                  {/* Image 5 (Right RAM / Right Air Cooler) - Same Size, Bottom Right */}
                   {slide.image5 && (
                     <div className="absolute bottom-[5%] md:bottom-[10%] right-[10%] md:right-[15%] w-32 sm:w-40 md:w-56 z-50">
                       <div className={`w-full transition-all duration-1000 delay-1000 ease-out transform ${isActive ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-8 md:translate-y-16 opacity-0 scale-95'}`}>
