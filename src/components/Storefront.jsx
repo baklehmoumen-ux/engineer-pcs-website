@@ -109,7 +109,7 @@ const dictionary = {
     viewGrid: '🔳 Grid',
     add: 'Add',
 
-    // ADVANCED E-COMMERCE FEATURES
+    // ADVANCED E-COMMERCE & SIDEBAR FEATURES
     filters: 'Filters',
     compare: 'Compare',
     compareItems: 'Compare Items',
@@ -121,6 +121,12 @@ const dictionary = {
     whatsapp: 'WhatsApp',
     loginToSave: 'Please log in to save your build.',
     emailAlert: 'Enter your email to be notified when this is back in stock:',
+    aboutUs: 'About Us',
+    aboutText: 'Our goal is to create a personalized experience for every customer that decides to build a pc with us.',
+    location: 'Location',
+    locationText: 'Al Bahsa, Sook Sarooja',
+    contactUs: 'Contact Us',
+    createdBy: 'Credits to the creator of the website Eng. Moumen BaKleh',
     
     categories: {
       'All': 'All', 
@@ -208,7 +214,7 @@ const dictionary = {
     viewGrid: '🔳 شبكة',
     add: 'إضافة',
 
-    // ADVANCED E-COMMERCE FEATURES
+    // ADVANCED E-COMMERCE & SIDEBAR FEATURES
     filters: 'تصفية',
     compare: 'مقارنة',
     compareItems: 'مقارنة المنتجات',
@@ -220,6 +226,12 @@ const dictionary = {
     whatsapp: 'واتساب',
     loginToSave: 'يرجى تسجيل الدخول لحفظ التجميعة.',
     emailAlert: 'أدخل بريدك الإلكتروني لإعلامك عند توفر المنتج:',
+    aboutUs: 'من نحن',
+    aboutText: 'هدفنا هو خلق تجربة مخصصة لكل عميل يقرر تجميع جهاز حاسوب معنا.',
+    location: 'الموقع',
+    locationText: 'البحصة، سوق ساروجة',
+    contactUs: 'اتصل بنا',
+    createdBy: 'تم إنشاء الموقع بواسطة م. مؤمن بقلة',
 
     categories: {
       'All': 'الكل', 
@@ -316,11 +328,11 @@ export default function Storefront() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('default');
   
-  // Advanced E-Commerce Features State
+  // NEW Advanced E-Commerce Features State
   const [compareItems, setCompareItems] = useState([]);
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
   const [notifyModalOpen, setNotifyModalOpen] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('whatsapp');
+  const [paymentMethod, setPaymentMethod] = useState('whatsapp'); // 'whatsapp' | 'card'
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [drawerView, setDrawerView] = useState('cart'); // 'cart', 'checkout', 'builder', 'auth'
@@ -329,13 +341,17 @@ export default function Storefront() {
   const [toastMessage, setToastMessage] = useState('');
   const [selectingFor, setSelectingFor] = useState(null);
 
+  // Modals
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [activeImage, setActiveImage] = useState('');useEffect(() => {
+  const [activeImage, setActiveImage] = useState('');// 1. Fetch live products from Supabase
+  useEffect(() => {
     async function fetchLiveProducts() {
       try {
         const { data, error } = await supabase.from('products').select('*');
-        if (!error && data) setDbProducts(data);
+        if (!error && data) {
+          setDbProducts(data);
+        }
       } catch (err) {
         console.error('Error fetching live inventory:', err);
       }
@@ -343,6 +359,7 @@ export default function Storefront() {
     fetchLiveProducts();
   }, []);
 
+  // 2. Combine Supabase items with static inventory
   const masterInventory = useMemo(() => {
     const dbIds = new Set(dbProducts.map(p => p.id));
     const remainingStatic = staticInventory.filter(item => !dbIds.has(item.id));
@@ -351,7 +368,9 @@ export default function Storefront() {
 
   const showToast = (msg) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(''), 2200);
+    setTimeout(() => {
+      setToastMessage('');
+    }, 2200);
   };
 
   const handleToggleCompare = (item) => {
@@ -365,6 +384,7 @@ export default function Storefront() {
     });
   };
 
+  // Filter & Price Sorting
   const filteredInventory = useMemo(() => {
     let items = masterInventory.filter(item => {
       const matchesCategory = activeCategory === 'All' || item.category === activeCategory;
@@ -372,12 +392,16 @@ export default function Storefront() {
       return matchesCategory && matchesSearch;
     });
 
-    if (sortBy === 'low-high') items = [...items].sort((a, b) => a.price - b.price);
-    else if (sortBy === 'high-low') items = [...items].sort((a, b) => b.price - a.price);
+    if (sortBy === 'low-high') {
+      items = [...items].sort((a, b) => a.price - b.price);
+    } else if (sortBy === 'high-low') {
+      items = [...items].sort((a, b) => b.price - a.price);
+    }
 
     return items;
   }, [masterInventory, activeCategory, searchQuery, sortBy]);
 
+  // Frequently Bought Together Logic (Pulls 2 items from other categories)
   const relatedItems = useMemo(() => {
     if (!selectedProduct) return [];
     return masterInventory.filter(i => i.category !== selectedProduct.category && i.in_stock !== false).slice(0, 2);
@@ -414,16 +438,20 @@ export default function Storefront() {
   };
 
   const updateQuantity = (id, delta) => {
-    setCart(prev => prev.map(item => {
-      if (item.id === id) {
-        const newQty = item.quantity + delta;
-        return newQty > 0 ? { ...item, quantity: newQty } : null;
-      }
-      return item;
-    }).filter(Boolean));
+    setCart(prev => {
+      return prev.map(item => {
+        if (item.id === id) {
+          const newQty = item.quantity + delta;
+          return newQty > 0 ? { ...item, quantity: newQty } : null;
+        }
+        return item;
+      }).filter(Boolean);
+    });
   };
 
-  const removeFromCart = (id) => setCart(prev => prev.filter(item => item.id !== id));
+  const removeFromCart = (id) => {
+    setCart(prev => prev.filter(item => item.id !== id));
+  };
 
   const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
@@ -461,8 +489,10 @@ export default function Storefront() {
     return { estimated: estimatedWattage, psu: selectedPsuWattage };
   }, [cart]);
 
+  // Compatibility & Power Deficit Error Checks
   const compatibilityErrors = useMemo(() => {
     const errors = [];
+    
     if (wattageInfo.psu > 0 && wattageInfo.psu < wattageInfo.estimated) {
       errors.push({
         id: 'insufficient-power',
@@ -477,8 +507,10 @@ export default function Storefront() {
     if (cpu && mb) {
       const cpuName = cpu.name.toLowerCase();
       const mbName = mb.name.toLowerCase();
+      
       const isAmdCpu = cpuName.includes('ryzen') || cpuName.includes('7500f') || cpuName.includes('7800x3d') || cpuName.includes('9800x3d');
       const isIntelMb = mbName.includes('h610') || mbName.includes('b760') || mbName.includes('z790') || mbName.includes('z890');
+      
       if (isAmdCpu && isIntelMb) {
         errors.push({
           id: 'socket-mismatch',
@@ -488,58 +520,100 @@ export default function Storefront() {
         });
       }
     }
+
     return errors;
   }, [cart, wattageInfo]);
 
   const expectedPerformance = useMemo(() => {
     const gpu = cart.find(i => i.category === 'GPUs');
     const cpu = cart.find(i => i.category === 'CPUs');
+
     if (!gpu && !cpu) return lang === 'ar' ? 'الرجاء اختيار قطع لعرض الأداء المتوقع' : 'Select parts to calculate estimated performance';
+    
     const gpuName = gpu ? gpu.name.toLowerCase() : '';
     
-    if (gpuName.includes('4090') || gpuName.includes('5090') || gpuName.includes('4080') || gpuName.includes('5080')) return lang === 'ar' ? '🚀 أداء خارق: 4K Ultra FPS (120+ FPS) · تتبع الأشعة المتقدم' : '🚀 Extreme Performance: 4K Ultra Gaming (120+ FPS) · Ray Tracing';
-    if (gpuName.includes('4070') || gpuName.includes('5070') || gpuName.includes('7800x3d')) return lang === 'ar' ? '🎮 أداء ممتازة: 1440p Ultra FPS (144+ FPS) · ألعاب تنافسية' : '🎮 High Performance: 1440p Ultra Gaming (144+ FPS) · Esports Ready';
+    if (gpuName.includes('4090') || gpuName.includes('5090') || gpuName.includes('4080') || gpuName.includes('5080')) {
+      return lang === 'ar' ? '🚀 أداء خارق: 4K Ultra FPS (120+ FPS) · تتبع الأشعة المتقدم' : '🚀 Extreme Performance: 4K Ultra Gaming (120+ FPS) · Ray Tracing';
+    } else if (gpuName.includes('4070') || gpuName.includes('5070') || gpuName.includes('7800x3d')) {
+      return lang === 'ar' ? '🎮 أداء ممتازة: 1440p Ultra FPS (144+ FPS) · ألعاب تنافسية' : '🎮 High Performance: 1440p Ultra Gaming (144+ FPS) · Esports Ready';
+    }
     return lang === 'ar' ? '⚡ أداء جيد: 1080p High FPS (100+ FPS) · ألعاب بدقة عالية' : '⚡ Solid Performance: 1080p High FPS (100+ FPS) · Smooth Gaming';
   }, [cart, lang]);
 
   const buildStatus = useMemo(() => {
-    let requiredCount = 0, fulfilledCount = 0;
+    let requiredCount = 0;
+    let fulfilledCount = 0;
     const missing = [];
+    
     requiredParts.forEach(part => {
       if (part.required) requiredCount++;
       const hasItem = cart.some(item => item.category === part.key);
       if (hasItem && part.required) fulfilledCount++;
       if (!hasItem && part.required) missing.push(t.partLabels[part.labelKey] || part.labelKey);
     });
+
     return {
       isComplete: missing.length === 0 && compatibilityErrors.length === 0,
       missing,
       progress: Math.round((fulfilledCount / requiredCount) * 100)
     };
   }, [cart, compatibilityErrors, t]);const generateShareBuildText = () => {
-    let text = `⚡ *${t.shareBuildTitle} - EngineerPCs*\n\n🎯 *${t.expectedPerf}:*\n${expectedPerformance}\n\n⚡ *${t.estWattage}:* ~${wattageInfo.estimated}W ${wattageInfo.psu ? `(PSU: ${wattageInfo.psu}W)` : ''}\n\n📦 *Parts Included:*\n`;
-    cart.forEach(item => text += `▪️ ${item.name} - $${item.price}\n`);
+    let text = `⚡ *${t.shareBuildTitle} - EngineerPCs*\n\n`;
+    text += `🎯 *${t.expectedPerf}:*\n${expectedPerformance}\n\n`;
+    text += `⚡ *${t.estWattage}:* ~${wattageInfo.estimated}W ${wattageInfo.psu ? `(PSU: ${wattageInfo.psu}W)` : ''}\n\n`;
+    text += `📦 *Parts Included:*\n`;
+    cart.forEach(item => {
+      text += `▪️ ${item.name} - $${item.price}\n`;
+    });
     text += `\n💰 *Total Price: $${cartTotal.toFixed(2)}*`;
     return text;
   };
 
-  const handleShareBuildWhatsApp = () => window.open(`https://wa.me/?text=${encodeURIComponent(generateShareBuildText())}`, '_blank');
-  const handleCopyShareText = () => { navigator.clipboard.writeText(generateShareBuildText()); showToast(lang === 'ar' ? 'تم نسخ التجميعة إلى الحافظة! 📋' : 'Build summary copied to clipboard! 📋'); };
-  const openDetailModal = (product) => { setSelectedProduct(product); setActiveImage(product.image ? product.image.split(',')[0].trim() : '/images/default.jpg'); };
-  const startSelectingPart = (category) => { setActiveCategory(category); setSelectingFor(category); setIsDrawerOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); };
-  
+  const handleShareBuildWhatsApp = () => {
+    const encoded = encodeURIComponent(generateShareBuildText());
+    window.open(`https://wa.me/?text=${encoded}`, '_blank');
+  };
+
+  const handleCopyShareText = () => {
+    navigator.clipboard.writeText(generateShareBuildText());
+    showToast(lang === 'ar' ? 'تم نسخ التجميعة إلى الحافظة! 📋' : 'Build summary copied to clipboard! 📋');
+  };
+
+  const openDetailModal = (product) => {
+    setSelectedProduct(product);
+    const firstImg = product.image ? product.image.split(',')[0].trim() : '/images/default.jpg';
+    setActiveImage(firstImg);
+  };
+
+  const startSelectingPart = (category) => {
+    setActiveCategory(category);
+    setSelectingFor(category);
+    setIsDrawerOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const submitOrder = (e) => {
     e.preventDefault(); 
     if (paymentMethod === 'card') {
       showToast('Redirecting to Secure Payment Gateway...');
       return; 
     }
-    let message = `*🌟 NEW ORDER FROM WEBSITE 🌟*\n\n*Customer Details:*\n👤 Name: ${customerInfo.name}\n📞 Phone: ${customerInfo.phone}\n🏠 Address: ${customerInfo.address}\n\n*Order Items:*\n`;
-    cart.forEach(item => message += `▪️ ${item.quantity}x ${item.name} - $${item.price * item.quantity}\n`);
+    let message = `*🌟 NEW ORDER FROM WEBSITE 🌟*\n\n`;
+    message += `*Customer Details:*\n`;
+    message += `👤 Name: ${customerInfo.name}\n`;
+    message += `📞 Phone: ${customerInfo.phone}\n`;
+    message += `🏠 Address: ${customerInfo.address}\n\n`;
+    message += `*Order Items:*\n`;
+    cart.forEach(item => {
+      message += `▪️ ${item.quantity}x ${item.name} - $${item.price * item.quantity}\n`;
+    });
     message += `\n*💰 Total Due: $${cartTotal.toFixed(2)}*`;
-    window.open(`https://wa.me/963946508988?text=${encodeURIComponent(message)}`, '_blank');
+
+    const encodedMessage = encodeURIComponent(message);
+    window.open(`https://wa.me/963946508988?text=${encodedMessage}`, '_blank');
   };
 
+  // HELPER: Renders the Pill-Style Spec Grid for Detailed View
   const renderProductSpecs = (item) => {
     const s = item.specs || {};
     const cat = item.category;
@@ -551,7 +625,8 @@ export default function Storefront() {
       </div>
     );
 
-    if (cat === 'CPUs') return (
+    if (cat === 'CPUs') {
+      return (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full">
           <SpecBox label="Core Count" val={s.cores || '8'} />
           <SpecBox label="Core Clock" val={s.clock || '4.2 GHz'} />
@@ -560,8 +635,9 @@ export default function Storefront() {
           <SpecBox label="TDP" val={s.tdp || '120 W'} />
           <SpecBox label="iGPU" val={s.igpu || 'Radeon'} />
         </div>
-    );
-    if (cat === 'GPUs') return (
+      );
+    } else if (cat === 'GPUs') {
+      return (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full">
           <SpecBox label="Chipset" val={s.chipset || 'RTX 5070'} />
           <SpecBox label="Memory (VRAM)" val={s.memory || '12 GB'} />
@@ -570,8 +646,9 @@ export default function Storefront() {
           <SpecBox label="Color" val={s.color || 'Black'} />
           <SpecBox label="Length" val={s.length || '282 mm'} />
         </div>
-    );
-    if (cat === 'Motherboards') return (
+      );
+    } else if (cat === 'Motherboards') {
+      return (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full">
           <SpecBox label="Socket" val={s.socket || 'AM5'} />
           <SpecBox label="Form Factor" val={s.formFactor || 'Micro ATX'} />
@@ -579,8 +656,9 @@ export default function Storefront() {
           <SpecBox label="Memory Max" val={s.memoryMax || '256 GB'} />
           <SpecBox label="Color" val={s.color || 'Black'} />
         </div>
-    );
-    if (cat === 'RAM') return (
+      );
+    } else if (cat === 'RAM') {
+      return (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full">
           <SpecBox label="Speed" val={s.speed || 'DDR5-6000'} />
           <SpecBox label="Modules" val={s.modules || '2 x 16GB'} />
@@ -588,16 +666,18 @@ export default function Storefront() {
           <SpecBox label="First Word Lat." val={s.latency || '10 ns'} />
           <SpecBox label="Color" val={s.color || 'Black'} />
         </div>
-    );
-    if (cat === 'Storage') return (
+      );
+    } else if (cat === 'Storage') {
+      return (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full">
           <SpecBox label="Capacity" val={s.capacity || '1 TB'} />
           <SpecBox label="Type" val={s.type || 'SSD'} />
           <SpecBox label="Form Factor" val={s.formFactor || 'M.2-2280'} />
           <SpecBox label="Interface" val={s.interface || 'M.2 PCIe 4.0 X4'} />
         </div>
-    );
-    if (cat === 'Power Supplies') return (
+      );
+    } else if (cat === 'Power Supplies') {
+      return (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full">
           <SpecBox label="Type" val={s.type || 'ATX'} />
           <SpecBox label="Efficiency" val={s.efficiency || '80+ Gold'} />
@@ -605,8 +685,9 @@ export default function Storefront() {
           <SpecBox label="Modular" val={s.modular || 'Full'} />
           <SpecBox label="Color" val={s.color || 'Black'} />
         </div>
-    );
-    if (cat === 'Monitors') return (
+      );
+    } else if (cat === 'Monitors') {
+      return (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full">
           <SpecBox label="Screen Size" val={s.size || '27.0"'} />
           <SpecBox label="Resolution" val={s.resolution || '2560 x 1440'} />
@@ -615,34 +696,43 @@ export default function Storefront() {
           <SpecBox label="Panel Type" val={s.panel || 'IPS'} />
           <SpecBox label="Aspect Ratio" val={s.aspect || '16:9'} />
         </div>
-    );
-    if (cat === 'PC Cases') return (
+      );
+    } else if (cat === 'PC Cases') {
+      return (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full">
           <SpecBox label="Type" val={s.type || 'ATX Mid Tower'} />
           <SpecBox label="Color" val={s.color || 'Black'} />
           <SpecBox label="Side Panel" val={s.sidePanel || 'Tempered Glass'} />
           <SpecBox label="External Vol." val={s.volume || '45.0 L'} />
         </div>
-    );
-    if (cat === 'Liquid & Air Cooling') return (
+      );
+    } else if (cat === 'Liquid & Air Cooling') {
+      return (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full">
           <SpecBox label="Fan RPM" val={s.rpm || '1550 RPM'} />
           <SpecBox label="Noise Level" val={s.noise || '25.6 dB'} />
           <SpecBox label="Radiator Size" val={s.radSize || '360 mm'} />
           <SpecBox label="Color" val={s.color || 'Black'} />
         </div>
-    );
+      );
+    }
 
-    return <p className="text-xs text-gray-500 mt-2">{item.description || `Official ${item.category} component verified by EngineerPCs.`}</p>;
+    return (
+      <p className="text-xs text-gray-500 mt-2">
+        {item.description || `Official ${item.category} component verified by EngineerPCs.`}
+      </p>
+    );
   };return (
     <div className="min-h-screen bg-gray-50 font-sans pb-24 md:pb-0 relative" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       
+      {/* FLOATING TOAST NOTIFICATION */}
       {toastMessage && (
         <div className="fixed top-16 left-1/2 transform -translate-x-1/2 z-50 bg-gray-900 text-white px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 border border-yellow-400 text-xs md:text-sm font-semibold animate-bounce">
           <span className="text-yellow-400">✨</span> {toastMessage}
         </div>
       )}
 
+      {/* FLOATING COMPARE BUTTON */}
       {compareItems.length > 0 && (
         <div className="fixed bottom-24 md:bottom-8 right-4 z-40 animate-bounce">
           <button onClick={() => setIsCompareModalOpen(true)} className="bg-blue-600 text-white font-black px-6 py-3 rounded-full shadow-2xl border-2 border-white flex items-center gap-2 transition hover:bg-blue-700 active:scale-95 cursor-pointer">
@@ -651,74 +741,139 @@ export default function Storefront() {
         </div>
       )}
 
+      {/* STICKY SELECTION BANNER */}
       {selectingFor && (
         <div className="bg-blue-600 text-white p-3 sticky top-[68px] md:top-[76px] z-30 shadow-md flex justify-between items-center px-4 md:px-6">
           <span className="text-xs md:text-sm font-bold flex items-center gap-2">
             <span className="animate-pulse text-lg">🔍</span> {t.selectPartPrefix} <span className="text-yellow-300 underline underline-offset-4">{t.categories[selectingFor] || selectingFor}</span> {t.selectPartSuffix}
           </span>
           <div className="flex gap-2">
-            <button onClick={() => { setSelectingFor(null); setIsDrawerOpen(true); setDrawerView('builder'); }} className="bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-md text-xs font-bold transition cursor-pointer shadow-sm border border-blue-400/50 whitespace-nowrap">{t.backToBuilder}</button>
+            <button 
+              onClick={() => { setSelectingFor(null); setIsDrawerOpen(true); setDrawerView('builder'); }} 
+              className="bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-md text-xs font-bold transition cursor-pointer shadow-sm border border-blue-400/50 whitespace-nowrap"
+            >
+              {t.backToBuilder}
+            </button>
             <button onClick={() => setSelectingFor(null)} className="text-white hover:text-gray-200 px-2 font-bold cursor-pointer text-lg leading-none">✕</button>
           </div>
         </div>
       )}
 
+      {/* 1. TOP UTILITY BAR */}
       <div className="bg-gray-900 text-gray-300 text-[11px] md:text-xs py-2 px-3 md:px-6 flex justify-between items-center z-50 relative border-b border-gray-800">
         <span className="font-semibold tracking-wide flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
           {t.proBuilders}
         </span>
+
         <div className="flex gap-3 md:gap-6 items-center">
-          <button onClick={() => setLang(lang === 'en' ? 'ar' : 'en')} className="hover:text-yellow-400 text-white font-bold flex items-center gap-1.5 transition text-xs bg-gray-800 hover:bg-gray-700 px-2.5 py-1 rounded-full border border-gray-700 cursor-pointer shadow-sm">
+          <button 
+            onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
+            className="hover:text-yellow-400 text-white font-bold flex items-center gap-1.5 transition text-xs bg-gray-800 hover:bg-gray-700 px-2.5 py-1 rounded-full border border-gray-700 cursor-pointer shadow-sm"
+          >
             <span>🌐</span> {lang === 'en' ? 'العربية' : 'English'}
           </button>
+
           <a href="https://www.instagram.com/engineer_pcs?igsh=MXA3aTJmZWFmajZsdg==" target="_blank" rel="noreferrer" className="hover:text-white flex items-center gap-1.5 transition font-semibold group">
-            <svg className="w-3.5 h-3.5 fill-pink-500 group-hover:scale-110 transition-transform" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg> WhatsApp
+            <svg className="w-3.5 h-3.5 fill-pink-500 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+            </svg>
+            WhatsApp
           </a>
         </div>
       </div>
 
+      {/* HERO BANNER SECTION */}
       <HeroBanner onSelectCategory={(cat) => setActiveCategory(cat)} />
 
+      {/* 3. CATEGORY NAVIGATION MENU */}
       <nav className="bg-[#232F3E] text-white text-sm py-2 px-2 md:px-4 shadow-md overflow-x-auto whitespace-nowrap hide-scrollbar">
         <div className="max-w-7xl mx-auto flex gap-4 md:gap-6 px-2">
           {categories.map((category) => (
-            <button key={category} onClick={() => setActiveCategory(category)} className={`transition-all pb-1 border-b-2 text-sm md:text-base cursor-pointer ${activeCategory === category ? 'border-yellow-400 text-yellow-400 font-bold' : 'border-transparent hover:border-gray-300 text-gray-300'}`}>
+            <button 
+              key={category}
+              onClick={() => setActiveCategory(category)}
+              className={`transition-all pb-1 border-b-2 text-sm md:text-base cursor-pointer ${
+                activeCategory === category ? 'border-yellow-400 text-yellow-400 font-bold' : 'border-transparent hover:border-gray-300 text-gray-300'
+              }`}
+            >
               {t.categories[category] || category}
             </button>
           ))}
         </div>
-      </nav>
-
+      </nav>{/* 4. MAIN PRODUCT DISPLAY HEADER & SIDEBAR FILTERS */}
       <main className="max-w-7xl mx-auto p-3 md:p-6 flex flex-col lg:flex-row gap-6">
         
-        <aside className="hidden lg:block w-64 shrink-0 space-y-6 pt-4">
-          <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 sticky top-24">
-            <h3 className="font-black text-gray-900 mb-5 border-b pb-3 flex items-center gap-2"><span>⚙️</span> {t.filters}</h3>
-            <div className="space-y-5">
+        {/* NEW PROFESSIONAL SIDEBAR (Filters, About, Location, Contact, Credits) */}
+        <aside className="hidden lg:block w-64 shrink-0 pt-4">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 sticky top-24 flex flex-col max-h-[calc(100vh-6rem)] overflow-hidden">
+            
+            <div className="p-5 overflow-y-auto hide-scrollbar flex-1 space-y-6">
+              {/* FILTERS */}
               <div>
-                <div className="text-xs font-bold text-gray-500 uppercase mb-2">Availability</div>
-                <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer"><input type="checkbox" className="w-4 h-4 rounded accent-blue-600 cursor-pointer" /> In Stock Only</label>
+                <h3 className="font-black text-gray-900 mb-4 flex items-center gap-2"><span>⚙️</span> {t.filters}</h3>
+                <div className="space-y-4">
+                  <div>
+                    <div className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-2">Availability</div>
+                    <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer text-gray-700 hover:text-blue-600 transition">
+                      <input type="checkbox" className="w-4 h-4 rounded accent-blue-600 cursor-pointer" /> In Stock Only
+                    </label>
+                  </div>
+
+                  {activeCategory !== 'All' ? (
+                    <>
+                      <div>
+                        <div className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-2">Brand</div>
+                        <div className="space-y-2">
+                          <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer text-gray-700 hover:text-blue-600 transition"><input type="checkbox" className="w-4 h-4 rounded accent-blue-600 cursor-pointer" /> AMD</label>
+                          <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer text-gray-700 hover:text-blue-600 transition"><input type="checkbox" className="w-4 h-4 rounded accent-blue-600 cursor-pointer" /> Intel</label>
+                          <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer text-gray-700 hover:text-blue-600 transition"><input type="checkbox" className="w-4 h-4 rounded accent-blue-600 cursor-pointer" /> NVIDIA</label>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-2">Price Range</div>
+                        <input type="range" className="w-full accent-blue-600 cursor-pointer" min="0" max="2000" />
+                        <div className="flex justify-between text-xs font-bold text-gray-400 mt-1"><span>$0</span><span>$2000+</span></div>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-[10px] text-gray-400 font-medium italic border-t pt-4">Select a specific category above to view detailed technical filters.</p>
+                  )}
+                </div>
               </div>
-              {activeCategory !== 'All' ? (
-                <>
-                  <div>
-                    <div className="text-xs font-bold text-gray-500 uppercase mb-2">Brand</div>
-                    <div className="space-y-2">
-                      <label className="flex items-center gap-2 text-sm font-medium cursor-pointer hover:text-blue-600"><input type="checkbox" className="w-4 h-4 rounded accent-blue-600 cursor-pointer" /> AMD</label>
-                      <label className="flex items-center gap-2 text-sm font-medium cursor-pointer hover:text-blue-600"><input type="checkbox" className="w-4 h-4 rounded accent-blue-600 cursor-pointer" /> Intel</label>
-                      <label className="flex items-center gap-2 text-sm font-medium cursor-pointer hover:text-blue-600"><input type="checkbox" className="w-4 h-4 rounded accent-blue-600 cursor-pointer" /> NVIDIA</label>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-gray-500 uppercase mb-2">Price Range</div>
-                    <input type="range" className="w-full accent-blue-600 cursor-pointer" min="0" max="2000" />
-                    <div className="flex justify-between text-xs font-bold text-gray-400 mt-1"><span>$0</span><span>$2000+</span></div>
-                  </div>
-                </>
-              ) : (
-                <p className="text-xs text-gray-400 font-medium italic border-t pt-4">Select a specific category above to view detailed technical filters.</p>
-              )}
+
+              <hr className="border-gray-100" />
+
+              {/* ABOUT US */}
+              <div>
+                <h3 className="font-black text-gray-900 text-sm mb-2 flex items-center gap-1.5"><span>🏢</span> {t.aboutUs}</h3>
+                <p className="text-xs text-gray-500 leading-relaxed font-medium">
+                  {t.aboutText}
+                </p>
+              </div>
+
+              {/* LOCATION */}
+              <div>
+                <h3 className="font-black text-gray-900 text-sm mb-2 flex items-center gap-1.5"><span>📍</span> {t.location}</h3>
+                <p className="text-xs text-gray-500 font-medium">
+                  {t.locationText}
+                </p>
+              </div>
+
+              {/* CONTACT US */}
+              <div>
+                <h3 className="font-black text-gray-900 text-sm mb-2 flex items-center gap-1.5"><span>📞</span> {t.contactUs}</h3>
+                <a href="https://wa.me/963946508988" target="_blank" rel="noreferrer" className="inline-block text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition">
+                  +963 946 508 988
+                </a>
+              </div>
+            </div>
+
+            {/* CREDITS - LOW PROFILE */}
+            <div className="bg-gray-50 border-t border-gray-200 p-3 text-center shrink-0 rounded-b-2xl">
+              <span className="text-[9px] text-gray-400 font-bold tracking-wider uppercase">
+                {t.createdBy}
+              </span>
             </div>
           </div>
         </aside>
@@ -728,12 +883,15 @@ export default function Storefront() {
             <h2 className="text-lg md:text-2xl font-bold text-gray-800">
               {searchQuery ? `${t.search} "${searchQuery}"` : (t.categories[activeCategory] || activeCategory)}
             </h2>
+            
             <div className="flex items-center justify-between sm:justify-end gap-3 flex-wrap">
               <div className="flex bg-gray-200 p-1 rounded-lg border border-gray-300">
                 <button onClick={() => setViewMode('list')} className={`px-3 py-1 rounded-md text-xs font-bold transition cursor-pointer ${viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600'}`}>{t.viewList}</button>
                 <button onClick={() => setViewMode('grid')} className={`px-3 py-1 rounded-md text-xs font-bold transition cursor-pointer ${viewMode === 'grid' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600'}`}>{t.viewGrid}</button>
               </div>
+
               <span className="text-xs md:text-sm text-gray-500 font-medium">{filteredInventory.length} {t.items}</span>
+
               <div className="flex items-center gap-1.5 bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 shadow-sm">
                 <span className="text-xs text-gray-500 font-medium">{t.sort}</span>
                 <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-transparent text-xs md:text-sm font-semibold text-gray-800 outline-none cursor-pointer">
@@ -742,6 +900,7 @@ export default function Storefront() {
                   <option value="high-low">{t.highToLow}</option>
                 </select>
               </div>
+
               {(activeCategory !== 'All' || searchQuery) && (
                 <button onClick={() => { setActiveCategory('All'); setSearchQuery(''); }} className="text-xs bg-yellow-100 hover:bg-yellow-200 text-yellow-800 px-2.5 py-1.5 rounded-lg font-semibold transition cursor-pointer">{t.reset}</button>
               )}
@@ -751,6 +910,8 @@ export default function Storefront() {
           {filteredInventory.length === 0 ? (
             <div className="text-center text-gray-500 py-20 text-lg md:text-xl">{t.noProducts}</div>
           ) : viewMode === 'list' ? (
+            
+            /* DETAILED LIST VIEW WITH SWIPEABLE CAROUSEL & PILL SPECS */
             <div className="space-y-4 md:space-y-6">
               {filteredInventory.map(item => {
                 const qty = getItemQuantity(item.id);
@@ -760,9 +921,11 @@ export default function Storefront() {
                 return (
                   <ScrollFadeItem key={item.id}>
                     <div className="bg-white rounded-2xl p-4 md:p-6 border border-gray-200 shadow-sm hover:shadow-md transition flex flex-col gap-4 relative">
+                      
                       <div className="absolute top-4 left-4 z-20 bg-white/90 p-1.5 rounded-lg shadow-sm backdrop-blur">
                         <input type="checkbox" className="w-4 h-4 cursor-pointer accent-blue-600" checked={compareItems.some(i => i.id === item.id)} onChange={(e) => { e.stopPropagation(); handleToggleCompare(item); }} title="Compare this item" />
                       </div>
+
                       <div className="flex overflow-x-auto snap-x snap-mandatory gap-3 pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                         {images.map((img, idx) => (
                           <div key={idx} className="w-[85%] sm:w-[45%] md:w-[30%] shrink-0 snap-start relative border border-gray-100 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center p-2">
@@ -775,12 +938,14 @@ export default function Storefront() {
                           </div>
                         ))}
                       </div>
+
                       <div className="flex flex-col">
                         <span className="text-[10px] md:text-xs font-black text-blue-600 uppercase tracking-widest mb-1 pl-10 md:pl-0">{t.categories[item.category] || item.category}</span>
                         <h3 className="font-extrabold text-gray-900 text-base md:text-xl leading-snug cursor-pointer hover:text-blue-600 transition" onClick={() => openDetailModal(item)}>{item.name}</h3>
                         <div className="flex items-center gap-1 text-xs text-yellow-500 font-bold mt-1.5">★★★★★ <span className="text-gray-400 text-[10px] font-medium">(48)</span></div>
                         {renderProductSpecs(item)}
                       </div>
+
                       <div className="flex items-center justify-between border-t border-gray-100 pt-4 mt-2">
                         <div className="text-2xl md:text-3xl font-black text-gray-900">${item.price}</div>
                         {isOutOfStock ? (
@@ -800,7 +965,10 @@ export default function Storefront() {
                 );
               })}
             </div>
+
           ) : (
+
+            /* CLASSIC GRID VIEW */
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
               {filteredInventory.map((item) => {
                 const qty = getItemQuantity(item.id);
@@ -846,7 +1014,7 @@ export default function Storefront() {
             </div>
           )}
         </div>
-      </main>{/* 🌟 NEW: MOBILE FLOATING CIRCULAR ACTION BUTTONS */}
+      </main>{/* 🌟 MOBILE FLOATING CIRCULAR ACTION BUTTONS */}
       <div className="md:hidden fixed bottom-6 left-0 right-0 px-4 flex justify-between items-end z-40 pointer-events-none">
         
         {/* Left Side: PC Builder Button */}
@@ -862,7 +1030,7 @@ export default function Storefront() {
         {cartCount > 0 && (
           <button 
             onClick={() => { setDrawerView('cart'); setIsDrawerOpen(true); }} 
-            className="pointer-events-auto h-16 w-16 bg-yellow-400 text-black rounded-full shadow-2xl flex items-center justify-center text-2xl transition-transform active:scale-90 border-4 border-white relative"
+            className="pointer-events-auto h-16 w-16 bg-yellow-400 text-black rounded-full shadow-2xl flex items-center justify-center text-2xl transition-transform active:scale-90 border-4 border-white relative cursor-pointer"
             title={t.yourCart}
           >
             🛒
@@ -1024,7 +1192,9 @@ export default function Storefront() {
                     })}
                   </div>
                 </div>
-              )}{/* CART VIEW */}
+              )}
+
+              {/* CART VIEW */}
               {drawerView === 'cart' && (
                 <div className="space-y-3 md:space-y-4 pb-20 md:pb-0">
                   <div className="flex justify-between items-center mb-2">
@@ -1095,7 +1265,6 @@ export default function Storefront() {
               )}
             </div>
 
-            {/* Bottom Drawer Action Bar */}
             <div className="p-4 md:p-6 bg-white border-t border-gray-200 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)]">
               <div className="flex justify-between text-lg md:text-xl mb-4 md:mb-6">
                 <span className="font-medium text-gray-600">{t.totalDue}</span>
@@ -1119,7 +1288,7 @@ export default function Storefront() {
       {/* SHARE BUILD SUMMARY MODAL */}
       {isShareModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="bg-gray-900 text-white w-full max-w-lg rounded-2xl p-6 border border-gray-800 shadow-2xl relative">
+          <div className="bg-white w-full max-w-lg rounded-2xl p-6 border border-gray-800 shadow-2xl relative">
             <button onClick={() => setIsShareModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl font-bold cursor-pointer">&times;</button>
             <h2 className="text-xl font-extrabold text-yellow-400 mb-4 flex items-center gap-2">⚡ {t.shareBuildTitle}</h2>
             <div className="bg-gray-800/80 p-4 rounded-xl border border-gray-700 mb-6 space-y-3 max-h-[300px] overflow-y-auto">
