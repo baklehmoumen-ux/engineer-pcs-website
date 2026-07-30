@@ -8,9 +8,9 @@ const slides = [
     title: "Next-Level Performance",
     subtitle: "RTX Graphics · Fast Memory · Better Gaming",
     tag: "GEFORCE RTX 40 SERIES",
-    gpuImage: "/images/pv240.jpg", // Replace with your GPU image path/URL
-    ramImageLeft: "/images/tlc12c.jpg", // Replace with RAM / Component image path/URL
-    ramImageRight: "/images/aqua360.jpg", // Replace with RAM / Component image path/URL
+    gpuImage: "https://dlcdnwebimgs.asus.com/files/media/09b5195d-6d4f-442d-af30-4942b9a2709c/v1/img/kv/pd-front.png",
+    ramImageLeft: "https://img.overclockers.co.uk/images/MEM-GSK-04195/379569ed093fbfe1a992d709c6f51fec.jpg",
+    ramImageRight: "https://assets.corsair.com/image/upload/f_auto,q_auto/pages/Memory%20Matters/VENGEANCE_RGB_DDR5_BLACK_RENDER_07.png",
     buttonText: "Shop Build Parts",
     categoryTarget: "GPUs"
   },
