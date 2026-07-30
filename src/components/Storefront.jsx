@@ -48,8 +48,7 @@ const dictionary = {
     availability: 'Availability',
     inStockReady: 'In Stock ✅ (Ready for Delivery)',
     outOfStockBadge: 'Out of Stock ❌',
-    descSpecs: 'Overview & Description',
-    techData: 'Technical Specifications',
+    descSpecs: 'Description & Specifications',
     addToBuild: '✅ Add to Build',
     addToCart: '➕ Add to Cart',
     currentlyUnavailable: 'Currently Unavailable',
@@ -136,8 +135,7 @@ const dictionary = {
     availability: 'التوفر',
     inStockReady: 'متوفر ✅ (جاهز للتوصيل)',
     outOfStockBadge: 'نفدت الكمية ❌',
-    descSpecs: 'نظرة عامة والوصف',
-    techData: 'المواصفات التقنية',
+    descSpecs: 'الوصف والمواصفات',
     addToBuild: '✅ إضافة للتجميعة',
     addToCart: '➕ إضافة للسلة',
     currentlyUnavailable: 'غير متوفر حالياً',
@@ -239,24 +237,6 @@ const staticInventory = [
   { id: 'cpu-amd-5', category: 'CPUs', name: 'Ryzen 7 9800X3D', price: 420, image: '/images/r7-9800x3d.jpg', specs: { cores: '8', clock: '4.7 GHz', boost: '5.2 GHz', arch: 'Zen 5', tdp: '120 W', igpu: 'Radeon' } },
   { id: 'mb-2', category: 'Motherboards', name: 'ASUS B850M AYW GAMING WIFI', price: 185, image: '/images/asus-b850m.jpg', specs: { socket: 'AM5', formFactor: 'Micro ATX', memoryMax: '256 GB', memorySlots: '4', color: 'Black / Silver' } },
 ];
-
-// Helper Function: Generates an array of specs for rendering dynamically in lists & modals
-const getSpecsList = (item) => {
-  const s = item.specs || {};
-  const cat = item.category;
-
-  if (cat === 'CPUs') return [ { l: 'Core Count', v: s.cores || '8' }, { l: 'Core Clock', v: s.clock || '4.2 GHz' }, { l: 'Boost Clock', v: s.boost || '5.0 GHz' }, { l: 'Microarch', v: s.arch || 'Zen 4' }, { l: 'TDP', v: s.tdp || '120 W' }, { l: 'iGPU', v: s.igpu || 'Radeon' } ];
-  if (cat === 'GPUs') return [ { l: 'Chipset', v: s.chipset || 'RTX 5070' }, { l: 'Memory (VRAM)', v: s.memory || '12 GB' }, { l: 'Core Clock', v: s.clock || '2160 MHz' }, { l: 'Boost Clock', v: s.boost || '2542 MHz' }, { l: 'Color', v: s.color || 'Black' }, { l: 'Length', v: s.length || '282 mm' } ];
-  if (cat === 'Motherboards') return [ { l: 'Socket', v: s.socket || 'AM5' }, { l: 'Form Factor', v: s.formFactor || 'Micro ATX' }, { l: 'Memory Slots', v: s.memorySlots || '4' }, { l: 'Memory Max', v: s.memoryMax || '256 GB' }, { l: 'Color', v: s.color || 'Black' } ];
-  if (cat === 'RAM') return [ { l: 'Speed', v: s.speed || 'DDR5-6000' }, { l: 'Modules', v: s.modules || '2 x 16GB' }, { l: 'CAS Latency', v: s.cas || '30' }, { l: 'First Word Latency', v: s.latency || '10 ns' }, { l: 'Color', v: s.color || 'Black' } ];
-  if (cat === 'Storage') return [ { l: 'Capacity', v: s.capacity || '1 TB' }, { l: 'Type', v: s.type || 'SSD' }, { l: 'Form Factor', v: s.formFactor || 'M.2-2280' }, { l: 'Interface', v: s.interface || 'M.2 PCIe 4.0 X4' } ];
-  if (cat === 'Power Supplies') return [ { l: 'Type', v: s.type || 'ATX' }, { l: 'Efficiency', v: s.efficiency || '80+ Gold' }, { l: 'Wattage', v: s.wattage || '850 W' }, { l: 'Modular', v: s.modular || 'Full' }, { l: 'Color', v: s.color || 'Black' } ];
-  if (cat === 'Monitors') return [ { l: 'Screen Size', v: s.size || '27.0"' }, { l: 'Resolution', v: s.resolution || '2560 x 1440' }, { l: 'Refresh Rate', v: s.refresh || '240 Hz' }, { l: 'Response Time', v: s.response || '1 ms' }, { l: 'Panel Type', v: s.panel || 'IPS' }, { l: 'Aspect Ratio', v: s.aspect || '16:9' } ];
-  if (cat === 'PC Cases') return [ { l: 'Type', v: s.type || 'ATX Mid Tower' }, { l: 'Color', v: s.color || 'Black' }, { l: 'Side Panel', v: s.sidePanel || 'Tempered Glass' }, { l: 'External Volume', v: s.volume || '45.0 L' } ];
-  if (cat === 'Liquid & Air Cooling') return [ { l: 'Fan RPM', v: s.rpm || '1550 RPM' }, { l: 'Noise Level', v: s.noise || '25.6 dB' }, { l: 'Radiator Size', v: s.radSize || '360 mm' }, { l: 'Color', v: s.color || 'Black' } ];
-  
-  return null;
-};
 
 export default function Storefront() {
   const [lang, setLang] = useState('en');
@@ -416,7 +396,6 @@ export default function Storefront() {
   const compatibilityErrors = useMemo(() => {
     const errors = [];
     
-    // 1. Power Supply Check
     if (wattageInfo.psu > 0 && wattageInfo.psu < wattageInfo.estimated) {
       errors.push({
         id: 'insufficient-power',
@@ -426,7 +405,6 @@ export default function Storefront() {
       });
     }
 
-    // 2. CPU vs Motherboard Socket Alignment Check
     const cpu = cart.find(i => i.category === 'CPUs');
     const mb = cart.find(i => i.category === 'Motherboards');
     if (cpu && mb) {
@@ -449,7 +427,6 @@ export default function Storefront() {
     return errors;
   }, [cart, wattageInfo]);
 
-  // Dynamic Performance Rating Calculation
   const expectedPerformance = useMemo(() => {
     const gpu = cart.find(i => i.category === 'GPUs');
     const cpu = cart.find(i => i.category === 'CPUs');
@@ -466,7 +443,6 @@ export default function Storefront() {
     return lang === 'ar' ? '⚡ أداء جيد: 1080p High FPS (100+ FPS) · ألعاب بدقة عالية' : '⚡ Solid Performance: 1080p High FPS (100+ FPS) · Smooth Gaming';
   }, [cart, lang]);
 
-  // Advanced PC Builder Checklist Validation Logic
   const buildStatus = useMemo(() => {
     let requiredCount = 0;
     let fulfilledCount = 0;
@@ -486,7 +462,6 @@ export default function Storefront() {
     };
   }, [cart, compatibilityErrors, t]);
 
-  // Generate Share Build Text / WhatsApp Summary
   const generateShareBuildText = () => {
     let text = `⚡ *${t.shareBuildTitle} - EngineerPCs*\n\n`;
     text += `🎯 *${t.expectedPerf}:*\n${expectedPerformance}\n\n`;
@@ -539,8 +514,118 @@ export default function Storefront() {
     window.open(`https://wa.me/963946508988?text=${encodedMessage}`, '_blank');
   };
 
-  // Generate specs for the detail modal
-  const selectedProductSpecs = selectedProduct ? getSpecsList(selectedProduct) : null;
+  // =========================================================================
+  // HELPER: Renders the Pill-Style Spec Grid for the new Detailed View Mode
+  // =========================================================================
+  const renderProductSpecs = (item) => {
+    const s = item.specs || {};
+    const cat = item.category;
+
+    const SpecBox = ({ label, val }) => (
+      <div className="bg-gray-50/70 border border-gray-100 rounded-xl p-2 md:p-3 flex flex-col justify-center transition-colors hover:bg-gray-100">
+        <span className="text-[9px] md:text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-0.5">{label}</span>
+        <span className="text-xs sm:text-sm font-bold text-gray-900 truncate">{val}</span>
+      </div>
+    );
+
+    if (cat === 'CPUs') {
+      return (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full">
+          <SpecBox label="Core Count" val={s.cores || '8'} />
+          <SpecBox label="Core Clock" val={s.clock || '4.2 GHz'} />
+          <SpecBox label="Boost Clock" val={s.boost || '5.0 GHz'} />
+          <SpecBox label="Microarch" val={s.arch || 'Zen 4'} />
+          <SpecBox label="TDP" val={s.tdp || '120 W'} />
+          <SpecBox label="iGPU" val={s.igpu || 'Radeon'} />
+        </div>
+      );
+    } else if (cat === 'GPUs') {
+      return (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full">
+          <SpecBox label="Chipset" val={s.chipset || 'RTX 5070'} />
+          <SpecBox label="Memory (VRAM)" val={s.memory || '12 GB'} />
+          <SpecBox label="Core Clock" val={s.clock || '2160 MHz'} />
+          <SpecBox label="Boost Clock" val={s.boost || '2542 MHz'} />
+          <SpecBox label="Color" val={s.color || 'Black'} />
+          <SpecBox label="Length" val={s.length || '282 mm'} />
+        </div>
+      );
+    } else if (cat === 'Motherboards') {
+      return (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full">
+          <SpecBox label="Socket" val={s.socket || 'AM5'} />
+          <SpecBox label="Form Factor" val={s.formFactor || 'Micro ATX'} />
+          <SpecBox label="Memory Slots" val={s.memorySlots || '4'} />
+          <SpecBox label="Memory Max" val={s.memoryMax || '256 GB'} />
+          <SpecBox label="Color" val={s.color || 'Black'} />
+        </div>
+      );
+    } else if (cat === 'RAM') {
+      return (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full">
+          <SpecBox label="Speed" val={s.speed || 'DDR5-6000'} />
+          <SpecBox label="Modules" val={s.modules || '2 x 16GB'} />
+          <SpecBox label="CAS Latency" val={s.cas || '30'} />
+          <SpecBox label="First Word Lat." val={s.latency || '10 ns'} />
+          <SpecBox label="Color" val={s.color || 'Black'} />
+        </div>
+      );
+    } else if (cat === 'Storage') {
+      return (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full">
+          <SpecBox label="Capacity" val={s.capacity || '1 TB'} />
+          <SpecBox label="Type" val={s.type || 'SSD'} />
+          <SpecBox label="Form Factor" val={s.formFactor || 'M.2-2280'} />
+          <SpecBox label="Interface" val={s.interface || 'M.2 PCIe 4.0 X4'} />
+        </div>
+      );
+    } else if (cat === 'Power Supplies') {
+      return (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full">
+          <SpecBox label="Type" val={s.type || 'ATX'} />
+          <SpecBox label="Efficiency" val={s.efficiency || '80+ Gold'} />
+          <SpecBox label="Wattage" val={s.wattage || '850 W'} />
+          <SpecBox label="Modular" val={s.modular || 'Full'} />
+          <SpecBox label="Color" val={s.color || 'Black'} />
+        </div>
+      );
+    } else if (cat === 'Monitors') {
+      return (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full">
+          <SpecBox label="Screen Size" val={s.size || '27.0"'} />
+          <SpecBox label="Resolution" val={s.resolution || '2560 x 1440'} />
+          <SpecBox label="Refresh Rate" val={s.refresh || '240 Hz'} />
+          <SpecBox label="Response Time" val={s.response || '1 ms'} />
+          <SpecBox label="Panel Type" val={s.panel || 'IPS'} />
+          <SpecBox label="Aspect Ratio" val={s.aspect || '16:9'} />
+        </div>
+      );
+    } else if (cat === 'PC Cases') {
+      return (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full">
+          <SpecBox label="Type" val={s.type || 'ATX Mid Tower'} />
+          <SpecBox label="Color" val={s.color || 'Black'} />
+          <SpecBox label="Side Panel" val={s.sidePanel || 'Tempered Glass'} />
+          <SpecBox label="External Vol." val={s.volume || '45.0 L'} />
+        </div>
+      );
+    } else if (cat === 'Liquid & Air Cooling') {
+      return (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full">
+          <SpecBox label="Fan RPM" val={s.rpm || '1550 RPM'} />
+          <SpecBox label="Noise Level" val={s.noise || '25.6 dB'} />
+          <SpecBox label="Radiator Size" val={s.radSize || '360 mm'} />
+          <SpecBox label="Color" val={s.color || 'Black'} />
+        </div>
+      );
+    }
+
+    return (
+      <p className="text-xs text-gray-500 mt-2">
+        {item.description || `Official ${item.category} component verified by EngineerPCs.`}
+      </p>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans pb-24 md:pb-0 relative" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
@@ -679,86 +764,84 @@ export default function Storefront() {
           <div className="text-center text-gray-500 py-20 text-lg md:text-xl">{t.noProducts}</div>
         ) : viewMode === 'list' ? (
           
-          /* 1. PCPARTPICKER DETAILED LIST VIEW (ENLARGED & INTERACTIVE) */
-          <div className="space-y-4">
+          /* ========================================================================= */
+          /* 1. BRAND NEW CARD-STYLE DETAILED LIST VIEW WITH SWIPEABLE IMAGE CAROUSEL  */
+          /* ========================================================================= */
+          <div className="space-y-4 md:space-y-6">
             {filteredInventory.map(item => {
               const qty = getItemQuantity(item.id);
               const isOutOfStock = item.in_stock === false;
-              const firstImage = item.image ? item.image.split(',')[0].trim() : '/images/default.jpg';
-              const specs = getSpecsList(item);
+              // Support multiple images separated by commas for the carousel
+              const images = item.image ? item.image.split(',').map(i => i.trim()) : ['/images/default.jpg'];
 
               return (
-                <div key={item.id} className={`group bg-white rounded-xl p-4 md:p-5 border border-gray-200 shadow-sm hover:shadow-lg hover:border-blue-400 hover:bg-blue-50/10 transition-all duration-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 md:gap-6 relative overflow-hidden ${isOutOfStock ? 'opacity-75' : ''}`}>
+                <div key={item.id} className="bg-white rounded-2xl p-4 md:p-6 border border-gray-200 shadow-sm hover:shadow-md transition flex flex-col gap-4 relative">
                   
-                  {isOutOfStock && (
-                    <div className="absolute top-2 right-2 bg-red-100 text-red-600 font-bold text-[10px] px-2 py-0.5 rounded shadow-sm border border-red-200 z-10 uppercase tracking-widest">
-                      {t.outOfStock}
-                    </div>
-                  )}
-
-                  <div className="flex items-start gap-4 md:gap-6 w-full sm:w-auto flex-1">
-                    
-                    {/* Enlarged Image Container with Hover Zoom */}
-                    <div 
-                      onClick={() => openDetailModal(item)}
-                      className="relative w-24 h-24 sm:w-32 sm:h-32 shrink-0 rounded-lg border border-gray-100 bg-gray-50 p-2 overflow-hidden flex items-center justify-center cursor-pointer shadow-inner"
-                    >
-                      <img 
-                        src={firstImage} 
-                        alt={item.name} 
-                        className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
-                        onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=PC'; }}
-                      />
-                    </div>
-
-                    <div className="flex-1 overflow-hidden flex flex-col justify-center min-h-[96px] sm:min-h-[128px]">
-                      <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider block mb-1">{t.categories[item.category] || item.category}</span>
-                      <h3 
-                        className="font-extrabold text-gray-900 text-sm md:text-lg leading-snug hover:text-blue-600 cursor-pointer truncate" 
-                        onClick={() => openDetailModal(item)}
-                      >
-                        {item.name}
-                      </h3>
-                      
-                      {/* PCPartPicker Star Rating Graphic */}
-                      <div className="flex items-center gap-1 text-xs text-yellow-500 font-black mt-1 mb-2">
-                        ★★★★★ <span className="text-gray-400 text-[10px] font-bold">(48)</span>
+                  {/* IMAGE CAROUSEL (TOP) */}
+                  <div className="flex overflow-x-auto snap-x snap-mandatory gap-3 pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                    {images.map((img, idx) => (
+                      <div key={idx} className="w-[85%] sm:w-[45%] md:w-[30%] shrink-0 snap-start relative border border-gray-100 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center p-2">
+                        <img 
+                          src={img} 
+                          alt={`${item.name} - View ${idx + 1}`} 
+                          className="h-40 md:h-56 w-full object-contain cursor-pointer hover:scale-105 transition-transform"
+                          onClick={() => openDetailModal(item)}
+                          onError={(e) => { e.target.src = 'https://via.placeholder.com/300?text=PC+Component'; }}
+                        />
+                        {isOutOfStock && idx === 0 && (
+                          <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center z-10 pointer-events-none">
+                            <span className="bg-red-600 text-white font-black text-xs uppercase tracking-widest px-3 py-1.5 rounded-md shadow-lg">
+                              {t.outOfStockBadge}
+                            </span>
+                          </div>
+                        )}
                       </div>
-
-                      {/* Interactive PCPartPicker Spec Chips */}
-                      {specs ? (
-                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-2 mt-1 w-full">
-                          {specs.map((spec, i) => (
-                            <div key={i} className="flex flex-col bg-gray-50/80 px-2 py-1.5 rounded-md border border-gray-100 group-hover:bg-white group-hover:border-blue-100 group-hover:shadow-sm transition-all duration-300">
-                              <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">{spec.l}</span>
-                              <span className="font-extrabold text-gray-800 text-[11px] truncate">{spec.v}</span>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-xs text-gray-500 mt-2 line-clamp-2 pr-4 leading-relaxed">
-                          {item.description || `Official ${item.category} component verified by EngineerPCs.`}
-                        </p>
-                      )}
-                    </div>
+                    ))}
                   </div>
 
-                  <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto border-t sm:border-t-0 pt-4 sm:pt-0 border-gray-100 shrink-0 gap-3">
-                    <div className="text-xl sm:text-2xl font-black text-gray-900">${item.price}</div>
+                  {/* INFO SECTION (BELOW IMAGES) */}
+                  <div className="flex flex-col">
+                    <span className="text-[10px] md:text-xs font-black text-blue-600 uppercase tracking-widest mb-1">{t.categories[item.category] || item.category}</span>
+                    <h3 
+                      className="font-extrabold text-gray-900 text-base md:text-xl leading-snug cursor-pointer hover:text-blue-600 transition" 
+                      onClick={() => openDetailModal(item)}
+                    >
+                      {item.name}
+                    </h3>
+                    
+                    {/* Fake Stars matching the UI requested */}
+                    <div className="flex items-center gap-1 text-xs text-yellow-500 font-bold mt-1.5">
+                      ★★★★★ <span className="text-gray-400 text-[10px] font-medium">(48)</span>
+                    </div>
+
+                    {/* Renders the Pill-Style Spec Grid */}
+                    {renderProductSpecs(item)}
+                  </div>
+
+                  {/* FOOTER SECTION (PRICE & ADD BUTTON) */}
+                  <div className="flex items-center justify-between border-t border-gray-100 pt-4 mt-2">
+                    <div className="text-2xl md:text-3xl font-black text-gray-900">${item.price}</div>
                     
                     {isOutOfStock ? (
-                      <span className="text-xs font-bold text-red-500 bg-red-50 px-3 py-1.5 rounded shadow-inner">
+                      <span className="text-sm font-bold text-red-500 bg-red-50 px-4 py-2 rounded-lg border border-red-100">
                         {t.unavailable}
                       </span>
-                    ) : (
+                    ) : qty === 0 ? (
                       <button 
                         onClick={() => addToCart(item)}
-                        className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-extrabold px-6 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all transform active:scale-95 cursor-pointer text-sm"
+                        className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-extrabold px-6 md:px-8 py-2.5 md:py-3 rounded-xl text-sm shadow-md transition transform active:scale-95 cursor-pointer flex items-center gap-2"
                       >
                         + {t.add}
                       </button>
+                    ) : (
+                      <div className="flex items-center bg-gray-100 rounded-xl border border-gray-300 p-1 shadow-inner h-10 md:h-12">
+                        <button onClick={() => updateQuantity(item.id, -1)} className="bg-white hover:bg-gray-200 text-black font-bold h-full w-10 md:w-12 rounded-lg flex items-center justify-center text-sm shadow-sm cursor-pointer transition">-</button>
+                        <span className="px-4 font-black text-sm md:text-base text-gray-800">{qty}</span>
+                        <button onClick={() => updateQuantity(item.id, 1)} className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold h-full w-10 md:w-12 rounded-lg flex items-center justify-center text-sm shadow-sm cursor-pointer transition">+</button>
+                      </div>
                     )}
                   </div>
+
                 </div>
               );
             })}
@@ -766,7 +849,9 @@ export default function Storefront() {
 
         ) : (
 
-          /* 2. CLASSIC GRID VIEW */
+          /* ========================================================================= */
+          /* 2. CLASSIC GRID VIEW                                                      */
+          /* ========================================================================= */
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
             {filteredInventory.map((item) => {
               const qty = getItemQuantity(item.id);
@@ -1177,7 +1262,7 @@ export default function Storefront() {
         </div>
       )}
 
-      {/* 7. PRODUCT DETAIL & MULTI-PICTURE MODAL WITH DYNAMIC SPECS */}
+      {/* 7. PRODUCT DETAIL & MULTI-PICTURE MODAL */}
       {selectedProduct && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
           <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
@@ -1229,21 +1314,6 @@ export default function Storefront() {
                       <span className="inline-block bg-green-100 text-green-700 font-bold text-xs px-2.5 py-1 rounded-md">{t.inStockReady}</span>
                     )}
                   </div>
-
-                  {/* DYNAMIC SPECS RENDERED IN MODAL FROM GRID/LIST VIEW CLICK */}
-                  {selectedProductSpecs && selectedProductSpecs.length > 0 && (
-                    <div className="mb-4">
-                      <span className="text-xs font-bold text-gray-500 uppercase block mb-2">{t.techData}</span>
-                      <div className="grid grid-cols-2 gap-3 bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-inner">
-                        {selectedProductSpecs.map((spec, i) => (
-                          <div key={i}>
-                            <span className="block text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-0.5">{spec.l}</span>
-                            <span className="font-black text-gray-800 text-xs">{spec.v}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
 
                   <div className="mb-6">
                     <span className="text-xs font-bold text-gray-500 uppercase block mb-1">{t.descSpecs}</span>
