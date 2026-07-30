@@ -301,7 +301,9 @@ const staticInventory = [
   { id: 'cpu-amd-5', category: 'CPUs', name: 'Ryzen 7 9800X3D', price: 420, image: '/images/r7-9800x3d.jpg', specs: { cores: '8', clock: '4.7 GHz', boost: '5.2 GHz', arch: 'Zen 5', tdp: '120 W', igpu: 'Radeon' } },
   { id: 'mb-2', category: 'Motherboards', name: 'ASUS B850M AYW GAMING WIFI', price: 185, image: '/images/asus-b850m.jpg', specs: { socket: 'AM5', formFactor: 'Micro ATX', memoryMax: '256 GB', memorySlots: '4', color: 'Black / Silver' } },
   { id: 'gpu-mock', category: 'GPUs', name: 'NVIDIA GeForce RTX 4090 FE', price: 1599, image: 'https://via.placeholder.com/300?text=RTX+4090', in_stock: false, specs: { chipset: 'RTX 4090', memory: '24 GB', clock: '2235 MHz', boost: '2520 MHz', color: 'Silver/Black' } }
-];export default function Storefront() {
+];
+
+export default function Storefront() {
   const [lang, setLang] = useState('en');
   const t = dictionary[lang];
 
@@ -314,11 +316,11 @@ const staticInventory = [
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('default');
   
-  // NEW Advanced E-Commerce Features State
+  // Advanced E-Commerce Features State
   const [compareItems, setCompareItems] = useState([]);
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
   const [notifyModalOpen, setNotifyModalOpen] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('whatsapp'); // 'whatsapp' | 'card'
+  const [paymentMethod, setPaymentMethod] = useState('whatsapp');
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [drawerView, setDrawerView] = useState('cart'); // 'cart', 'checkout', 'builder', 'auth'
@@ -327,19 +329,13 @@ const staticInventory = [
   const [toastMessage, setToastMessage] = useState('');
   const [selectingFor, setSelectingFor] = useState(null);
 
-  // Modals
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [activeImage, setActiveImage] = useState('');
-
-  // 1. Fetch live products from Supabase
-  useEffect(() => {
+  const [activeImage, setActiveImage] = useState('');useEffect(() => {
     async function fetchLiveProducts() {
       try {
         const { data, error } = await supabase.from('products').select('*');
-        if (!error && data) {
-          setDbProducts(data);
-        }
+        if (!error && data) setDbProducts(data);
       } catch (err) {
         console.error('Error fetching live inventory:', err);
       }
@@ -347,7 +343,6 @@ const staticInventory = [
     fetchLiveProducts();
   }, []);
 
-  // 2. Combine Supabase items with static inventory
   const masterInventory = useMemo(() => {
     const dbIds = new Set(dbProducts.map(p => p.id));
     const remainingStatic = staticInventory.filter(item => !dbIds.has(item.id));
@@ -356,9 +351,7 @@ const staticInventory = [
 
   const showToast = (msg) => {
     setToastMessage(msg);
-    setTimeout(() => {
-      setToastMessage('');
-    }, 2200);
+    setTimeout(() => setToastMessage(''), 2200);
   };
 
   const handleToggleCompare = (item) => {
@@ -372,7 +365,6 @@ const staticInventory = [
     });
   };
 
-  // Filter & Price Sorting
   const filteredInventory = useMemo(() => {
     let items = masterInventory.filter(item => {
       const matchesCategory = activeCategory === 'All' || item.category === activeCategory;
@@ -380,20 +372,18 @@ const staticInventory = [
       return matchesCategory && matchesSearch;
     });
 
-    if (sortBy === 'low-high') {
-      items = [...items].sort((a, b) => a.price - b.price);
-    } else if (sortBy === 'high-low') {
-      items = [...items].sort((a, b) => b.price - a.price);
-    }
+    if (sortBy === 'low-high') items = [...items].sort((a, b) => a.price - b.price);
+    else if (sortBy === 'high-low') items = [...items].sort((a, b) => b.price - a.price);
 
     return items;
   }, [masterInventory, activeCategory, searchQuery, sortBy]);
 
-  // Frequently Bought Together Logic (Pulls 2 items from other categories)
   const relatedItems = useMemo(() => {
     if (!selectedProduct) return [];
     return masterInventory.filter(i => i.category !== selectedProduct.category && i.in_stock !== false).slice(0, 2);
-  }, [selectedProduct, masterInventory]);const addToCart = (product) => {
+  }, [selectedProduct, masterInventory]);
+
+  const addToCart = (product) => {
     if (product.in_stock === false) {
       setNotifyModalOpen(true);
       return;
@@ -424,20 +414,16 @@ const staticInventory = [
   };
 
   const updateQuantity = (id, delta) => {
-    setCart(prev => {
-      return prev.map(item => {
-        if (item.id === id) {
-          const newQty = item.quantity + delta;
-          return newQty > 0 ? { ...item, quantity: newQty } : null;
-        }
-        return item;
-      }).filter(Boolean);
-    });
+    setCart(prev => prev.map(item => {
+      if (item.id === id) {
+        const newQty = item.quantity + delta;
+        return newQty > 0 ? { ...item, quantity: newQty } : null;
+      }
+      return item;
+    }).filter(Boolean));
   };
 
-  const removeFromCart = (id) => {
-    setCart(prev => prev.filter(item => item.id !== id));
-  };
+  const removeFromCart = (id) => setCart(prev => prev.filter(item => item.id !== id));
 
   const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
@@ -475,10 +461,8 @@ const staticInventory = [
     return { estimated: estimatedWattage, psu: selectedPsuWattage };
   }, [cart]);
 
-  // Compatibility & Power Deficit Error Checks
   const compatibilityErrors = useMemo(() => {
     const errors = [];
-    
     if (wattageInfo.psu > 0 && wattageInfo.psu < wattageInfo.estimated) {
       errors.push({
         id: 'insufficient-power',
@@ -493,10 +477,8 @@ const staticInventory = [
     if (cpu && mb) {
       const cpuName = cpu.name.toLowerCase();
       const mbName = mb.name.toLowerCase();
-      
       const isAmdCpu = cpuName.includes('ryzen') || cpuName.includes('7500f') || cpuName.includes('7800x3d') || cpuName.includes('9800x3d');
       const isIntelMb = mbName.includes('h610') || mbName.includes('b760') || mbName.includes('z790') || mbName.includes('z890');
-      
       if (isAmdCpu && isIntelMb) {
         errors.push({
           id: 'socket-mismatch',
@@ -506,100 +488,58 @@ const staticInventory = [
         });
       }
     }
-
     return errors;
   }, [cart, wattageInfo]);
 
   const expectedPerformance = useMemo(() => {
     const gpu = cart.find(i => i.category === 'GPUs');
     const cpu = cart.find(i => i.category === 'CPUs');
-
     if (!gpu && !cpu) return lang === 'ar' ? 'الرجاء اختيار قطع لعرض الأداء المتوقع' : 'Select parts to calculate estimated performance';
-    
     const gpuName = gpu ? gpu.name.toLowerCase() : '';
     
-    if (gpuName.includes('4090') || gpuName.includes('5090') || gpuName.includes('4080') || gpuName.includes('5080')) {
-      return lang === 'ar' ? '🚀 أداء خارق: 4K Ultra FPS (120+ FPS) · تتبع الأشعة المتقدم' : '🚀 Extreme Performance: 4K Ultra Gaming (120+ FPS) · Ray Tracing';
-    } else if (gpuName.includes('4070') || gpuName.includes('5070') || gpuName.includes('7800x3d')) {
-      return lang === 'ar' ? '🎮 أداء ممتازة: 1440p Ultra FPS (144+ FPS) · ألعاب تنافسية' : '🎮 High Performance: 1440p Ultra Gaming (144+ FPS) · Esports Ready';
-    }
+    if (gpuName.includes('4090') || gpuName.includes('5090') || gpuName.includes('4080') || gpuName.includes('5080')) return lang === 'ar' ? '🚀 أداء خارق: 4K Ultra FPS (120+ FPS) · تتبع الأشعة المتقدم' : '🚀 Extreme Performance: 4K Ultra Gaming (120+ FPS) · Ray Tracing';
+    if (gpuName.includes('4070') || gpuName.includes('5070') || gpuName.includes('7800x3d')) return lang === 'ar' ? '🎮 أداء ممتازة: 1440p Ultra FPS (144+ FPS) · ألعاب تنافسية' : '🎮 High Performance: 1440p Ultra Gaming (144+ FPS) · Esports Ready';
     return lang === 'ar' ? '⚡ أداء جيد: 1080p High FPS (100+ FPS) · ألعاب بدقة عالية' : '⚡ Solid Performance: 1080p High FPS (100+ FPS) · Smooth Gaming';
   }, [cart, lang]);
 
   const buildStatus = useMemo(() => {
-    let requiredCount = 0;
-    let fulfilledCount = 0;
+    let requiredCount = 0, fulfilledCount = 0;
     const missing = [];
-    
     requiredParts.forEach(part => {
       if (part.required) requiredCount++;
       const hasItem = cart.some(item => item.category === part.key);
       if (hasItem && part.required) fulfilledCount++;
       if (!hasItem && part.required) missing.push(t.partLabels[part.labelKey] || part.labelKey);
     });
-
     return {
       isComplete: missing.length === 0 && compatibilityErrors.length === 0,
       missing,
       progress: Math.round((fulfilledCount / requiredCount) * 100)
     };
-  }, [cart, compatibilityErrors, t]); const generateShareBuildText = () => {
-    let text = `⚡ *${t.shareBuildTitle} - EngineerPCs*\n\n`;
-    text += `🎯 *${t.expectedPerf}:*\n${expectedPerformance}\n\n`;
-    text += `⚡ *${t.estWattage}:* ~${wattageInfo.estimated}W ${wattageInfo.psu ? `(PSU: ${wattageInfo.psu}W)` : ''}\n\n`;
-    text += `📦 *Parts Included:*\n`;
-    cart.forEach(item => {
-      text += `▪️ ${item.name} - $${item.price}\n`;
-    });
+  }, [cart, compatibilityErrors, t]);const generateShareBuildText = () => {
+    let text = `⚡ *${t.shareBuildTitle} - EngineerPCs*\n\n🎯 *${t.expectedPerf}:*\n${expectedPerformance}\n\n⚡ *${t.estWattage}:* ~${wattageInfo.estimated}W ${wattageInfo.psu ? `(PSU: ${wattageInfo.psu}W)` : ''}\n\n📦 *Parts Included:*\n`;
+    cart.forEach(item => text += `▪️ ${item.name} - $${item.price}\n`);
     text += `\n💰 *Total Price: $${cartTotal.toFixed(2)}*`;
     return text;
   };
 
-  const handleShareBuildWhatsApp = () => {
-    const encoded = encodeURIComponent(generateShareBuildText());
-    window.open(`https://wa.me/?text=${encoded}`, '_blank');
-  };
-
-  const handleCopyShareText = () => {
-    navigator.clipboard.writeText(generateShareBuildText());
-    showToast(lang === 'ar' ? 'تم نسخ التجميعة إلى الحافظة! 📋' : 'Build summary copied to clipboard! 📋');
-  };
-
-  const openDetailModal = (product) => {
-    setSelectedProduct(product);
-    const firstImg = product.image ? product.image.split(',')[0].trim() : '/images/default.jpg';
-    setActiveImage(firstImg);
-  };
-
-  const startSelectingPart = (category) => {
-    setActiveCategory(category);
-    setSelectingFor(category);
-    setIsDrawerOpen(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
+  const handleShareBuildWhatsApp = () => window.open(`https://wa.me/?text=${encodeURIComponent(generateShareBuildText())}`, '_blank');
+  const handleCopyShareText = () => { navigator.clipboard.writeText(generateShareBuildText()); showToast(lang === 'ar' ? 'تم نسخ التجميعة إلى الحافظة! 📋' : 'Build summary copied to clipboard! 📋'); };
+  const openDetailModal = (product) => { setSelectedProduct(product); setActiveImage(product.image ? product.image.split(',')[0].trim() : '/images/default.jpg'); };
+  const startSelectingPart = (category) => { setActiveCategory(category); setSelectingFor(category); setIsDrawerOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  
   const submitOrder = (e) => {
     e.preventDefault(); 
     if (paymentMethod === 'card') {
       showToast('Redirecting to Secure Payment Gateway...');
       return; 
     }
-    let message = `*🌟 NEW ORDER FROM WEBSITE 🌟*\n\n`;
-    message += `*Customer Details:*\n`;
-    message += `👤 Name: ${customerInfo.name}\n`;
-    message += `📞 Phone: ${customerInfo.phone}\n`;
-    message += `🏠 Address: ${customerInfo.address}\n\n`;
-    message += `*Order Items:*\n`;
-    cart.forEach(item => {
-      message += `▪️ ${item.quantity}x ${item.name} - $${item.price * item.quantity}\n`;
-    });
+    let message = `*🌟 NEW ORDER FROM WEBSITE 🌟*\n\n*Customer Details:*\n👤 Name: ${customerInfo.name}\n📞 Phone: ${customerInfo.phone}\n🏠 Address: ${customerInfo.address}\n\n*Order Items:*\n`;
+    cart.forEach(item => message += `▪️ ${item.quantity}x ${item.name} - $${item.price * item.quantity}\n`);
     message += `\n*💰 Total Due: $${cartTotal.toFixed(2)}*`;
-
-    const encodedMessage = encodeURIComponent(message);
-    window.open(`https://wa.me/963946508988?text=${encodedMessage}`, '_blank');
+    window.open(`https://wa.me/963946508988?text=${encodeURIComponent(message)}`, '_blank');
   };
 
-  // HELPER: Renders the Pill-Style Spec Grid for Detailed View
   const renderProductSpecs = (item) => {
     const s = item.specs || {};
     const cat = item.category;
@@ -611,8 +551,7 @@ const staticInventory = [
       </div>
     );
 
-    if (cat === 'CPUs') {
-      return (
+    if (cat === 'CPUs') return (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full">
           <SpecBox label="Core Count" val={s.cores || '8'} />
           <SpecBox label="Core Clock" val={s.clock || '4.2 GHz'} />
@@ -621,9 +560,8 @@ const staticInventory = [
           <SpecBox label="TDP" val={s.tdp || '120 W'} />
           <SpecBox label="iGPU" val={s.igpu || 'Radeon'} />
         </div>
-      );
-    } else if (cat === 'GPUs') {
-      return (
+    );
+    if (cat === 'GPUs') return (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full">
           <SpecBox label="Chipset" val={s.chipset || 'RTX 5070'} />
           <SpecBox label="Memory (VRAM)" val={s.memory || '12 GB'} />
@@ -632,9 +570,8 @@ const staticInventory = [
           <SpecBox label="Color" val={s.color || 'Black'} />
           <SpecBox label="Length" val={s.length || '282 mm'} />
         </div>
-      );
-    } else if (cat === 'Motherboards') {
-      return (
+    );
+    if (cat === 'Motherboards') return (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full">
           <SpecBox label="Socket" val={s.socket || 'AM5'} />
           <SpecBox label="Form Factor" val={s.formFactor || 'Micro ATX'} />
@@ -642,9 +579,8 @@ const staticInventory = [
           <SpecBox label="Memory Max" val={s.memoryMax || '256 GB'} />
           <SpecBox label="Color" val={s.color || 'Black'} />
         </div>
-      );
-    } else if (cat === 'RAM') {
-      return (
+    );
+    if (cat === 'RAM') return (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full">
           <SpecBox label="Speed" val={s.speed || 'DDR5-6000'} />
           <SpecBox label="Modules" val={s.modules || '2 x 16GB'} />
@@ -652,18 +588,16 @@ const staticInventory = [
           <SpecBox label="First Word Lat." val={s.latency || '10 ns'} />
           <SpecBox label="Color" val={s.color || 'Black'} />
         </div>
-      );
-    } else if (cat === 'Storage') {
-      return (
+    );
+    if (cat === 'Storage') return (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full">
           <SpecBox label="Capacity" val={s.capacity || '1 TB'} />
           <SpecBox label="Type" val={s.type || 'SSD'} />
           <SpecBox label="Form Factor" val={s.formFactor || 'M.2-2280'} />
           <SpecBox label="Interface" val={s.interface || 'M.2 PCIe 4.0 X4'} />
         </div>
-      );
-    } else if (cat === 'Power Supplies') {
-      return (
+    );
+    if (cat === 'Power Supplies') return (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full">
           <SpecBox label="Type" val={s.type || 'ATX'} />
           <SpecBox label="Efficiency" val={s.efficiency || '80+ Gold'} />
@@ -671,9 +605,8 @@ const staticInventory = [
           <SpecBox label="Modular" val={s.modular || 'Full'} />
           <SpecBox label="Color" val={s.color || 'Black'} />
         </div>
-      );
-    } else if (cat === 'Monitors') {
-      return (
+    );
+    if (cat === 'Monitors') return (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full">
           <SpecBox label="Screen Size" val={s.size || '27.0"'} />
           <SpecBox label="Resolution" val={s.resolution || '2560 x 1440'} />
@@ -682,45 +615,34 @@ const staticInventory = [
           <SpecBox label="Panel Type" val={s.panel || 'IPS'} />
           <SpecBox label="Aspect Ratio" val={s.aspect || '16:9'} />
         </div>
-      );
-    } else if (cat === 'PC Cases') {
-      return (
+    );
+    if (cat === 'PC Cases') return (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full">
           <SpecBox label="Type" val={s.type || 'ATX Mid Tower'} />
           <SpecBox label="Color" val={s.color || 'Black'} />
           <SpecBox label="Side Panel" val={s.sidePanel || 'Tempered Glass'} />
           <SpecBox label="External Vol." val={s.volume || '45.0 L'} />
         </div>
-      );
-    } else if (cat === 'Liquid & Air Cooling') {
-      return (
+    );
+    if (cat === 'Liquid & Air Cooling') return (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full">
           <SpecBox label="Fan RPM" val={s.rpm || '1550 RPM'} />
           <SpecBox label="Noise Level" val={s.noise || '25.6 dB'} />
           <SpecBox label="Radiator Size" val={s.radSize || '360 mm'} />
           <SpecBox label="Color" val={s.color || 'Black'} />
         </div>
-      );
-    }
-
-    return (
-      <p className="text-xs text-gray-500 mt-2">
-        {item.description || `Official ${item.category} component verified by EngineerPCs.`}
-      </p>
     );
-  };
 
-  return (
+    return <p className="text-xs text-gray-500 mt-2">{item.description || `Official ${item.category} component verified by EngineerPCs.`}</p>;
+  };return (
     <div className="min-h-screen bg-gray-50 font-sans pb-24 md:pb-0 relative" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       
-      {/* FLOATING TOAST NOTIFICATION */}
       {toastMessage && (
         <div className="fixed top-16 left-1/2 transform -translate-x-1/2 z-50 bg-gray-900 text-white px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 border border-yellow-400 text-xs md:text-sm font-semibold animate-bounce">
           <span className="text-yellow-400">✨</span> {toastMessage}
         </div>
       )}
 
-      {/* FLOATING COMPARE BUTTON */}
       {compareItems.length > 0 && (
         <div className="fixed bottom-24 md:bottom-8 right-4 z-40 animate-bounce">
           <button onClick={() => setIsCompareModalOpen(true)} className="bg-blue-600 text-white font-black px-6 py-3 rounded-full shadow-2xl border-2 border-white flex items-center gap-2 transition hover:bg-blue-700 active:scale-95 cursor-pointer">
@@ -729,87 +651,55 @@ const staticInventory = [
         </div>
       )}
 
-      {/* STICKY SELECTION BANNER */}
       {selectingFor && (
         <div className="bg-blue-600 text-white p-3 sticky top-[68px] md:top-[76px] z-30 shadow-md flex justify-between items-center px-4 md:px-6">
           <span className="text-xs md:text-sm font-bold flex items-center gap-2">
             <span className="animate-pulse text-lg">🔍</span> {t.selectPartPrefix} <span className="text-yellow-300 underline underline-offset-4">{t.categories[selectingFor] || selectingFor}</span> {t.selectPartSuffix}
           </span>
           <div className="flex gap-2">
-            <button 
-              onClick={() => { setSelectingFor(null); setIsDrawerOpen(true); setDrawerView('builder'); }} 
-              className="bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-md text-xs font-bold transition cursor-pointer shadow-sm border border-blue-400/50 whitespace-nowrap"
-            >
-              {t.backToBuilder}
-            </button>
+            <button onClick={() => { setSelectingFor(null); setIsDrawerOpen(true); setDrawerView('builder'); }} className="bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-md text-xs font-bold transition cursor-pointer shadow-sm border border-blue-400/50 whitespace-nowrap">{t.backToBuilder}</button>
             <button onClick={() => setSelectingFor(null)} className="text-white hover:text-gray-200 px-2 font-bold cursor-pointer text-lg leading-none">✕</button>
           </div>
         </div>
       )}
 
-      {/* 1. TOP UTILITY BAR */}
       <div className="bg-gray-900 text-gray-300 text-[11px] md:text-xs py-2 px-3 md:px-6 flex justify-between items-center z-50 relative border-b border-gray-800">
         <span className="font-semibold tracking-wide flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
           {t.proBuilders}
         </span>
-
         <div className="flex gap-3 md:gap-6 items-center">
-          <button 
-            onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
-            className="hover:text-yellow-400 text-white font-bold flex items-center gap-1.5 transition text-xs bg-gray-800 hover:bg-gray-700 px-2.5 py-1 rounded-full border border-gray-700 cursor-pointer shadow-sm"
-          >
+          <button onClick={() => setLang(lang === 'en' ? 'ar' : 'en')} className="hover:text-yellow-400 text-white font-bold flex items-center gap-1.5 transition text-xs bg-gray-800 hover:bg-gray-700 px-2.5 py-1 rounded-full border border-gray-700 cursor-pointer shadow-sm">
             <span>🌐</span> {lang === 'en' ? 'العربية' : 'English'}
           </button>
-
           <a href="https://www.instagram.com/engineer_pcs?igsh=MXA3aTJmZWFmajZsdg==" target="_blank" rel="noreferrer" className="hover:text-white flex items-center gap-1.5 transition font-semibold group">
-            <svg className="w-3.5 h-3.5 fill-pink-500 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
-              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-            </svg>
-            Instagram
-          </a>
-
-          <a href="https://wa.me/963946508988" target="_blank" rel="noreferrer" className="hover:text-white flex items-center gap-1.5 transition font-semibold group">
-            <svg className="w-3.5 h-3.5 fill-green-400 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
-              <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
-            </svg>
-            WhatsApp
+            <svg className="w-3.5 h-3.5 fill-pink-500 group-hover:scale-110 transition-transform" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg> WhatsApp
           </a>
         </div>
       </div>
 
-      {/* HERO BANNER SECTION */}
       <HeroBanner onSelectCategory={(cat) => setActiveCategory(cat)} />
 
-      {/* 3. CATEGORY NAVIGATION MENU */}
       <nav className="bg-[#232F3E] text-white text-sm py-2 px-2 md:px-4 shadow-md overflow-x-auto whitespace-nowrap hide-scrollbar">
         <div className="max-w-7xl mx-auto flex gap-4 md:gap-6 px-2">
           {categories.map((category) => (
-            <button 
-              key={category}
-              onClick={() => setActiveCategory(category)}
-              className={`transition-all pb-1 border-b-2 text-sm md:text-base cursor-pointer ${
-                activeCategory === category ? 'border-yellow-400 text-yellow-400 font-bold' : 'border-transparent hover:border-gray-300 text-gray-300'
-              }`}
-            >
+            <button key={category} onClick={() => setActiveCategory(category)} className={`transition-all pb-1 border-b-2 text-sm md:text-base cursor-pointer ${activeCategory === category ? 'border-yellow-400 text-yellow-400 font-bold' : 'border-transparent hover:border-gray-300 text-gray-300'}`}>
               {t.categories[category] || category}
             </button>
           ))}
         </div>
-      </nav>{/* 4. MAIN PRODUCT DISPLAY HEADER & SIDEBAR FILTERS */}
+      </nav>
+
       <main className="max-w-7xl mx-auto p-3 md:p-6 flex flex-col lg:flex-row gap-6">
         
-        {/* SIDEBAR FILTER */}
         <aside className="hidden lg:block w-64 shrink-0 space-y-6 pt-4">
           <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 sticky top-24">
             <h3 className="font-black text-gray-900 mb-5 border-b pb-3 flex items-center gap-2"><span>⚙️</span> {t.filters}</h3>
-            
             <div className="space-y-5">
               <div>
                 <div className="text-xs font-bold text-gray-500 uppercase mb-2">Availability</div>
                 <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer"><input type="checkbox" className="w-4 h-4 rounded accent-blue-600 cursor-pointer" /> In Stock Only</label>
               </div>
-
               {activeCategory !== 'All' ? (
                 <>
                   <div>
@@ -838,15 +728,12 @@ const staticInventory = [
             <h2 className="text-lg md:text-2xl font-bold text-gray-800">
               {searchQuery ? `${t.search} "${searchQuery}"` : (t.categories[activeCategory] || activeCategory)}
             </h2>
-            
             <div className="flex items-center justify-between sm:justify-end gap-3 flex-wrap">
               <div className="flex bg-gray-200 p-1 rounded-lg border border-gray-300">
                 <button onClick={() => setViewMode('list')} className={`px-3 py-1 rounded-md text-xs font-bold transition cursor-pointer ${viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600'}`}>{t.viewList}</button>
                 <button onClick={() => setViewMode('grid')} className={`px-3 py-1 rounded-md text-xs font-bold transition cursor-pointer ${viewMode === 'grid' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600'}`}>{t.viewGrid}</button>
               </div>
-
               <span className="text-xs md:text-sm text-gray-500 font-medium">{filteredInventory.length} {t.items}</span>
-
               <div className="flex items-center gap-1.5 bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 shadow-sm">
                 <span className="text-xs text-gray-500 font-medium">{t.sort}</span>
                 <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-transparent text-xs md:text-sm font-semibold text-gray-800 outline-none cursor-pointer">
@@ -855,7 +742,6 @@ const staticInventory = [
                   <option value="high-low">{t.highToLow}</option>
                 </select>
               </div>
-
               {(activeCategory !== 'All' || searchQuery) && (
                 <button onClick={() => { setActiveCategory('All'); setSearchQuery(''); }} className="text-xs bg-yellow-100 hover:bg-yellow-200 text-yellow-800 px-2.5 py-1.5 rounded-lg font-semibold transition cursor-pointer">{t.reset}</button>
               )}
@@ -865,8 +751,6 @@ const staticInventory = [
           {filteredInventory.length === 0 ? (
             <div className="text-center text-gray-500 py-20 text-lg md:text-xl">{t.noProducts}</div>
           ) : viewMode === 'list' ? (
-            
-            /* DETAILED LIST VIEW WITH SWIPEABLE CAROUSEL & PILL SPECS */
             <div className="space-y-4 md:space-y-6">
               {filteredInventory.map(item => {
                 const qty = getItemQuantity(item.id);
@@ -876,23 +760,13 @@ const staticInventory = [
                 return (
                   <ScrollFadeItem key={item.id}>
                     <div className="bg-white rounded-2xl p-4 md:p-6 border border-gray-200 shadow-sm hover:shadow-md transition flex flex-col gap-4 relative">
-                      
-                      {/* Compare Checkbox */}
                       <div className="absolute top-4 left-4 z-20 bg-white/90 p-1.5 rounded-lg shadow-sm backdrop-blur">
                         <input type="checkbox" className="w-4 h-4 cursor-pointer accent-blue-600" checked={compareItems.some(i => i.id === item.id)} onChange={(e) => { e.stopPropagation(); handleToggleCompare(item); }} title="Compare this item" />
                       </div>
-
-                      {/* IMAGE CAROUSEL (TOP) */}
                       <div className="flex overflow-x-auto snap-x snap-mandatory gap-3 pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                         {images.map((img, idx) => (
                           <div key={idx} className="w-[85%] sm:w-[45%] md:w-[30%] shrink-0 snap-start relative border border-gray-100 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center p-2">
-                            <img 
-                              src={img} 
-                              alt={`${item.name} - View ${idx + 1}`} 
-                              className="h-40 md:h-56 w-full object-contain cursor-pointer hover:scale-105 transition-transform"
-                              onClick={() => openDetailModal(item)}
-                              onError={(e) => { e.target.src = 'https://via.placeholder.com/300?text=PC+Component'; }}
-                            />
+                            <img src={img} alt={`${item.name} - View ${idx + 1}`} className="h-40 md:h-56 w-full object-contain cursor-pointer hover:scale-105 transition-transform" onClick={() => openDetailModal(item)} onError={(e) => { e.target.src = 'https://via.placeholder.com/300?text=PC+Component'; }}/>
                             {isOutOfStock && idx === 0 && (
                               <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center z-10 pointer-events-none">
                                 <span className="bg-red-600 text-white font-black text-xs uppercase tracking-widest px-3 py-1.5 rounded-md shadow-lg">{t.outOfStockBadge}</span>
@@ -901,33 +775,18 @@ const staticInventory = [
                           </div>
                         ))}
                       </div>
-
-                      {/* INFO SECTION */}
                       <div className="flex flex-col">
                         <span className="text-[10px] md:text-xs font-black text-blue-600 uppercase tracking-widest mb-1 pl-10 md:pl-0">{t.categories[item.category] || item.category}</span>
-                        <h3 className="font-extrabold text-gray-900 text-base md:text-xl leading-snug cursor-pointer hover:text-blue-600 transition" onClick={() => openDetailModal(item)}>
-                          {item.name}
-                        </h3>
-                        
-                        <div className="flex items-center gap-1 text-xs text-yellow-500 font-bold mt-1.5">
-                          ★★★★★ <span className="text-gray-400 text-[10px] font-medium">(48)</span>
-                        </div>
-
+                        <h3 className="font-extrabold text-gray-900 text-base md:text-xl leading-snug cursor-pointer hover:text-blue-600 transition" onClick={() => openDetailModal(item)}>{item.name}</h3>
+                        <div className="flex items-center gap-1 text-xs text-yellow-500 font-bold mt-1.5">★★★★★ <span className="text-gray-400 text-[10px] font-medium">(48)</span></div>
                         {renderProductSpecs(item)}
                       </div>
-
-                      {/* FOOTER SECTION */}
                       <div className="flex items-center justify-between border-t border-gray-100 pt-4 mt-2">
                         <div className="text-2xl md:text-3xl font-black text-gray-900">${item.price}</div>
-                        
                         {isOutOfStock ? (
-                          <button onClick={(e) => { e.stopPropagation(); setNotifyModalOpen(true); }} className="bg-gray-800 hover:bg-gray-900 text-white font-bold px-4 md:px-6 py-2.5 rounded-xl text-sm shadow-md transition cursor-pointer flex items-center gap-2">
-                            {t.notifyMe}
-                          </button>
+                          <button onClick={(e) => { e.stopPropagation(); setNotifyModalOpen(true); }} className="bg-gray-800 hover:bg-gray-900 text-white font-bold px-4 md:px-6 py-2.5 rounded-xl text-sm shadow-md transition cursor-pointer flex items-center gap-2">{t.notifyMe}</button>
                         ) : qty === 0 ? (
-                          <button onClick={() => addToCart(item)} className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-extrabold px-6 md:px-8 py-2.5 md:py-3 rounded-xl text-sm shadow-md transition transform active:scale-95 cursor-pointer flex items-center gap-2">
-                            + {t.add}
-                          </button>
+                          <button onClick={() => addToCart(item)} className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-extrabold px-6 md:px-8 py-2.5 md:py-3 rounded-xl text-sm shadow-md transition transform active:scale-95 cursor-pointer flex items-center gap-2">+ {t.add}</button>
                         ) : (
                           <div className="flex items-center bg-gray-100 rounded-xl border border-gray-300 p-1 shadow-inner h-10 md:h-12">
                             <button onClick={() => updateQuantity(item.id, -1)} className="bg-white hover:bg-gray-200 text-black font-bold h-full w-10 md:w-12 rounded-lg flex items-center justify-center text-sm shadow-sm cursor-pointer transition">-</button>
@@ -941,10 +800,7 @@ const staticInventory = [
                 );
               })}
             </div>
-
           ) : (
-
-            /* CLASSIC GRID VIEW */
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
               {filteredInventory.map((item) => {
                 const qty = getItemQuantity(item.id);
@@ -954,11 +810,9 @@ const staticInventory = [
                 return (
                   <ScrollFadeItem key={item.id}>
                     <div className={`group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col h-full overflow-hidden relative ${isOutOfStock ? 'opacity-75' : ''}`}>
-                      
                       <div className="absolute top-2 left-2 z-30 bg-white/90 p-1 rounded shadow-sm backdrop-blur">
                         <input type="checkbox" className="w-4 h-4 cursor-pointer accent-blue-600" checked={compareItems.some(i => i.id === item.id)} onChange={(e) => { e.stopPropagation(); handleToggleCompare(item); }} />
                       </div>
-
                       <div onClick={() => openDetailModal(item)} className="h-32 md:h-56 bg-gray-50 flex items-center justify-center p-2 md:p-4 relative overflow-hidden cursor-pointer">
                         {isOutOfStock && (
                           <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px] flex items-center justify-center z-20">
@@ -967,14 +821,11 @@ const staticInventory = [
                         )}
                         <img src={firstImage} alt={item.name} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" onError={(e) => { e.target.src = 'https://via.placeholder.com/300?text=PC+Component'; }} />
                       </div>
-
                       <div className="p-3 md:p-5 flex flex-col flex-1">
                         <span className="text-[10px] md:text-xs font-bold text-blue-500 uppercase tracking-wider mb-1 line-clamp-1 pl-6 md:pl-0">{t.categories[item.category] || item.category}</span>
                         <h3 onClick={() => openDetailModal(item)} className="text-gray-900 font-semibold text-xs md:text-sm line-clamp-2 mb-2 md:mb-3 cursor-pointer hover:text-blue-600 transition">{item.name}</h3>
-                        
                         <div className="mt-auto flex items-center justify-between gap-2">
                           <div className="text-base md:text-xl font-black text-gray-900">${item.price}</div>
-                          
                           {isOutOfStock ? (
                             <button onClick={(e) => { e.stopPropagation(); setNotifyModalOpen(true); }} className="bg-gray-800 text-white font-bold px-2 py-1 rounded-lg text-xs cursor-pointer">{t.notifyMe}</button>
                           ) : qty === 0 ? (
@@ -995,26 +846,31 @@ const staticInventory = [
             </div>
           )}
         </div>
-      </main>{/* MOBILE-ONLY STICKY BOTTOM BAR */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-md border-t border-gray-800 p-2.5 px-4 flex justify-between items-center z-40 shadow-[0_-10px_25px_rgba(0,0,0,0.5)] gap-3">
-        <button onClick={() => { setDrawerView('builder'); setIsDrawerOpen(true); }} className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-bold text-xs transition-all shadow-md active:scale-95 cursor-pointer border ${buildStatus.isComplete ? 'bg-green-500/20 text-green-400 border-green-500/40 shadow-[0_0_15px_rgba(34,197,94,0.15)]' : 'bg-gray-800 hover:bg-gray-700 text-white border-gray-700'}`}>
-          <span className="text-base">{buildStatus.isComplete ? '✅' : '🛠️'}</span>
-          <div className="flex flex-col items-start leading-tight">
-            <span className="text-[9px] uppercase font-black tracking-wider text-gray-400">{t.system}</span>
-            <span className="font-extrabold">{buildStatus.isComplete ? t.buildReady : t.buildPc}</span>
-          </div>
+      </main>{/* 🌟 NEW: MOBILE FLOATING CIRCULAR ACTION BUTTONS */}
+      <div className="md:hidden fixed bottom-6 left-0 right-0 px-4 flex justify-between items-end z-40 pointer-events-none">
+        
+        {/* Left Side: PC Builder Button */}
+        <button 
+          onClick={() => { setDrawerView('builder'); setIsDrawerOpen(true); }} 
+          className={`pointer-events-auto h-16 w-16 rounded-full shadow-2xl flex items-center justify-center text-2xl transition-transform active:scale-90 border-4 border-white ${buildStatus.isComplete ? 'bg-green-500 text-white' : 'bg-gray-900 text-white'}`}
+          title={t.pcBuilder}
+        >
+          {buildStatus.isComplete ? '✅' : '🛠️'}
         </button>
 
-        <button onClick={() => { setDrawerView('cart'); setIsDrawerOpen(true); }} className="flex-1 bg-yellow-400 hover:bg-yellow-500 active:bg-yellow-600 text-black font-black py-2.5 px-3 rounded-xl text-xs shadow-[0_0_20px_rgba(250,204,21,0.25)] flex items-center justify-center gap-2.5 transition-all active:scale-95 cursor-pointer">
-          <div className="relative flex items-center justify-center">
-            <span className="text-base">🛒</span>
-            {cartCount > 0 && <span className="absolute -top-1.5 -right-2.5 bg-black text-yellow-400 text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border border-yellow-400">{cartCount}</span>}
-          </div>
-          <div className="flex flex-col items-start leading-tight">
-            <span className="text-[9px] uppercase font-black text-black/70 tracking-wider">{t.total}</span>
-            <span className="font-black text-sm">${cartTotal.toFixed(2)}</span>
-          </div>
-        </button>
+        {/* Right Side: Cart Button (ONLY SHOWS IF ITEMS ARE IN CART) */}
+        {cartCount > 0 && (
+          <button 
+            onClick={() => { setDrawerView('cart'); setIsDrawerOpen(true); }} 
+            className="pointer-events-auto h-16 w-16 bg-yellow-400 text-black rounded-full shadow-2xl flex items-center justify-center text-2xl transition-transform active:scale-90 border-4 border-white relative"
+            title={t.yourCart}
+          >
+            🛒
+            <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-black w-6 h-6 rounded-full flex items-center justify-center border-2 border-white shadow">
+              {cartCount}
+            </span>
+          </button>
+        )}
       </div>
 
       {/* COMPARE MODAL */}
@@ -1091,34 +947,19 @@ const staticInventory = [
               {/* BUILDER VIEW */}
               {drawerView === 'builder' && (
                 <div className="space-y-4 pb-20 md:pb-0">
-                  
-                  {/* Performance & Wattage Meter Panel */}
                   <div className="bg-gray-900 text-white p-4 rounded-2xl shadow-lg space-y-3 border border-gray-800">
                     <div className="flex justify-between items-center border-b border-gray-800 pb-2">
                       <span className="text-xs font-extrabold text-yellow-400 uppercase tracking-widest">{t.expectedPerf}</span>
-                      
-                      {/* Save Build Button */}
-                      <button onClick={() => setDrawerView('auth')} className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-black px-3 py-1.5 rounded-lg transition shadow-sm cursor-pointer">
-                        {t.saveBuild}
-                      </button>
+                      <button onClick={() => setDrawerView('auth')} className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-black px-3 py-1.5 rounded-lg transition shadow-sm cursor-pointer">{t.saveBuild}</button>
                     </div>
-
-                    <p className="text-xs md:text-sm font-semibold text-gray-200 leading-snug">
-                      {expectedPerformance}
-                    </p>
-
+                    <p className="text-xs md:text-sm font-semibold text-gray-200 leading-snug">{expectedPerformance}</p>
                     <div className="pt-1">
                       <div className="flex justify-between text-[11px] font-bold mb-1">
                         <span className="text-gray-400">{t.estWattage}: <span className="text-white font-black">~{wattageInfo.estimated}W</span></span>
-                        <span className={wattageInfo.psu >= wattageInfo.estimated ? "text-green-400 font-black" : "text-red-400 font-black"}>
-                          {t.psuCapacity}: {wattageInfo.psu ? `${wattageInfo.psu}W` : 'None'}
-                        </span>
+                        <span className={wattageInfo.psu >= wattageInfo.estimated ? "text-green-400 font-black" : "text-red-400 font-black"}>{t.psuCapacity}: {wattageInfo.psu ? `${wattageInfo.psu}W` : 'None'}</span>
                       </div>
                       <div className="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
-                        <div 
-                          className={`h-2 rounded-full transition-all duration-500 ${wattageInfo.psu === 0 ? 'bg-yellow-400' : wattageInfo.estimated > wattageInfo.psu ? 'bg-red-500' : 'bg-green-400'}`} 
-                          style={{ width: `${Math.min(100, wattageInfo.psu ? (wattageInfo.estimated / wattageInfo.psu) * 100 : 50)}%` }}
-                        ></div>
+                        <div className={`h-2 rounded-full transition-all duration-500 ${wattageInfo.psu === 0 ? 'bg-yellow-400' : wattageInfo.estimated > wattageInfo.psu ? 'bg-red-500' : 'bg-green-400'}`} style={{ width: `${Math.min(100, wattageInfo.psu ? (wattageInfo.estimated / wattageInfo.psu) * 100 : 50)}%` }}></div>
                       </div>
                     </div>
                   </div>
@@ -1127,10 +968,7 @@ const staticInventory = [
                     <div className="space-y-2">
                       {compatibilityErrors.map(err => (
                         <div key={err.id} className="bg-red-500/10 border-2 border-red-500/50 p-3 rounded-xl flex items-center justify-between gap-2 shadow-sm animate-pulse">
-                          <div className="flex items-start gap-2">
-                            <span className="text-lg">🚨</span>
-                            <p className="text-xs text-red-700 font-bold leading-tight">{lang === 'ar' ? err.messageAr : err.messageEn}</p>
-                          </div>
+                          <div className="flex items-start gap-2"><span className="text-lg">🚨</span><p className="text-xs text-red-700 font-bold leading-tight">{lang === 'ar' ? err.messageAr : err.messageEn}</p></div>
                           <button onClick={() => startSelectingPart(err.categoryTarget)} className="bg-green-500 hover:bg-green-600 text-white font-extrabold text-xs px-3 py-1.5 rounded-lg shadow cursor-pointer">{t.fixBtn}</button>
                         </div>
                       ))}
@@ -1166,7 +1004,6 @@ const staticInventory = [
                             </div>
                             {!isAdded && <button onClick={() => startSelectingPart(part.key)} className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-md font-bold transition shadow-sm cursor-pointer">{t.choose}</button>}
                           </div>
-
                           {isAdded && (
                             <div className="mt-2 ml-10 pl-3 border-l-2 border-green-300 flex items-center justify-between gap-3">
                               <div className="flex items-center gap-3 overflow-hidden">
@@ -1187,16 +1024,13 @@ const staticInventory = [
                     })}
                   </div>
                 </div>
-              )}
-
-              {/* CART VIEW */}
+              )}{/* CART VIEW */}
               {drawerView === 'cart' && (
                 <div className="space-y-3 md:space-y-4 pb-20 md:pb-0">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-xs font-bold text-gray-500">{cart.length} {t.items}</span>
                     <button onClick={() => setIsShareModalOpen(true)} className="text-xs bg-gray-800 hover:bg-gray-900 text-yellow-400 font-bold px-3 py-1 rounded-lg transition cursor-pointer">{t.shareCartBtn}</button>
                   </div>
-
                   {cart.length === 0 ? (
                     <div className="text-center text-gray-500 mt-20 flex flex-col items-center">
                       <span className="text-5xl md:text-6xl mb-4">🪹</span>
