@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
+import HeroBanner from './HeroBanner';
 
 // Categories matching uploaded PDF inventory & new images
 const categories = [
@@ -19,7 +20,7 @@ const categories = [
   'Chairs & Accessories'
 ];
 
-// PC Builder Checklist Definition (with strictly required parts and realistic hardware SVGs)
+// PC Builder Checklist Definition (with clean SVG Icons for the Part Picker feel)
 const requiredParts = [
   { 
     key: 'CPUs', 
@@ -456,79 +457,8 @@ export default function Storefront() {
         </div>
       </div>
 
-      {/* 2. MAIN NAVBAR */}
-      <header className="bg-[#131921] text-white p-3 md:p-4 sticky top-0 z-40 shadow-lg">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-3 md:gap-6">
-          
-          <div className="flex justify-between w-full md:w-auto items-center">
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight cursor-pointer hover:text-yellow-400 transition whitespace-nowrap">
-              Engineer<span className="text-yellow-500">PCs</span>
-            </h1>
-          </div>
-
-          {/* High-Contrast Search Bar */}
-          <div className="flex-1 w-full flex bg-white rounded-lg overflow-hidden border-2 border-transparent focus-within:border-yellow-500 transition-all shadow-md relative">
-            <select 
-              value={activeCategory} 
-              onChange={(e) => setActiveCategory(e.target.value)}
-              className="hidden md:block bg-gray-100 text-gray-800 font-medium px-3 outline-none text-sm cursor-pointer hover:bg-gray-200 border-r border-gray-300 transition-colors"
-            >
-              {categories.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-            <input 
-              type="text" 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white text-gray-900 placeholder-gray-500 px-4 py-2 md:py-2.5 outline-none text-sm md:text-base font-normal pr-10" 
-              placeholder="Search products..." 
-            />
-            {searchQuery && (
-              <button 
-                onClick={() => setSearchQuery('')}
-                className="absolute right-14 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 text-sm font-bold p-1 cursor-pointer"
-              >
-                ✕
-              </button>
-            )}
-            <button className="bg-[#FEBD69] hover:bg-[#F3A847] px-5 md:px-6 text-black font-bold text-lg md:text-xl transition-colors flex items-center justify-center cursor-pointer">
-              🔍
-            </button>
-          </div>
-
-          {/* Desktop Builder & Cart Buttons */}
-          <div className="hidden md:flex items-center gap-4">
-            <button 
-              onClick={() => { setDrawerView('builder'); setIsDrawerOpen(true); }}
-              className="flex items-center gap-3 bg-[#232F3E] hover:bg-gray-700 border border-transparent hover:border-white px-4 py-2 rounded-lg transition relative cursor-pointer whitespace-nowrap"
-            >
-              <span className="text-2xl">🛠️</span>
-              <div className="flex flex-col text-left">
-                <span className="text-xs text-gray-300 font-medium">PC Builder</span>
-                <span className={`font-bold text-sm ${buildStatus.isComplete ? 'text-green-400' : 'text-yellow-400'}`}>
-                  {buildStatus.isComplete ? 'Ready' : 'Incomplete'}
-                </span>
-              </div>
-            </button>
-
-            <button 
-              onClick={() => { setDrawerView('cart'); setIsDrawerOpen(true); }}
-              className="flex items-center gap-3 bg-[#232F3E] hover:bg-gray-700 border border-transparent hover:border-white px-4 py-2 rounded-lg transition relative cursor-pointer whitespace-nowrap"
-            >
-              <span className="text-2xl">🛒</span>
-              <div className="flex flex-col text-left">
-                <span className="text-xs text-gray-300 font-medium">My Cart</span>
-                <span className="font-bold text-yellow-400 text-sm">${cartTotal.toFixed(2)}</span>
-              </div>
-              {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full h-5 w-5 flex items-center justify-center font-bold text-xs shadow animate-pulse">
-                  {cartCount}
-                </span>
-              )}
-            </button>
-          </div>
-
-        </div>
-      </header>
+      {/* HERO BANNER SECTION */}
+      <HeroBanner onSelectCategory={(cat) => setActiveCategory(cat)} />
 
       {/* 3. CATEGORY NAVIGATION MENU */}
       <nav className="bg-[#232F3E] text-white text-sm py-2 px-2 md:px-4 shadow-md overflow-x-auto whitespace-nowrap hide-scrollbar">
