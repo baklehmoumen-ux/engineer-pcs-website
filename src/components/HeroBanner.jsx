@@ -72,15 +72,15 @@ export default function HeroBanner({ onSelectCategory }) {
       
       {/* Injecting foolproof keyframes directly into the component for continuous floating */}
       <style dangerouslySetInnerHTML={{__html: `
-        @keyframes float1 { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-12px) rotate(2deg); } }
-        @keyframes float2 { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(12px) rotate(-2deg); } }
-        @keyframes float3 { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-8px) rotate(-1deg); } }
+        @keyframes float1 { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-10px) rotate(2deg); } }
+        @keyframes float2 { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(10px) rotate(-2deg); } }
+        @keyframes float3 { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-6px) rotate(-1deg); } }
         .anim-float-1 { animation: float1 5s ease-in-out infinite; }
         .anim-float-2 { animation: float2 6s ease-in-out infinite; }
         .anim-float-3 { animation: float3 5.5s ease-in-out infinite; }
       `}} />
 
-      <div className="relative bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-3xl overflow-hidden shadow-2xl min-h-[400px] md:min-h-[480px] flex items-center border border-gray-800">
+      <div className="relative bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-3xl overflow-hidden shadow-2xl min-h-[460px] md:min-h-[480px] flex items-center border border-gray-800">
         
         {/* Background Ambient Glow */}
         <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-72 h-72 bg-yellow-500/10 blur-[100px] rounded-full pointer-events-none"></div>
@@ -97,75 +97,75 @@ export default function HeroBanner({ onSelectCategory }) {
                 isActive ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
               }`}
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 w-full p-6 md:p-12 items-center gap-8 h-full relative">
+              <div className="grid grid-cols-1 md:grid-cols-2 w-full p-6 md:p-12 items-center gap-4 md:gap-8 h-full relative">
                 
                 {/* LAYERED ANIMATED IMAGES (LEFT COLUMN) */}
-                <div className="relative h-[250px] md:h-full w-full flex items-center justify-center order-2 md:order-1">
+                <div className="relative h-[220px] sm:h-[260px] md:h-full w-full flex items-center justify-center order-2 md:order-1 mt-4 md:mt-0">
                   
-                  {/* Image 1 (Main/Top) - Slides down, pops in first (delay-100) */}
+                  {/* Image 1 (Main/Top) */}
                   {slide.image1 && (
-                    <div className={`absolute top-0 md:top-[5%] left-0 md:left-[5%] w-36 md:w-56 z-30 transition-all duration-1000 delay-100 ease-out transform ${isActive ? 'translate-y-0 opacity-100 scale-100' : '-translate-y-16 opacity-0 scale-95'}`}>
+                    <div className={`absolute top-0 md:top-[5%] left-[5%] md:left-[5%] w-28 sm:w-40 md:w-56 z-30 transition-all duration-1000 delay-100 ease-out transform ${isActive ? 'translate-y-0 opacity-100 scale-100' : '-translate-y-8 md:-translate-y-16 opacity-0 scale-95'}`}>
                       <div className="anim-float-1">
                         <img 
                           src={slide.image1} 
                           alt={slide.alt1} 
-                          className="w-full h-auto object-contain drop-shadow-[0_20px_25px_rgba(0,0,0,0.7)]" 
+                          className="w-full h-auto object-contain drop-shadow-[0_15px_20px_rgba(0,0,0,0.7)]" 
                           onError={(e) => { e.target.src = `https://via.placeholder.com/300x200?text=${encodeURIComponent(slide.alt1)}`; }} 
                         />
                       </div>
                     </div>
                   )}
 
-                  {/* Image 2 (Secondary/Middle) - Slides down, pops in second (delay-300) */}
+                  {/* Image 2 (Secondary/Middle) */}
                   {slide.image2 && (
-                    <div className={`absolute top-6 md:top-[12%] left-8 md:left-[15%] w-32 md:w-48 z-20 transition-all duration-1000 delay-300 ease-out transform ${isActive ? 'translate-y-0 opacity-100 scale-100' : '-translate-y-16 opacity-0 scale-95'}`}>
+                    <div className={`absolute top-4 sm:top-6 md:top-[12%] left-[20%] sm:left-[25%] md:left-[15%] w-24 sm:w-32 md:w-48 z-20 transition-all duration-1000 delay-300 ease-out transform ${isActive ? 'translate-y-0 opacity-100 scale-100' : '-translate-y-8 md:-translate-y-16 opacity-0 scale-95'}`}>
                       <div className="anim-float-2">
                         <img 
                           src={slide.image2} 
                           alt={slide.alt2} 
-                          className="w-full h-auto object-contain drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)] brightness-90" 
+                          className="w-full h-auto object-contain drop-shadow-[0_10px_15px_rgba(0,0,0,0.6)] brightness-90" 
                           onError={(e) => { e.target.src = `https://via.placeholder.com/300x200?text=${encodeURIComponent(slide.alt2)}`; }} 
                         />
                       </div>
                     </div>
                   )}
 
-                  {/* Image 3 (Tertiary/Back) - Slides down, pops in third (delay-500) */}
+                  {/* Image 3 (Tertiary/Back) */}
                   {slide.image3 && (
-                    <div className={`absolute top-12 md:top-[19%] left-16 md:left-[25%] w-28 md:w-40 z-10 transition-all duration-1000 delay-500 ease-out transform ${isActive ? 'translate-y-0 opacity-100 scale-100' : '-translate-y-16 opacity-0 scale-95'}`}>
+                    <div className={`absolute top-8 sm:top-12 md:top-[19%] left-[35%] sm:left-[40%] md:left-[25%] w-20 sm:w-28 md:w-40 z-10 transition-all duration-1000 delay-500 ease-out transform ${isActive ? 'translate-y-0 opacity-100 scale-100' : '-translate-y-8 md:-translate-y-16 opacity-0 scale-95'}`}>
                       <div className="anim-float-3">
                         <img 
                           src={slide.image3} 
                           alt={slide.alt3} 
-                          className="w-full h-auto object-contain drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] brightness-75" 
+                          className="w-full h-auto object-contain drop-shadow-[0_5px_10px_rgba(0,0,0,0.5)] brightness-75" 
                           onError={(e) => { e.target.src = `https://via.placeholder.com/300x200?text=${encodeURIComponent(slide.alt3)}`; }} 
                         />
                       </div>
                     </div>
                   )}
 
-                  {/* Image 4 (Bottom-Left) - Slides in after main images (delay-700) */}
+                  {/* Image 4 (Bottom-Left) */}
                   {slide.image4 && (
-                    <div className={`absolute bottom-4 md:bottom-[15%] left-0 md:left-[5%] w-36 md:w-56 z-40 transition-all duration-1000 delay-700 ease-out transform ${isActive ? 'translate-x-0 opacity-100 scale-100' : '-translate-x-16 opacity-0 scale-95'}`}>
+                    <div className={`absolute bottom-2 sm:bottom-4 md:bottom-[15%] left-0 md:left-[5%] w-28 sm:w-36 md:w-56 z-40 transition-all duration-1000 delay-700 ease-out transform ${isActive ? 'translate-x-0 opacity-100 scale-100' : '-translate-x-8 md:-translate-x-16 opacity-0 scale-95'}`}>
                       <div className="anim-float-2">
                         <img 
                           src={slide.image4} 
                           alt={slide.alt4} 
-                          className="w-full h-auto object-contain -rotate-6 drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)]" 
+                          className="w-full h-auto object-contain -rotate-6 drop-shadow-[0_10px_15px_rgba(0,0,0,0.6)]" 
                           onError={(e) => { e.target.src = `https://via.placeholder.com/200x150?text=${encodeURIComponent(slide.alt4)}`; }} 
                         />
                       </div>
                     </div>
                   )}
 
-                  {/* Image 5 (Bottom-Right) - Slides up last (delay-1000) */}
+                  {/* Image 5 (Bottom-Right) */}
                   {slide.image5 && (
-                    <div className={`absolute bottom-0 md:bottom-[5%] right-2 md:right-[15%] w-40 md:w-64 z-50 transition-all duration-1000 delay-1000 ease-out transform ${isActive ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-16 opacity-0 scale-95'}`}>
+                    <div className={`absolute bottom-0 md:bottom-[5%] right-0 md:right-[15%] w-32 sm:w-44 md:w-64 z-50 transition-all duration-1000 delay-1000 ease-out transform ${isActive ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-8 md:translate-y-16 opacity-0 scale-95'}`}>
                       <div className="anim-float-3">
                         <img 
                           src={slide.image5} 
                           alt={slide.alt5} 
-                          className="w-full h-auto object-contain rotate-3 drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)]" 
+                          className="w-full h-auto object-contain rotate-3 drop-shadow-[0_10px_15px_rgba(0,0,0,0.6)]" 
                           onError={(e) => { e.target.src = `https://via.placeholder.com/200x150?text=${encodeURIComponent(slide.alt5)}`; }} 
                         />
                       </div>
@@ -175,24 +175,24 @@ export default function HeroBanner({ onSelectCategory }) {
                 </div>
 
                 {/* TEXT & CTA CONTENT (RIGHT COLUMN) */}
-                <div className={`flex flex-col items-center md:items-start text-center md:text-left order-1 md:order-2 space-y-3 md:space-y-5 transition-all duration-1000 delay-200 ease-out transform ${isActive ? 'translate-x-0 opacity-100' : 'translate-x-12 opacity-0'}`}>
-                  <span className="text-xs md:text-sm font-black text-yellow-400 tracking-widest uppercase bg-yellow-400/10 px-4 py-1.5 rounded-full border border-yellow-400/20 shadow-[0_0_15px_rgba(250,204,21,0.2)]">
+                <div className={`flex flex-col items-center md:items-start text-center md:text-left order-1 md:order-2 space-y-2 md:space-y-4 transition-all duration-1000 delay-200 ease-out transform z-50 ${isActive ? 'translate-x-0 opacity-100' : 'translate-x-8 md:translate-x-12 opacity-0'}`}>
+                  <span className="text-[10px] md:text-sm font-black text-yellow-400 tracking-widest uppercase bg-yellow-400/10 px-3 md:px-4 py-1.5 rounded-full border border-yellow-400/20 shadow-[0_0_15px_rgba(250,204,21,0.2)]">
                     {slide.tag}
                   </span>
                   
-                  <h2 className="text-3xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight drop-shadow-lg">
+                  <h2 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight drop-shadow-lg">
                     {slide.title}
                   </h2>
 
-                  <p className="text-sm md:text-base font-medium text-gray-400 max-w-md">
+                  <p className="text-xs sm:text-sm md:text-base font-medium text-gray-400 max-w-md">
                     {slide.subtitle}
                   </p>
 
                   <button
                     onClick={() => onSelectCategory && onSelectCategory(slide.categoryTarget)}
-                    className="mt-4 bg-yellow-400 hover:bg-yellow-500 text-black font-extrabold px-8 py-3.5 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.3)] transition-all transform hover:scale-105 active:scale-95 cursor-pointer text-sm md:text-base flex items-center gap-2"
+                    className="mt-2 md:mt-4 bg-yellow-400 hover:bg-yellow-500 text-black font-extrabold px-6 md:px-8 py-2.5 md:py-3.5 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.3)] transition-all transform hover:scale-105 active:scale-95 cursor-pointer text-xs md:text-base flex items-center gap-2"
                   >
-                    {slide.buttonText} <span className="text-lg">→</span>
+                    {slide.buttonText} <span className="text-sm md:text-lg">→</span>
                   </button>
                 </div>
 
@@ -216,13 +216,13 @@ export default function HeroBanner({ onSelectCategory }) {
         </button>
 
         {/* SLIDE INDICATORS */}
-        <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-40">
+        <div className="absolute bottom-3 md:bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-40">
           {slides.map((_, idx) => (
             <button
               key={idx}
               onClick={() => setCurrentSlide(idx)}
               className={`h-1.5 md:h-2 rounded-full transition-all duration-500 cursor-pointer ${
-                currentSlide === idx ? 'w-8 md:w-10 bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.8)]' : 'w-2 md:w-3 bg-white/30 hover:bg-white/50'
+                currentSlide === idx ? 'w-6 md:w-10 bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.8)]' : 'w-2 md:w-3 bg-white/30 hover:bg-white/50'
               }`}
             />
           ))}
