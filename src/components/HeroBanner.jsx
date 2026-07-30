@@ -7,7 +7,7 @@ const slides = [
     id: 1,
     title: "Next-Level Performance",
     subtitle: "RTX Graphics · Fast Memory · Better Gaming",
-    tag: "GEFORCE RTX 40 SERIES",
+    tag: "GEFORCE RTX 50 SERIES",
     
     // GPUs
     image1: "https://dlcdnwebimgs.asus.com/gain/1604342F-835B-4F89-BDC9-9834AF558D5C/w1000/h732",
@@ -72,9 +72,9 @@ export default function HeroBanner({ onSelectCategory }) {
       
       {/* Injecting foolproof keyframes directly into the component for continuous floating */}
       <style dangerouslySetInnerHTML={{__html: `
-        @keyframes float1 { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-10px) rotate(2deg); } }
-        @keyframes float2 { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(10px) rotate(-2deg); } }
-        @keyframes float3 { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-6px) rotate(-1deg); } }
+        @keyframes float1 { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-10px) rotate(1deg); } }
+        @keyframes float2 { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(10px) rotate(-1deg); } }
+        @keyframes float3 { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-6px) rotate(0deg); } }
         .anim-float-1 { animation: float1 5s ease-in-out infinite; }
         .anim-float-2 { animation: float2 6s ease-in-out infinite; }
         .anim-float-3 { animation: float3 5.5s ease-in-out infinite; }
@@ -102,15 +102,15 @@ export default function HeroBanner({ onSelectCategory }) {
                 {/* LAYERED ANIMATED IMAGES (LEFT COLUMN) */}
                 <div className="relative h-[220px] sm:h-[260px] md:h-full w-full flex items-center justify-center order-2 md:order-1 mt-4 md:mt-0">
                   
-                  {/* Image 3 (Tertiary/Back GPU) - Pushed Top Left */}
+                  {/* Image 3 (Tertiary GPU) - Left Side */}
                   {slide.image3 && (
-                    <div className="absolute top-[0%] md:top-[2%] left-0 right-0 mx-auto mr-16 md:mr-32 w-24 sm:w-32 md:w-40 z-10 flex justify-center">
+                    <div className="absolute top-[5%] md:top-[12%] left-[2%] md:left-[5%] w-28 sm:w-36 md:w-44 z-10">
                       <div className={`w-full transition-all duration-1000 delay-500 ease-out transform ${isActive ? 'translate-y-0 opacity-100 scale-100' : '-translate-y-8 md:-translate-y-16 opacity-0 scale-95'}`}>
-                        <div className="anim-float-3 w-full flex justify-center">
+                        <div className="anim-float-3 w-full">
                           <img 
                             src={slide.image3} 
                             alt={slide.alt3} 
-                            className="w-full h-auto object-contain drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] brightness-75" 
+                            className="w-full h-auto object-contain drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)]" 
                             onError={(e) => { e.target.src = `https://via.placeholder.com/300x200?text=${encodeURIComponent(slide.alt3)}`; }} 
                           />
                         </div>
@@ -118,15 +118,15 @@ export default function HeroBanner({ onSelectCategory }) {
                     </div>
                   )}
 
-                  {/* Image 2 (Secondary/Middle GPU) - Pushed Middle Center */}
+                  {/* Image 2 (Secondary GPU) - Center */}
                   {slide.image2 && (
-                    <div className="absolute top-[8%] md:top-[12%] left-0 right-0 mx-auto mr-4 md:mr-8 w-28 sm:w-40 md:w-52 z-20 flex justify-center">
+                    <div className="absolute top-[5%] md:top-[12%] left-1/2 -translate-x-1/2 w-28 sm:w-36 md:w-44 z-20">
                       <div className={`w-full transition-all duration-1000 delay-300 ease-out transform ${isActive ? 'translate-y-0 opacity-100 scale-100' : '-translate-y-8 md:-translate-y-16 opacity-0 scale-95'}`}>
-                        <div className="anim-float-2 w-full flex justify-center">
+                        <div className="anim-float-2 w-full">
                           <img 
                             src={slide.image2} 
                             alt={slide.alt2} 
-                            className="w-full h-auto object-contain drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)] brightness-90" 
+                            className="w-full h-auto object-contain drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)]" 
                             onError={(e) => { e.target.src = `https://via.placeholder.com/300x200?text=${encodeURIComponent(slide.alt2)}`; }} 
                           />
                         </div>
@@ -134,15 +134,15 @@ export default function HeroBanner({ onSelectCategory }) {
                     </div>
                   )}
 
-                  {/* Image 1 (Main/Front GPU) - Pushed Bottom Right */}
+                  {/* Image 1 (Main GPU) - Right Side */}
                   {slide.image1 && (
-                    <div className="absolute top-[16%] md:top-[22%] left-0 right-0 mx-auto ml-12 md:ml-20 w-36 sm:w-48 md:w-64 z-30 flex justify-center">
+                    <div className="absolute top-[5%] md:top-[12%] right-[2%] md:right-[5%] w-28 sm:w-36 md:w-44 z-30">
                       <div className={`w-full transition-all duration-1000 delay-100 ease-out transform ${isActive ? 'translate-y-0 opacity-100 scale-100' : '-translate-y-8 md:-translate-y-16 opacity-0 scale-95'}`}>
-                        <div className="anim-float-1 w-full flex justify-center">
+                        <div className="anim-float-1 w-full">
                           <img 
                             src={slide.image1} 
                             alt={slide.alt1} 
-                            className="w-full h-auto object-contain drop-shadow-[0_20px_25px_rgba(0,0,0,0.7)]" 
+                            className="w-full h-auto object-contain drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)]" 
                             onError={(e) => { e.target.src = `https://via.placeholder.com/300x200?text=${encodeURIComponent(slide.alt1)}`; }} 
                           />
                         </div>
@@ -150,15 +150,15 @@ export default function HeroBanner({ onSelectCategory }) {
                     </div>
                   )}
 
-                  {/* Image 4 (Bottom-Left RAM) */}
+                  {/* Image 4 (Left RAM) - Same Size, Bottom Left */}
                   {slide.image4 && (
-                    <div className="absolute bottom-[2%] md:bottom-[10%] left-0 md:left-[5%] w-28 sm:w-36 md:w-56 z-40">
+                    <div className="absolute bottom-[5%] md:bottom-[10%] left-[10%] md:left-[15%] w-32 sm:w-40 md:w-56 z-40">
                       <div className={`w-full transition-all duration-1000 delay-700 ease-out transform ${isActive ? 'translate-x-0 opacity-100 scale-100' : '-translate-x-8 md:-translate-x-16 opacity-0 scale-95'}`}>
                         <div className="anim-float-2 w-full">
                           <img 
                             src={slide.image4} 
                             alt={slide.alt4} 
-                            className="w-full h-auto object-contain -rotate-6 drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)]" 
+                            className="w-full h-auto object-contain drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)]" 
                             onError={(e) => { e.target.src = `https://via.placeholder.com/200x150?text=${encodeURIComponent(slide.alt4)}`; }} 
                           />
                         </div>
@@ -166,15 +166,15 @@ export default function HeroBanner({ onSelectCategory }) {
                     </div>
                   )}
 
-                  {/* Image 5 (Bottom-Right RAM) */}
+                  {/* Image 5 (Right RAM) - Same Size, Bottom Right */}
                   {slide.image5 && (
-                    <div className="absolute bottom-0 md:bottom-[5%] right-0 md:right-[5%] w-32 sm:w-44 md:w-64 z-50">
+                    <div className="absolute bottom-[5%] md:bottom-[10%] right-[10%] md:right-[15%] w-32 sm:w-40 md:w-56 z-50">
                       <div className={`w-full transition-all duration-1000 delay-1000 ease-out transform ${isActive ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-8 md:translate-y-16 opacity-0 scale-95'}`}>
                         <div className="anim-float-3 w-full">
                           <img 
                             src={slide.image5} 
                             alt={slide.alt5} 
-                            className="w-full h-auto object-contain rotate-3 drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)]" 
+                            className="w-full h-auto object-contain drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)]" 
                             onError={(e) => { e.target.src = `https://via.placeholder.com/200x150?text=${encodeURIComponent(slide.alt5)}`; }} 
                           />
                         </div>
