@@ -130,10 +130,13 @@ const staticInventory = [
 ];
 
 export default function AdminDashboard() {
+  // Tabs State
+  const [activeTab, setActiveTab] = useState('products'); // 'products' or 'banners'
+
+  // --- PRODUCT MANAGER STATE ---
   const [dbProducts, setDbProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingProducts, setLoadingProducts] = useState(true);
   const [editingItem, setEditingItem] = useState(null);
-  
   const [adminSearch, setAdminSearch] = useState('');
 
   const [formData, setFormData] = useState({
@@ -146,18 +149,45 @@ export default function AdminDashboard() {
     description: ''
   });
 
-  const fetchProducts = async () => {
-    setLoading(true);
-    const { data, error } = await supabase.from('products').select('*').order('name');
-    if (error) console.error('Error fetching:', error);
-    else setDbProducts(data || []);
-    setLoading(false);
-  };
+  // --- BANNER MANAGER STATE ---
+  const [dbSlides, setDbSlides] = useState([]);
+  const [loadingSlides, setLoadingSlides] = useState(true);
+  const [editingSlide, setEditingSlide] = useState(null);
 
+  const [slideFormData, setSlideFormData] = useState({
+    id: '',
+    tag: '',
+    title: '',
+    subtitle: '',
+    button_text: 'Shop Now',
+    category_target: 'All',
+    text_alignment: 'right',
+    images: []
+  });
+
+  // FETCH DATA
   useEffect(() => {
     fetchProducts();
+    fetchSlides();
   }, []);
 
+  const fetchProducts = async () => {
+    setLoadingProducts(true);
+    const { data, error } = await supabase.from('products').select('*').order('name');
+    if (error) console.error('Error fetching products:', error);
+    else setDbProducts(data || []);
+    setLoadingProducts(false);
+  };
+
+  const fetchSlides = async () => {
+    setLoadingSlides(true);
+    const { data, error } = await supabase.from('hero_slides').select('*').order('created_at', { ascending: true });
+    if (error) console.error('Error fetching slides:', error);
+    else setDbSlides(data || []);
+    setLoadingSlides(false);
+  };
+
+  // --- PRODUCT FUNCTIONS ---
   const allProducts = useMemo(() => {
     const dbIds = new Set(dbProducts.map(p => p.id));
     const remainingStatic = staticInventory.filter(item => !dbIds.has(item.id));
@@ -173,7 +203,7 @@ export default function AdminDashboard() {
     );
   }, [allProducts, adminSearch]);
 
-  const handleSubmit = async (e) => {
+  const handleProductSubmit = async (e) => {
     e.preventDefault();
     const itemData = {
       id: formData.id || `item-${Date.now()}`,
@@ -196,7 +226,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleEdit = (product) => {
+  const handleProductEdit = (product) => {
     setEditingItem(product);
     setFormData({
       id: product.id,
@@ -209,128 +239,356 @@ export default function AdminDashboard() {
     });
   };
 
-  const handleDelete = async (id) => {
+  const handleProductDelete = async (id) => {
     if (confirm('Are you sure you want to delete or hide this item?')) {
       await supabase.from('products').delete().eq('id', id);
       fetchProducts();
     }
   };
 
+  // --- BANNER FUNCTIONS ---
+  const handleSlideSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Create payload. If new, omit ID so Supabase generates a UUID.
+    const payload = {
+      tag: slideFormData.tag,
+      title: slideFormData.title,
+      subtitle: slideFormData.subtitle,
+      button_text: slideFormData.button_text,
+      category_target: slideFormData.category_target,
+      text_alignment: slideFormData.text_alignment,
+      images: slideFormData.images
+    };
+
+    if (slideFormData.id) payload.id = slideFormData.id;
+
+    const { error } = await supabase.from('hero_slides').upsert([payload]);
+    if (error) {
+      alert(`Failed to save slide: ${error.message}`);
+    } else {
+      setSlideFormData({ id: '', tag: '', title: '', subtitle: '', button_text: 'Shop Now', category_target: 'All', text_alignment: 'right', images: [] });
+      setEditingSlide(null);
+      fetchSlides();
+    }
+  };
+
+  const handleSlideEdit = (slide) => {
+    setEditingSlide(slide);
+    setSlideFormData({
+      id: slide.id,
+      tag: slide.tag,
+      title: slide.title,
+      subtitle: slide.subtitle,
+      button_text: slide.button_text,
+      category_target: slide.category_target,
+      text_alignment: slide.text_alignment || 'right',
+      images: slide.images || []
+    });
+  };
+
+  const handleSlideDelete = async (id) => {
+    if (confirm('Are you sure you want to permanently delete this slide?')) {
+      await supabase.from('hero_slides').delete().eq('id', id);
+      fetchSlides();
+    }
+  };
+
+  // --- DYNAMIC IMAGE BUILDER FUNCTIONS ---
+  const addSlideImage = () => {
+    const newImage = { 
+      url: '', 
+      width: 'w-32 md:w-48', 
+      position: 'top-[10%] left-[10%]', 
+      animation: 'anim-float-1 delay-100', 
+      zIndex: 'z-10' 
+    };
+    setSlideFormData(prev => ({ ...prev, images: [...prev.images, newImage] }));
+  };
+
+  const updateSlideImage = (index, field, value) => {
+    const updatedImages = [...slideFormData.images];
+    updatedImages[index][field] = value;
+    setSlideFormData(prev => ({ ...prev, images: updatedImages }));
+  };
+
+  const removeSlideImage = (index) => {
+    const updatedImages = slideFormData.images.filter((_, i) => i !== index);
+    setSlideFormData(prev => ({ ...prev, images: updatedImages }));
+  };
+
+
   return (
-    <div className="min-h-screen bg-gray-100 p-4 md:p-8 font-sans">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-extrabold text-gray-900">⚡ EngineerPCs Admin Panel</h1>
-          <a href="/" className="bg-gray-800 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-700">
+    <div className="min-h-screen bg-gray-100 p-4 md:p-8 font-sans pb-20">
+      <div className="max-w-7xl mx-auto">
+        
+        {/* HEADER */}
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+          <h1 className="text-3xl font-extrabold text-gray-900">⚡ Admin Panel</h1>
+          <a href="/" className="bg-gray-800 text-white px-5 py-2 rounded-lg font-bold hover:bg-gray-700 shadow-md">
             ← Back to Store
           </a>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="bg-white p-6 rounded-xl shadow-md h-fit">
-            <h2 className="text-xl font-bold mb-4 text-gray-800">
-              {editingItem ? '✏️ Edit Product' : '➕ Add New Product'}
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-gray-600 mb-1">Product Name</label>
-                <input required type="text" className="w-full p-2.5 border rounded-lg outline-none text-sm text-black" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="e.g. Ryzen 7 7800X3D" />
-              </div>
+        {/* TAB NAVIGATION */}
+        <div className="flex gap-4 mb-6 border-b-2 border-gray-200 pb-2">
+          <button 
+            onClick={() => setActiveTab('products')}
+            className={`text-lg font-bold px-4 py-2 rounded-t-lg transition ${activeTab === 'products' ? 'text-blue-600 border-b-4 border-blue-600 bg-white shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
+          >
+            📦 Product Catalog
+          </button>
+          <button 
+            onClick={() => setActiveTab('banners')}
+            className={`text-lg font-bold px-4 py-2 rounded-t-lg transition ${activeTab === 'banners' ? 'text-blue-600 border-b-4 border-blue-600 bg-white shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
+          >
+            🖼️ Hero Banner Builder
+          </button>
+        </div>
 
-              <div>
-                <label className="block text-xs font-bold text-gray-600 mb-1">Category</label>
-                <select className="w-full p-2.5 border rounded-lg outline-none text-sm text-black bg-white" value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})}>
-                  {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
+        {/* ========================================= */}
+        {/*              PRODUCT MANAGER              */}
+        {/* ========================================= */}
+        {activeTab === 'products' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fade-in">
+            {/* PRODUCT FORM */}
+            <div className="bg-white p-6 rounded-xl shadow-md h-fit border-t-4 border-blue-500">
+              <h2 className="text-xl font-bold mb-4 text-gray-800">
+                {editingItem ? '✏️ Edit Product' : '➕ Add New Product'}
+              </h2>
+              <form onSubmit={handleProductSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 mb-1">Product Name</label>
+                  <input required type="text" className="w-full p-2.5 border rounded-lg outline-none text-sm text-black" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="e.g. Ryzen 7 7800X3D" />
+                </div>
 
-              <div>
-                <label className="block text-xs font-bold text-gray-600 mb-1">Retail Price ($)</label>
-                <input required type="number" step="0.01" className="w-full p-2.5 border rounded-lg outline-none text-sm text-black" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} placeholder="299" />
-              </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 mb-1">Category</label>
+                  <select className="w-full p-2.5 border rounded-lg outline-none text-sm text-black bg-white" value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})}>
+                    {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
 
-              <div>
-                <label className="block text-xs font-bold text-gray-600 mb-1">Description & Specifications</label>
-                <textarea 
-                  rows="3" 
-                  className="w-full p-2.5 border rounded-lg outline-none text-sm text-black resize-y" 
-                  value={formData.description} 
-                  onChange={(e) => setFormData({...formData, description: e.target.value})} 
-                  placeholder="Enter detailed specifications here..." 
-                />
-              </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 mb-1">Retail Price ($)</label>
+                  <input required type="number" step="0.01" className="w-full p-2.5 border rounded-lg outline-none text-sm text-black" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} placeholder="299" />
+                </div>
 
-              <div>
-                <label className="block text-xs font-bold text-gray-600 mb-1">Image Path(s) / URL(s) - Separate with commas</label>
-                <input type="text" className="w-full p-2.5 border rounded-lg outline-none text-sm text-black" value={formData.image} onChange={(e) => setFormData({...formData, image: e.target.value})} placeholder="url1.jpg, url2.jpg" />
-              </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 mb-1">Description & Specifications</label>
+                  <textarea rows="3" className="w-full p-2.5 border rounded-lg outline-none text-sm text-black resize-y" value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} placeholder="Enter detailed specifications here..." />
+                </div>
 
-              <div>
-                <label className="block text-xs font-bold text-gray-600 mb-1">Availability Status</label>
-                <select 
-                  className="w-full p-2.5 border rounded-lg outline-none text-sm text-black bg-white font-medium" 
-                  value={formData.in_stock ? 'true' : 'false'} 
-                  onChange={(e) => setFormData({...formData, in_stock: e.target.value === 'true'})}
-                >
-                  <option value="true">In Stock ✅</option>
-                  <option value="false">Out of Stock ❌</option>
-                </select>
-              </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 mb-1">Image Path(s) / URL(s)</label>
+                  <input type="text" className="w-full p-2.5 border rounded-lg outline-none text-sm text-black" value={formData.image} onChange={(e) => setFormData({...formData, image: e.target.value})} placeholder="url1.jpg, url2.jpg" />
+                </div>
 
-              <div className="flex gap-2 pt-2">
-                <button type="submit" className="flex-1 bg-yellow-400 hover:bg-yellow-500 font-bold py-2.5 rounded-lg text-black cursor-pointer">
-                  {editingItem ? 'Update Item' : 'Add Item'}
-                </button>
-                {editingItem && (
-                  <button type="button" onClick={() => { setEditingItem(null); setFormData({ id: '', name: '', category: 'Motherboards', price: '', image: '', in_stock: true, description: '' }); }} className="bg-gray-300 hover:bg-gray-400 px-4 py-2.5 rounded-lg font-bold text-gray-700 cursor-pointer">
-                    Cancel
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 mb-1">Availability Status</label>
+                  <select className="w-full p-2.5 border rounded-lg outline-none text-sm text-black bg-white font-medium" value={formData.in_stock ? 'true' : 'false'} onChange={(e) => setFormData({...formData, in_stock: e.target.value === 'true'})}>
+                    <option value="true">In Stock ✅</option>
+                    <option value="false">Out of Stock ❌</option>
+                  </select>
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                  <button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg transition shadow-md">
+                    {editingItem ? 'Update Product' : 'Save Product'}
                   </button>
-                )}
-              </div>
-            </form>
-          </div>
-
-          <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-md">
-            <h2 className="text-xl font-bold mb-4 text-gray-800">📦 All Store Catalog ({allProducts.length})</h2>
-            
-            <div className="mb-4">
-              <input 
-                type="text" 
-                placeholder="Search products by name or category..." 
-                className="w-full p-2.5 border border-gray-300 rounded-lg outline-none text-sm text-black focus:border-yellow-500 transition-colors"
-                value={adminSearch}
-                onChange={(e) => setAdminSearch(e.target.value)}
-              />
+                  {editingItem && (
+                    <button type="button" onClick={() => { setEditingItem(null); setFormData({ id: '', name: '', category: 'Motherboards', price: '', image: '', in_stock: true, description: '' }); }} className="bg-gray-200 hover:bg-gray-300 px-4 py-2.5 rounded-lg font-bold text-gray-700">
+                      Cancel
+                    </button>
+                  )}
+                </div>
+              </form>
             </div>
 
-            {loading ? (
-              <div className="text-center py-10 text-gray-500">Loading catalog...</div>
-            ) : displayedProducts.length === 0 ? (
-              <div className="text-center py-10 text-gray-500">No items found matching your search.</div>
-            ) : (
-              <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
-                {displayedProducts.map(item => (
-                  <div key={item.id} className="flex items-center justify-between p-3 border rounded-lg hover:border-gray-300 transition">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-bold text-gray-800 text-sm">{item.name}</h4>
-                        {item.in_stock === false && (
-                          <span className="text-[10px] bg-red-100 text-red-600 font-bold px-1.5 py-0.5 rounded">Out of Stock</span>
-                        )}
+            {/* PRODUCT LIST */}
+            <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-md border-t-4 border-gray-800">
+              <h2 className="text-xl font-bold mb-4 text-gray-800">📦 All Store Catalog ({allProducts.length})</h2>
+              
+              <div className="mb-4">
+                <input type="text" placeholder="Search products by name or category..." className="w-full p-2.5 border border-gray-300 rounded-lg outline-none text-sm text-black focus:border-blue-500 transition-colors bg-gray-50" value={adminSearch} onChange={(e) => setAdminSearch(e.target.value)} />
+              </div>
+
+              {loadingProducts ? (
+                <div className="text-center py-10 text-gray-500 font-bold animate-pulse">Loading catalog...</div>
+              ) : displayedProducts.length === 0 ? (
+                <div className="text-center py-10 text-gray-500">No items found matching your search.</div>
+              ) : (
+                <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+                  {displayedProducts.map(item => (
+                    <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50/50 transition">
+                      <div className="mb-2 sm:mb-0">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-bold text-gray-800 text-sm">{item.name}</h4>
+                          {item.in_stock === false && <span className="text-[10px] bg-red-100 text-red-600 font-bold px-1.5 py-0.5 rounded">Out of Stock</span>}
+                        </div>
+                        <p className="text-xs text-blue-600 font-medium">{item.category} — <span className="text-gray-900 font-bold">${item.price}</span></p>
                       </div>
-                      <p className="text-xs text-blue-600 font-medium">{item.category} — <span className="text-gray-900 font-bold">${item.price}</span></p>
+                      
+                      <div className="flex gap-2">
+                        <button onClick={() => handleProductEdit(item)} className="bg-white border border-gray-300 text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded text-xs font-bold shadow-sm">Edit</button>
+                        <button onClick={() => handleProductDelete(item.id)} className="bg-white border border-gray-300 text-red-600 hover:bg-red-50 px-3 py-1.5 rounded text-xs font-bold shadow-sm">Delete</button>
+                      </div>
                     </div>
-                    
-                    <div className="flex gap-2">
-                      <button onClick={() => handleEdit(item)} className="bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1 rounded text-xs font-bold cursor-pointer">Edit</button>
-                      <button onClick={() => handleDelete(item.id)} className="bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1 rounded text-xs font-bold cursor-pointer">Delete</button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+
+        {/* ========================================= */}
+        {/*               BANNER BUILDER              */}
+        {/* ========================================= */}
+        {activeTab === 'banners' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fade-in">
+            
+            {/* SLIDE FORM */}
+            <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-md h-fit border-t-4 border-yellow-400">
+              <h2 className="text-xl font-bold mb-4 text-gray-800 flex items-center gap-2">
+                {editingSlide ? '✏️ Edit Slide' : '➕ Create New Slide'}
+              </h2>
+              
+              <form onSubmit={handleSlideSubmit} className="space-y-6">
+                {/* 1. TEXT SETTINGS */}
+                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                  <h3 className="font-bold text-gray-800 mb-3 border-b pb-2">1. Text & Content</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-600 mb-1">Badge / Tagline</label>
+                      <input required type="text" className="w-full p-2 border rounded-lg text-sm" value={slideFormData.tag} onChange={e => setSlideFormData({...slideFormData, tag: e.target.value})} placeholder="e.g. GEFORCE RTX 40 SERIES" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-600 mb-1">Main Title</label>
+                      <input required type="text" className="w-full p-2 border rounded-lg text-sm" value={slideFormData.title} onChange={e => setSlideFormData({...slideFormData, title: e.target.value})} placeholder="e.g. Next-Level Performance" />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="block text-xs font-bold text-gray-600 mb-1">Subtitle</label>
+                      <input required type="text" className="w-full p-2 border rounded-lg text-sm" value={slideFormData.subtitle} onChange={e => setSlideFormData({...slideFormData, subtitle: e.target.value})} placeholder="e.g. RTX Graphics · Fast Memory" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-600 mb-1">Button Text</label>
+                      <input required type="text" className="w-full p-2 border rounded-lg text-sm" value={slideFormData.button_text} onChange={e => setSlideFormData({...slideFormData, button_text: e.target.value})} placeholder="e.g. Shop Build Parts" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-600 mb-1">Button Category Target</label>
+                      <select className="w-full p-2 border rounded-lg text-sm bg-white" value={slideFormData.category_target} onChange={e => setSlideFormData({...slideFormData, category_target: e.target.value})}>
+                        {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                        <option value="All">All Store</option>
+                      </select>
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="block text-xs font-bold text-gray-600 mb-1">Text Alignment (Left or Right side of banner)</label>
+                      <select className="w-full p-2 border rounded-lg text-sm bg-white" value={slideFormData.text_alignment} onChange={e => setSlideFormData({...slideFormData, text_alignment: e.target.value})}>
+                        <option value="left">Left Side</option>
+                        <option value="right">Right Side</option>
+                      </select>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
+                </div>
+
+                {/* 2. DYNAMIC IMAGES BUILDER */}
+                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                  <div className="flex justify-between items-center mb-3 border-b pb-2">
+                    <h3 className="font-bold text-gray-800">2. Floating Images Layering</h3>
+                    <button type="button" onClick={addSlideImage} className="bg-yellow-400 hover:bg-yellow-500 text-black text-xs font-bold px-3 py-1.5 rounded shadow">
+                      + Add Image
+                    </button>
+                  </div>
+
+                  {slideFormData.images.length === 0 ? (
+                    <p className="text-sm text-gray-500 text-center py-4">No images added to this slide yet. Click "+ Add Image".</p>
+                  ) : (
+                    <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+                      {slideFormData.images.map((img, idx) => (
+                        <div key={idx} className="bg-white border border-gray-300 rounded-lg p-3 shadow-sm relative">
+                          <button type="button" onClick={() => removeSlideImage(idx)} className="absolute top-2 right-2 text-red-500 hover:text-red-700 font-bold text-xl leading-none">&times;</button>
+                          <h4 className="text-xs font-extrabold text-blue-600 mb-2 uppercase">Image Layer {idx + 1}</h4>
+                          
+                          <div className="space-y-3">
+                            <div>
+                              <label className="block text-[10px] font-bold text-gray-500 uppercase">Direct Image URL (.png / .jpg)</label>
+                              <input type="text" className="w-full p-2 border rounded text-sm" value={img.url} onChange={(e) => updateSlideImage(idx, 'url', e.target.value)} placeholder="https://..." />
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="block text-[10px] font-bold text-gray-500 uppercase">Width / Size</label>
+                                <input type="text" className="w-full p-2 border rounded text-sm" value={img.width} onChange={(e) => updateSlideImage(idx, 'width', e.target.value)} placeholder="e.g. w-32 md:w-48" />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] font-bold text-gray-500 uppercase">X/Y Exact Position</label>
+                                <input type="text" className="w-full p-2 border rounded text-sm" value={img.position} onChange={(e) => updateSlideImage(idx, 'position', e.target.value)} placeholder="e.g. top-[10%] left-[5%]" />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] font-bold text-gray-500 uppercase">Animation & Delay</label>
+                                <input type="text" className="w-full p-2 border rounded text-sm" value={img.animation} onChange={(e) => updateSlideImage(idx, 'animation', e.target.value)} placeholder="e.g. anim-float-1 delay-100" />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] font-bold text-gray-500 uppercase">Z-Index (Layer Height)</label>
+                                <input type="text" className="w-full p-2 border rounded text-sm" value={img.zIndex} onChange={(e) => updateSlideImage(idx, 'zIndex', e.target.value)} placeholder="e.g. z-10, z-20" />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex gap-2 pt-2 border-t">
+                  <button type="submit" className="flex-1 bg-gray-900 hover:bg-black text-white font-bold py-3 rounded-lg transition shadow-md">
+                    {editingSlide ? '💾 Update Slide' : '💾 Save New Slide'}
+                  </button>
+                  {editingSlide && (
+                    <button type="button" onClick={() => { setEditingSlide(null); setSlideFormData({ id: '', tag: '', title: '', subtitle: '', button_text: 'Shop Now', category_target: 'All', text_alignment: 'right', images: [] }); }} className="bg-gray-200 hover:bg-gray-300 px-6 py-3 rounded-lg font-bold text-gray-700">
+                      Cancel
+                    </button>
+                  )}
+                </div>
+              </form>
+            </div>
+
+            {/* LIVE SLIDES LIST */}
+            <div className="bg-white p-6 rounded-xl shadow-md border-t-4 border-gray-800">
+              <h2 className="text-xl font-bold mb-4 text-gray-800">📋 Active Slides ({dbSlides.length})</h2>
+              
+              {loadingSlides ? (
+                <div className="text-center py-10 text-gray-500 font-bold animate-pulse">Loading slides...</div>
+              ) : dbSlides.length === 0 ? (
+                <div className="text-center py-10 text-gray-500 text-sm">No slides saved yet. Create one on the left!</div>
+              ) : (
+                <div className="space-y-4">
+                  {dbSlides.map((slide, i) => (
+                    <div key={slide.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50 hover:bg-white transition shadow-sm">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <span className="text-[10px] font-black bg-yellow-400 text-black px-2 py-0.5 rounded-full mb-1 inline-block">Slide #{i + 1}</span>
+                          <h4 className="font-black text-gray-900 leading-tight">{slide.title}</h4>
+                          <p className="text-xs text-gray-500 truncate w-48">{slide.tag}</p>
+                        </div>
+                      </div>
+                      <div className="text-[10px] text-gray-400 font-bold uppercase mb-3">
+                        {slide.images?.length || 0} Floating Images
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <button onClick={() => handleSlideEdit(slide)} className="flex-1 bg-white border border-gray-300 text-gray-800 hover:bg-gray-100 py-1.5 rounded text-xs font-bold shadow-sm">Edit</button>
+                        <button onClick={() => handleSlideDelete(slide.id)} className="bg-white border border-red-200 text-red-600 hover:bg-red-50 px-3 py-1.5 rounded text-xs font-bold shadow-sm">Trash</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
           </div>
-        </div>
+        )}
+
       </div>
     </div>
   );
