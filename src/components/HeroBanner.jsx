@@ -7,8 +7,15 @@ const slides = [
     id: 1,
     title: "Next-Level Performance",
     subtitle: "RTX Graphics · Fast Memory · Better Gaming",
-    tag: "GEFORCE RTX 40 SERIES",
+    tag: "GEFORCE RTX 50 SERIES",
+    
+    // PRIMARY GPU
     gpuImage: "https://dlcdnwebimgs.asus.com/files/media/09b5195d-6d4f-442d-af30-4942b9a2709c/v1/img/kv/pd-front.png",
+    
+    // 👇 NEW: SLOTS FOR 2 MORE GPUs (You can replace these links with your own!)
+    gpuImage2: "https://dlcdnwebimgs.asus.com/files/media/09b5195d-6d4f-442d-af30-4942b9a2709c/v1/img/kv/pd-front.png", 
+    gpuImage3: "https://dlcdnwebimgs.asus.com/files/media/09b5195d-6d4f-442d-af30-4942b9a2709c/v1/img/kv/pd-front.png",
+    
     ramImageLeft: "https://img.overclockers.co.uk/images/MEM-GSK-04195/379569ed093fbfe1a992d709c6f51fec.jpg",
     ramImageRight: "https://assets.corsair.com/image/upload/f_auto,q_auto/pages/Memory%20Matters/VENGEANCE_RGB_DDR5_BLACK_RENDER_07.png",
     buttonText: "Shop Build Parts",
@@ -20,6 +27,8 @@ const slides = [
     subtitle: "Liquid & Air Coolers · Low Temps · High FPS",
     tag: "THERMALRIGHT VISION",
     gpuImage: "/images/aqua360v6.jpg",
+    gpuImage2: "", // Empty so it doesn't show on the cooler slide
+    gpuImage3: "",
     ramImageLeft: "/images/frozinf360.jpg",
     ramImageRight: "/images/pv360.jpg",
     buttonText: "Explore Cooling",
@@ -41,99 +50,137 @@ export default function HeroBanner({ onSelectCategory }) {
   const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % slides.length);
   const prevSlide = () => setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
 
-  const slide = slides[currentSlide];
-
   return (
     <div className="relative w-full max-w-7xl mx-auto my-4 px-3 md:px-6">
-      <div className="relative bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-3xl overflow-hidden shadow-2xl min-h-[380px] md:min-h-[440px] flex items-center border border-gray-800">
+      
+      {/* Injecting foolproof keyframes directly into the component for continuous floating */}
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes float1 { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-12px) rotate(2deg); } }
+        @keyframes float2 { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(12px) rotate(-2deg); } }
+        @keyframes float3 { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-8px) rotate(-1deg); } }
+        .anim-float-1 { animation: float1 5s ease-in-out infinite; }
+        .anim-float-2 { animation: float2 6s ease-in-out infinite; }
+        .anim-float-3 { animation: float3 5.5s ease-in-out infinite; }
+      `}} />
+
+      <div className="relative bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-3xl overflow-hidden shadow-2xl min-h-[400px] md:min-h-[480px] flex items-center border border-gray-800">
         
         {/* Background Ambient Glow */}
         <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-72 h-72 bg-yellow-500/10 blur-[100px] rounded-full pointer-events-none"></div>
         <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-blue-500/10 blur-[120px] rounded-full pointer-events-none"></div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 w-full p-6 md:p-12 items-center gap-8 relative z-10">
+        {/* MAP THROUGH ALL SLIDES FOR CROSSFADING */}
+        {slides.map((slide, idx) => {
+          const isActive = currentSlide === idx;
           
-          {/* LAYERED ANIMATED IMAGES (LEFT COLUMN) */}
-          <div className="relative h-64 md:h-80 w-full flex items-center justify-center order-2 md:order-1">
-            
-            {/* Top Image (GPU) - Floating Animation */}
-            <div className="absolute top-0 left-4 md:left-8 w-44 md:w-64 z-20 transition-all duration-700 transform animate-float-slow">
-              <img 
-                src={slide.gpuImage} 
-                alt="Graphics Card" 
-                className="w-full h-auto object-contain drop-shadow-[0_20px_25px_rgba(0,0,0,0.7)]"
-                onError={(e) => { e.target.src = 'https://via.placeholder.com/300x200?text=GPU+Hardware'; }}
-              />
-            </div>
-
-            {/* Bottom-Left Image (RAM Stack) - Opposite Float */}
-            <div className="absolute bottom-2 left-0 w-36 md:w-52 z-10 transition-all duration-700 transform animate-float-reverse">
-              <img 
-                src={slide.ramImageLeft} 
-                alt="RAM Kit" 
-                className="w-full h-auto object-contain -rotate-6 drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)]"
-                onError={(e) => { e.target.src = 'https://via.placeholder.com/200x150?text=RAM+Kit'; }}
-              />
-            </div>
-
-            {/* Bottom-Right Image (Dark Hardware) - Static offset */}
-            <div className="absolute bottom-0 right-2 w-36 md:w-52 z-15 transition-all duration-700 transform animate-float-slow">
-              <img 
-                src={slide.ramImageRight} 
-                alt="Hardware Component" 
-                className="w-full h-auto object-contain rotate-3 drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)]"
-                onError={(e) => { e.target.src = 'https://via.placeholder.com/200x150?text=Component'; }}
-              />
-            </div>
-
-          </div>
-
-          {/* TEXT & CTA CONTENT (RIGHT COLUMN) */}
-          <div className="flex flex-col items-center md:items-start text-center md:text-left order-1 md:order-2 space-y-3 md:space-y-4">
-            <span className="text-xs md:text-sm font-black text-yellow-400 tracking-widest uppercase bg-yellow-400/10 px-3 py-1 rounded-full border border-yellow-400/20">
-              {slide.tag}
-            </span>
-            
-            <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight leading-tight">
-              {slide.title}
-            </h2>
-
-            <p className="text-xs md:text-sm font-semibold text-gray-400">
-              {slide.subtitle}
-            </p>
-
-            <button
-              onClick={() => onSelectCategory && onSelectCategory(slide.categoryTarget)}
-              className="mt-2 bg-yellow-400 hover:bg-yellow-500 text-black font-extrabold px-6 py-3 rounded-full shadow-lg transition-transform transform active:scale-95 cursor-pointer text-sm md:text-base flex items-center gap-2"
+          return (
+            <div
+              key={slide.id}
+              className={`absolute inset-0 w-full h-full flex transition-opacity duration-1000 ease-in-out ${
+                isActive ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+              }`}
             >
-              {slide.buttonText} →
-            </button>
-          </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 w-full p-6 md:p-12 items-center gap-8 h-full relative">
+                
+                {/* LAYERED ANIMATED IMAGES (LEFT COLUMN) */}
+                <div className="relative h-[250px] md:h-full w-full flex items-center justify-center order-2 md:order-1">
+                  
+                  {/* GPU 1 (Main) - Slides down, pops in first (delay-100) */}
+                  {slide.gpuImage && (
+                    <div className={`absolute top-0 md:top-[5%] left-0 md:left-[5%] w-36 md:w-56 z-30 transition-all duration-1000 delay-100 ease-out transform ${isActive ? 'translate-y-0 opacity-100 scale-100' : '-translate-y-16 opacity-0 scale-95'}`}>
+                      <div className="anim-float-1">
+                        <img src={slide.gpuImage} alt="GPU 1" className="w-full h-auto object-contain drop-shadow-[0_20px_25px_rgba(0,0,0,0.7)]" onError={(e) => { e.target.src = 'https://via.placeholder.com/300x200?text=GPU+1'; }} />
+                      </div>
+                    </div>
+                  )}
 
-        </div>
+                  {/* GPU 2 - Slides down, pops in second (delay-300) */}
+                  {slide.gpuImage2 && (
+                    <div className={`absolute top-6 md:top-[12%] left-8 md:left-[15%] w-32 md:w-48 z-20 transition-all duration-1000 delay-300 ease-out transform ${isActive ? 'translate-y-0 opacity-100 scale-100' : '-translate-y-16 opacity-0 scale-95'}`}>
+                      <div className="anim-float-2">
+                        <img src={slide.gpuImage2} alt="GPU 2" className="w-full h-auto object-contain drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)] brightness-90" onError={(e) => { e.target.src = 'https://via.placeholder.com/300x200?text=GPU+2'; }} />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* GPU 3 - Slides down, pops in third (delay-500) */}
+                  {slide.gpuImage3 && (
+                    <div className={`absolute top-12 md:top-[19%] left-16 md:left-[25%] w-28 md:w-40 z-10 transition-all duration-1000 delay-500 ease-out transform ${isActive ? 'translate-y-0 opacity-100 scale-100' : '-translate-y-16 opacity-0 scale-95'}`}>
+                      <div className="anim-float-3">
+                        <img src={slide.gpuImage3} alt="GPU 3" className="w-full h-auto object-contain drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] brightness-75" onError={(e) => { e.target.src = 'https://via.placeholder.com/300x200?text=GPU+3'; }} />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Bottom-Left Image (RAM) - Slides in after GPUs (delay-700) */}
+                  {slide.ramImageLeft && (
+                    <div className={`absolute bottom-4 md:bottom-[15%] left-0 md:left-[5%] w-36 md:w-56 z-40 transition-all duration-1000 delay-700 ease-out transform ${isActive ? 'translate-x-0 opacity-100 scale-100' : '-translate-x-16 opacity-0 scale-95'}`}>
+                      <div className="anim-float-2">
+                        <img src={slide.ramImageLeft} alt="RAM Kit" className="w-full h-auto object-contain -rotate-6 drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)]" onError={(e) => { e.target.src = 'https://via.placeholder.com/200x150?text=RAM+Kit'; }} />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Bottom-Right Image (RAM) - Slides up last (delay-1000) */}
+                  {slide.ramImageRight && (
+                    <div className={`absolute bottom-0 md:bottom-[5%] right-2 md:right-[15%] w-40 md:w-64 z-50 transition-all duration-1000 delay-1000 ease-out transform ${isActive ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-16 opacity-0 scale-95'}`}>
+                      <div className="anim-float-3">
+                        <img src={slide.ramImageRight} alt="Hardware Component" className="w-full h-auto object-contain rotate-3 drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)]" onError={(e) => { e.target.src = 'https://via.placeholder.com/200x150?text=Component'; }} />
+                      </div>
+                    </div>
+                  )}
+
+                </div>
+
+                {/* TEXT & CTA CONTENT (RIGHT COLUMN) */}
+                <div className={`flex flex-col items-center md:items-start text-center md:text-left order-1 md:order-2 space-y-3 md:space-y-5 transition-all duration-1000 delay-200 ease-out transform ${isActive ? 'translate-x-0 opacity-100' : 'translate-x-12 opacity-0'}`}>
+                  <span className="text-xs md:text-sm font-black text-yellow-400 tracking-widest uppercase bg-yellow-400/10 px-4 py-1.5 rounded-full border border-yellow-400/20 shadow-[0_0_15px_rgba(250,204,21,0.2)]">
+                    {slide.tag}
+                  </span>
+                  
+                  <h2 className="text-3xl md:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight drop-shadow-lg">
+                    {slide.title}
+                  </h2>
+
+                  <p className="text-sm md:text-base font-medium text-gray-400 max-w-md">
+                    {slide.subtitle}
+                  </p>
+
+                  <button
+                    onClick={() => onSelectCategory && onSelectCategory(slide.categoryTarget)}
+                    className="mt-4 bg-yellow-400 hover:bg-yellow-500 text-black font-extrabold px-8 py-3.5 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.3)] transition-all transform hover:scale-105 active:scale-95 cursor-pointer text-sm md:text-base flex items-center gap-2"
+                  >
+                    {slide.buttonText} <span className="text-lg">→</span>
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          );
+        })}
 
         {/* NAVIGATION ARROWS */}
         <button 
           onClick={prevSlide}
-          className="absolute left-3 top-1/2 -translate-y-1/2 z-30 bg-white/10 hover:bg-white/20 text-white rounded-full p-2 md:p-3 backdrop-blur-md transition cursor-pointer border border-white/10"
+          className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-40 bg-black/40 hover:bg-black/60 text-white rounded-full p-2.5 md:p-4 backdrop-blur-md transition-all hover:scale-110 cursor-pointer border border-white/10"
         >
-          ❮
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
         </button>
         <button 
           onClick={nextSlide}
-          className="absolute right-3 top-1/2 -translate-y-1/2 z-30 bg-white/10 hover:bg-white/20 text-white rounded-full p-2 md:p-3 backdrop-blur-md transition cursor-pointer border border-white/10"
+          className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-40 bg-black/40 hover:bg-black/60 text-white rounded-full p-2.5 md:p-4 backdrop-blur-md transition-all hover:scale-110 cursor-pointer border border-white/10"
         >
-          ❯
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </button>
 
         {/* SLIDE INDICATORS */}
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-30">
+        <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-40">
           {slides.map((_, idx) => (
             <button
               key={idx}
               onClick={() => setCurrentSlide(idx)}
-              className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
-                currentSlide === idx ? 'w-8 bg-yellow-400' : 'w-2 bg-white/30'
+              className={`h-1.5 md:h-2 rounded-full transition-all duration-500 cursor-pointer ${
+                currentSlide === idx ? 'w-8 md:w-10 bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.8)]' : 'w-2 md:w-3 bg-white/30 hover:bg-white/50'
               }`}
             />
           ))}
