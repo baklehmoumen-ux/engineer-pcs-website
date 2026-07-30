@@ -7,7 +7,7 @@ const slides = [
     id: 1,
     title: "Next-Level Performance",
     subtitle: "RTX Graphics · Fast Memory · Better Gaming",
-    tag: "GEFORCE RTX 40 SERIES",
+    tag: "GEFORCE RTX 50 SERIES & Radeon RX 90 SERIES",
     
     // GPUs
     image1: "https://dlcdnwebimgs.asus.com/gain/1604342F-835B-4F89-BDC9-9834AF558D5C/w1000/h732",
