@@ -14,7 +14,7 @@ const slides = [
     alt1: "Primary GPU",
     image2: "https://dlcdnwebimgs.asus.com/gain/5f627238-83a2-4886-99ea-0db96c46a489/",
     alt2: "Secondary GPU",
-    image3: "https://assets.nvidia.partners/images/png/RTX5070-3QTR-Back-Left_small.png",
+    image3: "https://www.asus.com/microsite/Graphics-Cards/GeForce-RTX-50-Series/ph/v1/img/features/cooling/pd.png",
     alt3: "Tertiary GPU",
     
     // RAM
