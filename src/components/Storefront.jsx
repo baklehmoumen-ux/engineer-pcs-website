@@ -234,7 +234,7 @@ export default function Storefront() {
   
   const [toastMessage, setToastMessage] = useState('');
 
-  // NEW: State to track if the user is currently hunting for a specific builder part
+  // State to track if the user is currently hunting for a specific builder part
   const [selectingFor, setSelectingFor] = useState(null);
 
   // Detail Modal State
@@ -294,7 +294,7 @@ export default function Storefront() {
     const isBuilderSelection = selectingFor === product.category;
     
     setCart(prev => {
-      // If selecting for builder, remove any previously selected part of this exact category first to keep it a true 1-part slot
+      // If selecting for builder, remove any previously selected part of this exact category first
       let newCart = prev;
       if (isBuilderSelection) {
         newCart = prev.filter(item => item.category !== product.category);
@@ -521,18 +521,16 @@ export default function Storefront() {
             {filteredInventory.map((item) => {
               const qty = getItemQuantity(item.id);
               const isOutOfStock = item.in_stock === false;
-              // Extract the first image out of the comma-separated string
               const firstImage = item.image ? item.image.split(',')[0].trim() : '/images/default.jpg';
 
               return (
                 <div key={item.id} className={`group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col overflow-hidden relative ${isOutOfStock ? 'opacity-75' : ''}`}>
                   
-                  {/* PRODUCT IMAGE CONTAINER (CLICK TO VIEW DETAILS & FURTHER PICTURES) */}
+                  {/* PRODUCT IMAGE CONTAINER */}
                   <div 
                     onClick={() => openDetailModal(item)}
                     className="h-32 md:h-56 bg-gray-50 flex items-center justify-center p-2 md:p-4 relative overflow-hidden cursor-pointer"
                   >
-                    {/* OUT OF STOCK OVERLAY BADGE */}
                     {isOutOfStock && (
                       <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px] flex items-center justify-center z-20">
                         <span className="bg-red-600 text-white font-black text-xs md:text-sm uppercase tracking-widest px-3 py-1.5 rounded-md shadow-lg border border-red-400">
@@ -541,7 +539,6 @@ export default function Storefront() {
                       </div>
                     )}
 
-                    {/* REPLACED WITH REAL IMAGE TAG (Using the first image available) */}
                     <img 
                       src={firstImage} 
                       alt={item.name}
@@ -566,7 +563,6 @@ export default function Storefront() {
                     <div className="mt-auto flex items-center justify-between gap-2">
                       <div className="text-base md:text-xl font-black text-gray-900">${item.price}</div>
                       
-                      {/* IN-CARD QUANTITY CONTROLLER / OUT OF STOCK BADGE */}
                       {isOutOfStock ? (
                         <span className="text-xs font-bold text-red-500 bg-red-50 px-2 py-1 rounded">
                           Unavailable
@@ -594,23 +590,44 @@ export default function Storefront() {
         )}
       </main>
 
-      {/* MOBILE-ONLY STICKY BOTTOM BAR (Builder + Cart) */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-2 px-4 flex justify-between items-center z-40 shadow-[0_-5px_15px_rgba(0,0,0,0.1)] gap-2">
+      {/* DYNAMIC, HIGH-THEME MOBILE-ONLY STICKY BOTTOM BAR */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-md border-t border-gray-800 p-2.5 px-4 flex justify-between items-center z-40 shadow-[0_-10px_25px_rgba(0,0,0,0.5)] gap-3">
+        
+        {/* PC BUILDER BUTTON */}
         <button 
           onClick={() => { setDrawerView('builder'); setIsDrawerOpen(true); }}
-          className={`flex-1 flex flex-col items-center justify-center py-2 rounded-lg font-bold text-xs transition-colors shadow-sm border ${buildStatus.isComplete ? 'bg-green-50 border-green-200 text-green-800' : 'bg-yellow-50 border-yellow-200 text-yellow-800'}`}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-bold text-xs transition-all shadow-md active:scale-95 cursor-pointer border ${
+            buildStatus.isComplete 
+              ? 'bg-green-500/20 text-green-400 border-green-500/40 shadow-[0_0_15px_rgba(34,197,94,0.15)]' 
+              : 'bg-gray-800 hover:bg-gray-700 text-white border-gray-700'
+          }`}
         >
-          <span className="text-lg">🛠️</span>
-          {buildStatus.isComplete ? 'Build Ready' : 'Build PC'}
+          <span className="text-base">{buildStatus.isComplete ? '✅' : '🛠️'}</span>
+          <div className="flex flex-col items-start leading-tight">
+            <span className="text-[9px] uppercase font-black tracking-wider text-gray-400">System</span>
+            <span className="font-extrabold">{buildStatus.isComplete ? 'Build Ready' : 'Build PC'}</span>
+          </div>
         </button>
 
+        {/* CART BUTTON */}
         <button 
           onClick={() => { setDrawerView('cart'); setIsDrawerOpen(true); }}
-          className="flex-1 bg-gray-900 hover:bg-black text-white font-bold py-2 rounded-lg text-xs shadow-md flex flex-col items-center justify-center transition-colors"
+          className="flex-1 bg-yellow-400 hover:bg-yellow-500 active:bg-yellow-600 text-black font-black py-2.5 px-3 rounded-xl text-xs shadow-[0_0_20px_rgba(250,204,21,0.25)] flex items-center justify-center gap-2.5 transition-all active:scale-95 cursor-pointer"
         >
-          <span className="text-lg">🛒</span>
-          ${cartTotal.toFixed(2)}
+          <div className="relative flex items-center justify-center">
+            <span className="text-base">🛒</span>
+            {cartCount > 0 && (
+              <span className="absolute -top-1.5 -right-2.5 bg-black text-yellow-400 text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border border-yellow-400">
+                {cartCount}
+              </span>
+            )}
+          </div>
+          <div className="flex flex-col items-start leading-tight">
+            <span className="text-[9px] uppercase font-black text-black/70 tracking-wider">Total</span>
+            <span className="font-black text-sm">${cartTotal.toFixed(2)}</span>
+          </div>
         </button>
+
       </div>
 
       {/* 5. INTERACTIVE MULTI-STEP CHECKOUT & BUILDER DRAWER */}
@@ -627,10 +644,9 @@ export default function Storefront() {
 
             <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
               
-              {/* BUILDER VIEW (Part Picker Experience) */}
+              {/* BUILDER VIEW */}
               {drawerView === 'builder' && (
                 <div className="space-y-4 pb-20 md:pb-0">
-                  {/* Progress Header */}
                   <div className={`p-4 rounded-xl border shadow-sm ${buildStatus.isComplete ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'}`}>
                     <div className="flex justify-between items-end mb-2">
                       <h3 className={`font-black text-lg ${buildStatus.isComplete ? 'text-green-800' : 'text-gray-800'}`}>
@@ -638,7 +654,6 @@ export default function Storefront() {
                       </h3>
                       <span className="text-xs font-bold text-gray-500">{buildStatus.progress}%</span>
                     </div>
-                    {/* Progress Bar */}
                     <div className="w-full bg-gray-200 rounded-full h-2.5 mb-2 overflow-hidden shadow-inner">
                       <div className={`h-2.5 rounded-full transition-all duration-500 ${buildStatus.isComplete ? 'bg-green-500' : 'bg-yellow-400'}`} style={{ width: `${buildStatus.progress}%` }}></div>
                     </div>
@@ -649,18 +664,14 @@ export default function Storefront() {
                     )}
                   </div>
                   
-                  {/* Interactive Component List */}
                   <div className="space-y-2">
                     {requiredParts.map(part => {
-                      // Grab the first item in the cart that matches this category to represent the "slotted" item
                       const selectedItem = cart.find(item => item.category === part.key);
                       const isAdded = !!selectedItem;
                       const thumb = selectedItem?.image ? selectedItem.image.split(',')[0].trim() : '/images/default.jpg';
 
                       return (
                         <div key={part.key} className={`flex flex-col bg-white p-3 rounded-xl shadow-sm border transition-colors ${isAdded ? 'border-green-200' : 'border-gray-200 hover:border-blue-300'}`}>
-                          
-                          {/* Slot Header */}
                           <div className="flex justify-between items-center mb-1">
                             <div className="flex items-center gap-2">
                               <span className="text-gray-700 bg-gray-100 p-2 rounded-lg shadow-inner flex items-center justify-center">
@@ -684,7 +695,6 @@ export default function Storefront() {
                             )}
                           </div>
 
-                          {/* Selected Item Data */}
                           {isAdded && (
                             <div className="mt-2 ml-10 pl-3 border-l-2 border-green-300 flex items-center justify-between gap-3">
                               <div className="flex items-center gap-3 overflow-hidden">
@@ -695,7 +705,6 @@ export default function Storefront() {
                                 </div>
                               </div>
                               
-                              {/* Slot Actions */}
                               <div className="flex items-center gap-1 shrink-0">
                                 <button onClick={() => startSelectingPart(part.key)} className="text-[10px] text-blue-600 font-bold bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded cursor-pointer transition">
                                   Swap
@@ -741,7 +750,7 @@ export default function Storefront() {
                           <div className="text-base md:text-lg font-black text-gray-900">${item.price * item.quantity}</div>
                           <button onClick={() => removeFromCart(item.id)} className="text-red-500 hover:text-red-700 bg-red-50 p-2 rounded-md transition text-sm md:text-base cursor-pointer">🗑️</button>
                         </div>
-                      )
+                      );
                     })
                   )}
                 </div>
@@ -752,15 +761,15 @@ export default function Storefront() {
                 <form id="checkout-form" onSubmit={submitOrder} className="space-y-4 md:space-y-5 pb-20 md:pb-0">
                   <div>
                     <label className="block text-xs md:text-sm font-bold text-gray-700 mb-1">Full Name</label>
-                    <input required type="text" placeholder="John Doe" className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-yellow-500 text-sm md:text-base" value={customerInfo.name} onChange={(e) => setCustomerInfo({...customerInfo, name: e.target.value})} />
+                    <input required type="text" placeholder="John Doe" className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-yellow-500 text-sm md:text-base text-black" value={customerInfo.name} onChange={(e) => setCustomerInfo({...customerInfo, name: e.target.value})} />
                   </div>
                   <div>
                     <label className="block text-xs md:text-sm font-bold text-gray-700 mb-1">WhatsApp / Phone Number</label>
-                    <input required type="tel" placeholder="+963..." className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-yellow-500 text-sm md:text-base" value={customerInfo.phone} onChange={(e) => setCustomerInfo({...customerInfo, phone: e.target.value})} />
+                    <input required type="tel" placeholder="+963..." className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-yellow-500 text-sm md:text-base text-black" value={customerInfo.phone} onChange={(e) => setCustomerInfo({...customerInfo, phone: e.target.value})} />
                   </div>
                   <div>
                     <label className="block text-xs md:text-sm font-bold text-gray-700 mb-1">Delivery Address</label>
-                    <textarea required rows="3" placeholder="City, Street, Building..." className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-yellow-500 text-sm md:text-base" value={customerInfo.address} onChange={(e) => setCustomerInfo({...customerInfo, address: e.target.value})}></textarea>
+                    <textarea required rows="3" placeholder="City, Street, Building..." className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-yellow-500 text-sm md:text-base text-black" value={customerInfo.address} onChange={(e) => setCustomerInfo({...customerInfo, address: e.target.value})}></textarea>
                   </div>
                   <button type="button" onClick={() => setDrawerView('cart')} className="text-sm text-blue-600 font-bold hover:underline cursor-pointer">
                     ← Back to Cart
@@ -810,7 +819,6 @@ export default function Storefront() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
           <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             
-            {/* Modal Header */}
             <div className="p-4 bg-gray-900 text-white flex justify-between items-center">
               <span className="text-xs font-bold text-yellow-400 uppercase tracking-widest">
                 {selectedProduct.category}
@@ -823,10 +831,8 @@ export default function Storefront() {
               </button>
             </div>
 
-            {/* Modal Body */}
             <div className="p-6 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-6">
               
-              {/* Left: Main Image & Gallery Thumbnails */}
               <div className="flex flex-col gap-3">
                 <div className="h-64 bg-gray-100 rounded-xl overflow-hidden border border-gray-200 flex items-center justify-center p-4 relative">
                   <img 
@@ -857,7 +863,6 @@ export default function Storefront() {
                 </div>
               </div>
 
-              {/* Right: Product Details & Actions */}
               <div className="flex flex-col justify-between">
                 <div>
                   <h2 className="text-xl font-bold text-gray-900 mb-2">
