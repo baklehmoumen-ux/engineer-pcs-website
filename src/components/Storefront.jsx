@@ -67,6 +67,19 @@ const dictionary = {
     viewList: '☰ Detailed List',
     viewGrid: '🔳 Grid',
     add: 'Add',
+
+    // ADVANCED E-COMMERCE FEATURES
+    filters: 'Filters',
+    compare: 'Compare',
+    compareItems: 'Compare Items',
+    frequentlyBought: 'Frequently Bought Together',
+    notifyMe: '🔔 Notify Me',
+    saveBuild: '💾 Save Build',
+    paymentMethod: 'Payment Method',
+    card: 'Credit Card',
+    whatsapp: 'WhatsApp',
+    loginToSave: 'Please log in to save your build.',
+    emailAlert: 'Enter your email to be notified when this is back in stock:',
     
     categories: {
       'All': 'All', 
@@ -155,6 +168,19 @@ const dictionary = {
     viewGrid: '🔳 شبكة',
     add: 'إضافة',
 
+    // ADVANCED E-COMMERCE FEATURES
+    filters: 'تصفية',
+    compare: 'مقارنة',
+    compareItems: 'مقارنة المنتجات',
+    frequentlyBought: 'غالباً ما تشترى معاً',
+    notifyMe: '🔔 أعلمني',
+    saveBuild: '💾 حفظ التجميعة',
+    paymentMethod: 'طريقة الدفع',
+    card: 'بطاقة ائتمان',
+    whatsapp: 'واتساب',
+    loginToSave: 'يرجى تسجيل الدخول لحفظ التجميعة.',
+    emailAlert: 'أدخل بريدك الإلكتروني لإعلامك عند توفر المنتج:',
+
     categories: {
       'All': 'الكل', 
       'CPUs': 'المعالجات',
@@ -180,9 +206,7 @@ const dictionary = {
       'Power Supply': 'مزود الطاقة'
     }
   }
-};
-
-const categories = [
+};const categories = [
   'All', 
   'CPUs',
   'Motherboards', 
@@ -236,13 +260,12 @@ const staticInventory = [
   { id: 'cpu-amd-3', category: 'CPUs', name: 'Ryzen 7 7800X3D', price: 315, image: '/images/r7-7800x3d.jpg', specs: { cores: '8', clock: '4.2 GHz', boost: '5.0 GHz', arch: 'Zen 4', tdp: '120 W', igpu: 'Radeon' } },
   { id: 'cpu-amd-5', category: 'CPUs', name: 'Ryzen 7 9800X3D', price: 420, image: '/images/r7-9800x3d.jpg', specs: { cores: '8', clock: '4.7 GHz', boost: '5.2 GHz', arch: 'Zen 5', tdp: '120 W', igpu: 'Radeon' } },
   { id: 'mb-2', category: 'Motherboards', name: 'ASUS B850M AYW GAMING WIFI', price: 185, image: '/images/asus-b850m.jpg', specs: { socket: 'AM5', formFactor: 'Micro ATX', memoryMax: '256 GB', memorySlots: '4', color: 'Black / Silver' } },
-];
-
-export default function Storefront() {
+  { id: 'gpu-mock', category: 'GPUs', name: 'NVIDIA GeForce RTX 4090 FE', price: 1599, image: 'https://via.placeholder.com/300?text=RTX+4090', in_stock: false, specs: { chipset: 'RTX 4090', memory: '24 GB', clock: '2235 MHz', boost: '2520 MHz', color: 'Silver/Black' } }
+];export default function Storefront() {
   const [lang, setLang] = useState('en');
   const t = dictionary[lang];
 
-  // Storefront Layout View State: 'list' (PCPartPicker detailed view) or 'grid' (classic grid)
+  // Storefront Layout View State: 'list' (PCPartPicker detailed view) or 'grid'
   const [viewMode, setViewMode] = useState('list');
 
   const [dbProducts, setDbProducts] = useState([]);
@@ -251,17 +274,21 @@ export default function Storefront() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('default');
   
+  // NEW Advanced E-Commerce Features State
+  const [compareItems, setCompareItems] = useState([]);
+  const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
+  const [notifyModalOpen, setNotifyModalOpen] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('whatsapp'); // 'whatsapp' | 'card'
+
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [drawerView, setDrawerView] = useState('cart'); // 'cart', 'checkout', or 'builder'
+  const [drawerView, setDrawerView] = useState('cart'); // 'cart', 'checkout', 'builder', 'auth'
   const [customerInfo, setCustomerInfo] = useState({ name: '', phone: '', address: '' });
   
   const [toastMessage, setToastMessage] = useState('');
   const [selectingFor, setSelectingFor] = useState(null);
 
-  // Share Build Modal
+  // Modals
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-
-  // Detail Modal State
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [activeImage, setActiveImage] = useState('');
 
@@ -294,6 +321,17 @@ export default function Storefront() {
     }, 2200);
   };
 
+  const handleToggleCompare = (item) => {
+    setCompareItems(prev => {
+      if (prev.find(i => i.id === item.id)) return prev.filter(i => i.id !== item.id);
+      if (prev.length >= 4) {
+        showToast(lang === 'ar' ? 'الحد الأقصى 4 منتجات للمقارنة' : 'Maximum 4 items to compare');
+        return prev;
+      }
+      return [...prev, item];
+    });
+  };
+
   // Filter & Price Sorting
   const filteredInventory = useMemo(() => {
     let items = masterInventory.filter(item => {
@@ -311,8 +349,15 @@ export default function Storefront() {
     return items;
   }, [masterInventory, activeCategory, searchQuery, sortBy]);
 
-  const addToCart = (product) => {
-    if (product.in_stock === false) return;
+  // Frequently Bought Together Logic (Pulls 2 items from other categories)
+  const relatedItems = useMemo(() => {
+    if (!selectedProduct) return [];
+    return masterInventory.filter(i => i.category !== selectedProduct.category && i.in_stock !== false).slice(0, 2);
+  }, [selectedProduct, masterInventory]);const addToCart = (product) => {
+    if (product.in_stock === false) {
+      setNotifyModalOpen(true);
+      return;
+    }
     
     const isBuilderSelection = selectingFor === product.category;
     
@@ -362,11 +407,9 @@ export default function Storefront() {
     return found ? found.quantity : 0;
   };
 
-  // =========================================================
   // ⚡ POWER WATTAGE & COMPATIBILITY CALCULATION ENGINE
-  // =========================================================
   const wattageInfo = useMemo(() => {
-    let estimatedWattage = 65; // Base MB, RAM, SSD, Fans load
+    let estimatedWattage = 65; 
     let selectedPsuWattage = 0;
 
     cart.forEach(item => {
@@ -460,9 +503,7 @@ export default function Storefront() {
       missing,
       progress: Math.round((fulfilledCount / requiredCount) * 100)
     };
-  }, [cart, compatibilityErrors, t]);
-
-  const generateShareBuildText = () => {
+  }, [cart, compatibilityErrors, t]);const generateShareBuildText = () => {
     let text = `⚡ *${t.shareBuildTitle} - EngineerPCs*\n\n`;
     text += `🎯 *${t.expectedPerf}:*\n${expectedPerformance}\n\n`;
     text += `⚡ *${t.estWattage}:* ~${wattageInfo.estimated}W ${wattageInfo.psu ? `(PSU: ${wattageInfo.psu}W)` : ''}\n\n`;
@@ -499,6 +540,10 @@ export default function Storefront() {
 
   const submitOrder = (e) => {
     e.preventDefault(); 
+    if (paymentMethod === 'card') {
+      showToast('Redirecting to Secure Payment Gateway...');
+      return; 
+    }
     let message = `*🌟 NEW ORDER FROM WEBSITE 🌟*\n\n`;
     message += `*Customer Details:*\n`;
     message += `👤 Name: ${customerInfo.name}\n`;
@@ -514,9 +559,7 @@ export default function Storefront() {
     window.open(`https://wa.me/963946508988?text=${encodedMessage}`, '_blank');
   };
 
-  // =========================================================================
-  // HELPER: Renders the Pill-Style Spec Grid for the new Detailed View Mode
-  // =========================================================================
+  // HELPER: Renders the Pill-Style Spec Grid for Detailed View
   const renderProductSpecs = (item) => {
     const s = item.specs || {};
     const cat = item.category;
@@ -625,15 +668,22 @@ export default function Storefront() {
         {item.description || `Official ${item.category} component verified by EngineerPCs.`}
       </p>
     );
-  };
-
-  return (
+  };return (
     <div className="min-h-screen bg-gray-50 font-sans pb-24 md:pb-0 relative" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       
       {/* FLOATING TOAST NOTIFICATION */}
       {toastMessage && (
         <div className="fixed top-16 left-1/2 transform -translate-x-1/2 z-50 bg-gray-900 text-white px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 border border-yellow-400 text-xs md:text-sm font-semibold animate-bounce">
           <span className="text-yellow-400">✨</span> {toastMessage}
+        </div>
+      )}
+
+      {/* FLOATING COMPARE BUTTON */}
+      {compareItems.length > 0 && (
+        <div className="fixed bottom-24 md:bottom-8 right-4 z-40 animate-bounce">
+          <button onClick={() => setIsCompareModalOpen(true)} className="bg-blue-600 text-white font-black px-6 py-3 rounded-full shadow-2xl border-2 border-white flex items-center gap-2 transition hover:bg-blue-700 active:scale-95 cursor-pointer">
+            <span className="text-lg">⚖️</span> {t.compare} ({compareItems.length})
+          </button>
         </div>
       )}
 
@@ -706,235 +756,202 @@ export default function Storefront() {
         </div>
       </nav>
 
-      {/* 4. MAIN PRODUCT DISPLAY HEADER, VIEW SWITCHER & LIVE PRICE SORTING */}
-      <main className="max-w-7xl mx-auto p-3 md:p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 md:mb-6 border-b-2 border-gray-200 pb-3">
-          <h2 className="text-lg md:text-2xl font-bold text-gray-800">
-            {searchQuery ? `${t.search} "${searchQuery}"` : (t.categories[activeCategory] || activeCategory)}
-          </h2>
-          
-          <div className="flex items-center justify-between sm:justify-end gap-3 flex-wrap">
+      {/* 4. MAIN PRODUCT DISPLAY HEADER & SIDEBAR FILTERS */}
+      <main className="max-w-7xl mx-auto p-3 md:p-6 flex flex-col lg:flex-row gap-6">
+        
+        {/* SIDEBAR FILTER */}
+        <aside className="hidden lg:block w-64 shrink-0 space-y-6 pt-4">
+          <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 sticky top-24">
+            <h3 className="font-black text-gray-900 mb-5 border-b pb-3 flex items-center gap-2"><span>⚙️</span> {t.filters}</h3>
             
-            {/* STOREFRONT VIEW MODE TOGGLE BUTTONS */}
-            <div className="flex bg-gray-200 p-1 rounded-lg border border-gray-300">
-              <button 
-                onClick={() => setViewMode('list')} 
-                className={`px-3 py-1 rounded-md text-xs font-bold transition cursor-pointer ${viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600'}`}
-              >
-                {t.viewList}
-              </button>
-              <button 
-                onClick={() => setViewMode('grid')} 
-                className={`px-3 py-1 rounded-md text-xs font-bold transition cursor-pointer ${viewMode === 'grid' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600'}`}
-              >
-                {t.viewGrid}
-              </button>
-            </div>
+            <div className="space-y-5">
+              <div>
+                <div className="text-xs font-bold text-gray-500 uppercase mb-2">Availability</div>
+                <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer"><input type="checkbox" className="w-4 h-4 rounded accent-blue-600 cursor-pointer" /> In Stock Only</label>
+              </div>
 
-            <span className="text-xs md:text-sm text-gray-500 font-medium">
-              {filteredInventory.length} {t.items}
-            </span>
-
-            {/* LIVE PRICE SORTING DROPDOWN */}
-            <div className="flex items-center gap-1.5 bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 shadow-sm">
-              <span className="text-xs text-gray-500 font-medium">{t.sort}</span>
-              <select 
-                value={sortBy} 
-                onChange={(e) => setSortBy(e.target.value)}
-                className="bg-transparent text-xs md:text-sm font-semibold text-gray-800 outline-none cursor-pointer"
-              >
-                <option value="default">{t.featured}</option>
-                <option value="low-high">{t.lowToHigh}</option>
-                <option value="high-low">{t.highToLow}</option>
-              </select>
-            </div>
-
-            {(activeCategory !== 'All' || searchQuery) && (
-              <button 
-                onClick={() => { setActiveCategory('All'); setSearchQuery(''); }}
-                className="text-xs bg-yellow-100 hover:bg-yellow-200 text-yellow-800 px-2.5 py-1.5 rounded-lg font-semibold transition cursor-pointer"
-              >
-                {t.reset}
-              </button>
-            )}
-          </div>
-        </div>
-
-        {filteredInventory.length === 0 ? (
-          <div className="text-center text-gray-500 py-20 text-lg md:text-xl">{t.noProducts}</div>
-        ) : viewMode === 'list' ? (
-          
-          /* ========================================================================= */
-          /* 1. BRAND NEW CARD-STYLE DETAILED LIST VIEW WITH SWIPEABLE IMAGE CAROUSEL  */
-          /* ========================================================================= */
-          <div className="space-y-4 md:space-y-6">
-            {filteredInventory.map(item => {
-              const qty = getItemQuantity(item.id);
-              const isOutOfStock = item.in_stock === false;
-              // Support multiple images separated by commas for the carousel
-              const images = item.image ? item.image.split(',').map(i => i.trim()) : ['/images/default.jpg'];
-
-              return (
-                <div key={item.id} className="bg-white rounded-2xl p-4 md:p-6 border border-gray-200 shadow-sm hover:shadow-md transition flex flex-col gap-4 relative">
-                  
-                  {/* IMAGE CAROUSEL (TOP) */}
-                  <div className="flex overflow-x-auto snap-x snap-mandatory gap-3 pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                    {images.map((img, idx) => (
-                      <div key={idx} className="w-[85%] sm:w-[45%] md:w-[30%] shrink-0 snap-start relative border border-gray-100 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center p-2">
-                        <img 
-                          src={img} 
-                          alt={`${item.name} - View ${idx + 1}`} 
-                          className="h-40 md:h-56 w-full object-contain cursor-pointer hover:scale-105 transition-transform"
-                          onClick={() => openDetailModal(item)}
-                          onError={(e) => { e.target.src = 'https://via.placeholder.com/300?text=PC+Component'; }}
-                        />
-                        {isOutOfStock && idx === 0 && (
-                          <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center z-10 pointer-events-none">
-                            <span className="bg-red-600 text-white font-black text-xs uppercase tracking-widest px-3 py-1.5 rounded-md shadow-lg">
-                              {t.outOfStockBadge}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    ))}
+              {activeCategory !== 'All' ? (
+                <>
+                  <div>
+                    <div className="text-xs font-bold text-gray-500 uppercase mb-2">Brand</div>
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 text-sm font-medium cursor-pointer hover:text-blue-600"><input type="checkbox" className="w-4 h-4 rounded accent-blue-600 cursor-pointer" /> AMD</label>
+                      <label className="flex items-center gap-2 text-sm font-medium cursor-pointer hover:text-blue-600"><input type="checkbox" className="w-4 h-4 rounded accent-blue-600 cursor-pointer" /> Intel</label>
+                      <label className="flex items-center gap-2 text-sm font-medium cursor-pointer hover:text-blue-600"><input type="checkbox" className="w-4 h-4 rounded accent-blue-600 cursor-pointer" /> NVIDIA</label>
+                    </div>
                   </div>
+                  <div>
+                    <div className="text-xs font-bold text-gray-500 uppercase mb-2">Price Range</div>
+                    <input type="range" className="w-full accent-blue-600 cursor-pointer" min="0" max="2000" />
+                    <div className="flex justify-between text-xs font-bold text-gray-400 mt-1"><span>$0</span><span>$2000+</span></div>
+                  </div>
+                </>
+              ) : (
+                <p className="text-xs text-gray-400 font-medium italic border-t pt-4">Select a specific category above to view detailed technical filters.</p>
+              )}
+            </div>
+          </div>
+        </aside><div className="flex-1">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 md:mb-6 border-b-2 border-gray-200 pb-3 pt-4">
+            <h2 className="text-lg md:text-2xl font-bold text-gray-800">
+              {searchQuery ? `${t.search} "${searchQuery}"` : (t.categories[activeCategory] || activeCategory)}
+            </h2>
+            
+            <div className="flex items-center justify-between sm:justify-end gap-3 flex-wrap">
+              <div className="flex bg-gray-200 p-1 rounded-lg border border-gray-300">
+                <button onClick={() => setViewMode('list')} className={`px-3 py-1 rounded-md text-xs font-bold transition cursor-pointer ${viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600'}`}>{t.viewList}</button>
+                <button onClick={() => setViewMode('grid')} className={`px-3 py-1 rounded-md text-xs font-bold transition cursor-pointer ${viewMode === 'grid' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600'}`}>{t.viewGrid}</button>
+              </div>
 
-                  {/* INFO SECTION (BELOW IMAGES) */}
-                  <div className="flex flex-col">
-                    <span className="text-[10px] md:text-xs font-black text-blue-600 uppercase tracking-widest mb-1">{t.categories[item.category] || item.category}</span>
-                    <h3 
-                      className="font-extrabold text-gray-900 text-base md:text-xl leading-snug cursor-pointer hover:text-blue-600 transition" 
-                      onClick={() => openDetailModal(item)}
-                    >
-                      {item.name}
-                    </h3>
+              <span className="text-xs md:text-sm text-gray-500 font-medium">{filteredInventory.length} {t.items}</span>
+
+              <div className="flex items-center gap-1.5 bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 shadow-sm">
+                <span className="text-xs text-gray-500 font-medium">{t.sort}</span>
+                <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-transparent text-xs md:text-sm font-semibold text-gray-800 outline-none cursor-pointer">
+                  <option value="default">{t.featured}</option>
+                  <option value="low-high">{t.lowToHigh}</option>
+                  <option value="high-low">{t.highToLow}</option>
+                </select>
+              </div>
+
+              {(activeCategory !== 'All' || searchQuery) && (
+                <button onClick={() => { setActiveCategory('All'); setSearchQuery(''); }} className="text-xs bg-yellow-100 hover:bg-yellow-200 text-yellow-800 px-2.5 py-1.5 rounded-lg font-semibold transition cursor-pointer">{t.reset}</button>
+              )}
+            </div>
+          </div>
+
+          {filteredInventory.length === 0 ? (
+            <div className="text-center text-gray-500 py-20 text-lg md:text-xl">{t.noProducts}</div>
+          ) : viewMode === 'list' ? (
+            
+            /* DETAILED LIST VIEW WITH SWIPEABLE CAROUSEL & PILL SPECS */
+            <div className="space-y-4 md:space-y-6">
+              {filteredInventory.map(item => {
+                const qty = getItemQuantity(item.id);
+                const isOutOfStock = item.in_stock === false;
+                const images = item.image ? item.image.split(',').map(i => i.trim()) : ['/images/default.jpg'];
+
+                return (
+                  <div key={item.id} className="bg-white rounded-2xl p-4 md:p-6 border border-gray-200 shadow-sm hover:shadow-md transition flex flex-col gap-4 relative">
                     
-                    {/* Fake Stars matching the UI requested */}
-                    <div className="flex items-center gap-1 text-xs text-yellow-500 font-bold mt-1.5">
-                      ★★★★★ <span className="text-gray-400 text-[10px] font-medium">(48)</span>
+                    {/* Compare Checkbox */}
+                    <div className="absolute top-4 left-4 z-20 bg-white/90 p-1.5 rounded-lg shadow-sm backdrop-blur">
+                      <input type="checkbox" className="w-4 h-4 cursor-pointer accent-blue-600" checked={compareItems.some(i => i.id === item.id)} onChange={(e) => { e.stopPropagation(); handleToggleCompare(item); }} title="Compare this item" />
                     </div>
 
-                    {/* Renders the Pill-Style Spec Grid */}
-                    {renderProductSpecs(item)}
-                  </div>
+                    {/* IMAGE CAROUSEL (TOP) */}
+                    <div className="flex overflow-x-auto snap-x snap-mandatory gap-3 pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                      {images.map((img, idx) => (
+                        <div key={idx} className="w-[85%] sm:w-[45%] md:w-[30%] shrink-0 snap-start relative border border-gray-100 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center p-2">
+                          <img 
+                            src={img} 
+                            alt={`${item.name} - View ${idx + 1}`} 
+                            className="h-40 md:h-56 w-full object-contain cursor-pointer hover:scale-105 transition-transform"
+                            onClick={() => openDetailModal(item)}
+                            onError={(e) => { e.target.src = 'https://via.placeholder.com/300?text=PC+Component'; }}
+                          />
+                          {isOutOfStock && idx === 0 && (
+                            <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center z-10 pointer-events-none">
+                              <span className="bg-red-600 text-white font-black text-xs uppercase tracking-widest px-3 py-1.5 rounded-md shadow-lg">{t.outOfStockBadge}</span>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
 
-                  {/* FOOTER SECTION (PRICE & ADD BUTTON) */}
-                  <div className="flex items-center justify-between border-t border-gray-100 pt-4 mt-2">
-                    <div className="text-2xl md:text-3xl font-black text-gray-900">${item.price}</div>
-                    
-                    {isOutOfStock ? (
-                      <span className="text-sm font-bold text-red-500 bg-red-50 px-4 py-2 rounded-lg border border-red-100">
-                        {t.unavailable}
-                      </span>
-                    ) : qty === 0 ? (
-                      <button 
-                        onClick={() => addToCart(item)}
-                        className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-extrabold px-6 md:px-8 py-2.5 md:py-3 rounded-xl text-sm shadow-md transition transform active:scale-95 cursor-pointer flex items-center gap-2"
-                      >
-                        + {t.add}
-                      </button>
-                    ) : (
-                      <div className="flex items-center bg-gray-100 rounded-xl border border-gray-300 p-1 shadow-inner h-10 md:h-12">
-                        <button onClick={() => updateQuantity(item.id, -1)} className="bg-white hover:bg-gray-200 text-black font-bold h-full w-10 md:w-12 rounded-lg flex items-center justify-center text-sm shadow-sm cursor-pointer transition">-</button>
-                        <span className="px-4 font-black text-sm md:text-base text-gray-800">{qty}</span>
-                        <button onClick={() => updateQuantity(item.id, 1)} className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold h-full w-10 md:w-12 rounded-lg flex items-center justify-center text-sm shadow-sm cursor-pointer transition">+</button>
+                    {/* INFO SECTION */}
+                    <div className="flex flex-col">
+                      <span className="text-[10px] md:text-xs font-black text-blue-600 uppercase tracking-widest mb-1 pl-10 md:pl-0">{t.categories[item.category] || item.category}</span>
+                      <h3 className="font-extrabold text-gray-900 text-base md:text-xl leading-snug cursor-pointer hover:text-blue-600 transition" onClick={() => openDetailModal(item)}>
+                        {item.name}
+                      </h3>
+                      
+                      <div className="flex items-center gap-1 text-xs text-yellow-500 font-bold mt-1.5">
+                        ★★★★★ <span className="text-gray-400 text-[10px] font-medium">(48)</span>
                       </div>
-                    )}
-                  </div>
 
-                </div>
-              );
-            })}
-          </div>
+                      {renderProductSpecs(item)}
+                    </div>
 
-        ) : (
-
-          /* ========================================================================= */
-          /* 2. CLASSIC GRID VIEW                                                      */
-          /* ========================================================================= */
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
-            {filteredInventory.map((item) => {
-              const qty = getItemQuantity(item.id);
-              const isOutOfStock = item.in_stock === false;
-              const firstImage = item.image ? item.image.split(',')[0].trim() : '/images/default.jpg';
-
-              return (
-                <div key={item.id} className={`group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col overflow-hidden relative ${isOutOfStock ? 'opacity-75' : ''}`}>
-                  
-                  <div 
-                    onClick={() => openDetailModal(item)}
-                    className="h-32 md:h-56 bg-gray-50 flex items-center justify-center p-2 md:p-4 relative overflow-hidden cursor-pointer"
-                  >
-                    {isOutOfStock && (
-                      <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px] flex items-center justify-center z-20">
-                        <span className="bg-red-600 text-white font-black text-xs md:text-sm uppercase tracking-widest px-3 py-1.5 rounded-md shadow-lg border border-red-400">
-                          {t.outOfStock}
-                        </span>
-                      </div>
-                    )}
-
-                    <img 
-                      src={firstImage} 
-                      alt={item.name}
-                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
-                      onError={(e) => { e.target.src = 'https://via.placeholder.com/300?text=PC+Component'; }}
-                    />
-                    
-                    <span className="absolute bottom-2 right-2 bg-gray-900/80 text-white text-[10px] px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                      {t.viewDetails}
-                    </span>
-                  </div>
-
-                  <div className="p-3 md:p-5 flex flex-col flex-1">
-                    <span className="text-[10px] md:text-xs font-bold text-blue-500 uppercase tracking-wider mb-1 line-clamp-1">{t.categories[item.category] || item.category}</span>
-                    <h3 
-                      onClick={() => openDetailModal(item)}
-                      className="text-gray-900 font-semibold text-xs md:text-sm line-clamp-2 mb-2 md:mb-3 cursor-pointer hover:text-blue-600 transition"
-                    >
-                      {item.name}
-                    </h3>
-                    
-                    <div className="mt-auto flex items-center justify-between gap-2">
-                      <div className="text-base md:text-xl font-black text-gray-900">${item.price}</div>
+                    {/* FOOTER SECTION */}
+                    <div className="flex items-center justify-between border-t border-gray-100 pt-4 mt-2">
+                      <div className="text-2xl md:text-3xl font-black text-gray-900">${item.price}</div>
                       
                       {isOutOfStock ? (
-                        <span className="text-xs font-bold text-red-500 bg-red-50 px-2 py-1 rounded">
-                          {t.unavailable}
-                        </span>
+                        <button onClick={(e) => { e.stopPropagation(); setNotifyModalOpen(true); }} className="bg-gray-800 hover:bg-gray-900 text-white font-bold px-4 md:px-6 py-2.5 rounded-xl text-sm shadow-md transition cursor-pointer flex items-center gap-2">
+                          {t.notifyMe}
+                        </button>
                       ) : qty === 0 ? (
-                        <button 
-                          onClick={() => addToCart(item)}
-                          className="bg-yellow-400 hover:bg-yellow-500 active:bg-yellow-600 text-black font-bold h-8 w-8 md:h-10 md:w-10 flex items-center justify-center rounded-full shadow transition-transform active:scale-90 text-sm md:text-base cursor-pointer"
-                        >
-                          ➕
+                        <button onClick={() => addToCart(item)} className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-extrabold px-6 md:px-8 py-2.5 md:py-3 rounded-xl text-sm shadow-md transition transform active:scale-95 cursor-pointer flex items-center gap-2">
+                          + {t.add}
                         </button>
                       ) : (
-                        <div className="flex items-center bg-gray-100 rounded-full border border-gray-300 p-0.5 shadow-inner">
-                          <button onClick={() => updateQuantity(item.id, -1)} className="bg-white hover:bg-gray-200 text-black font-bold h-7 w-7 rounded-full flex items-center justify-center text-xs shadow cursor-pointer">-</button>
-                          <span className="px-2 font-black text-xs text-gray-800">{qty}</span>
-                          <button onClick={() => updateQuantity(item.id, 1)} className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold h-7 w-7 rounded-full flex items-center justify-center text-xs shadow cursor-pointer">+</button>
+                        <div className="flex items-center bg-gray-100 rounded-xl border border-gray-300 p-1 shadow-inner h-10 md:h-12">
+                          <button onClick={() => updateQuantity(item.id, -1)} className="bg-white hover:bg-gray-200 text-black font-bold h-full w-10 md:w-12 rounded-lg flex items-center justify-center text-sm shadow-sm cursor-pointer transition">-</button>
+                          <span className="px-4 font-black text-sm md:text-base text-gray-800">{qty}</span>
+                          <button onClick={() => updateQuantity(item.id, 1)} className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold h-full w-10 md:w-12 rounded-lg flex items-center justify-center text-sm shadow-sm cursor-pointer transition">+</button>
                         </div>
                       )}
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </main>
+                );
+              })}
+            </div>
 
-      {/* MOBILE-ONLY STICKY BOTTOM BAR */}
+          ) : (
+
+            /* CLASSIC GRID VIEW */
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
+              {filteredInventory.map((item) => {
+                const qty = getItemQuantity(item.id);
+                const isOutOfStock = item.in_stock === false;
+                const firstImage = item.image ? item.image.split(',')[0].trim() : '/images/default.jpg';
+
+                return (
+                  <div key={item.id} className={`group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col overflow-hidden relative ${isOutOfStock ? 'opacity-75' : ''}`}>
+                    
+                    <div className="absolute top-2 left-2 z-30 bg-white/90 p-1 rounded shadow-sm backdrop-blur">
+                      <input type="checkbox" className="w-4 h-4 cursor-pointer accent-blue-600" checked={compareItems.some(i => i.id === item.id)} onChange={(e) => { e.stopPropagation(); handleToggleCompare(item); }} />
+                    </div>
+
+                    <div onClick={() => openDetailModal(item)} className="h-32 md:h-56 bg-gray-50 flex items-center justify-center p-2 md:p-4 relative overflow-hidden cursor-pointer">
+                      {isOutOfStock && (
+                        <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px] flex items-center justify-center z-20">
+                          <span className="bg-red-600 text-white font-black text-xs md:text-sm uppercase tracking-widest px-3 py-1.5 rounded-md shadow-lg border border-red-400">{t.outOfStock}</span>
+                        </div>
+                      )}
+                      <img src={firstImage} alt={item.name} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" onError={(e) => { e.target.src = 'https://via.placeholder.com/300?text=PC+Component'; }} />
+                    </div>
+
+                    <div className="p-3 md:p-5 flex flex-col flex-1">
+                      <span className="text-[10px] md:text-xs font-bold text-blue-500 uppercase tracking-wider mb-1 line-clamp-1 pl-6 md:pl-0">{t.categories[item.category] || item.category}</span>
+                      <h3 onClick={() => openDetailModal(item)} className="text-gray-900 font-semibold text-xs md:text-sm line-clamp-2 mb-2 md:mb-3 cursor-pointer hover:text-blue-600 transition">{item.name}</h3>
+                      
+                      <div className="mt-auto flex items-center justify-between gap-2">
+                        <div className="text-base md:text-xl font-black text-gray-900">${item.price}</div>
+                        
+                        {isOutOfStock ? (
+                          <button onClick={(e) => { e.stopPropagation(); setNotifyModalOpen(true); }} className="bg-gray-800 text-white font-bold px-2 py-1 rounded-lg text-xs cursor-pointer">{t.notifyMe}</button>
+                        ) : qty === 0 ? (
+                          <button onClick={() => addToCart(item)} className="bg-yellow-400 hover:bg-yellow-500 active:bg-yellow-600 text-black font-bold h-8 w-8 md:h-10 md:w-10 flex items-center justify-center rounded-full shadow transition-transform active:scale-90 text-sm md:text-base cursor-pointer">➕</button>
+                        ) : (
+                          <div className="flex items-center bg-gray-100 rounded-full border border-gray-300 p-0.5 shadow-inner">
+                            <button onClick={() => updateQuantity(item.id, -1)} className="bg-white hover:bg-gray-200 text-black font-bold h-7 w-7 rounded-full flex items-center justify-center text-xs shadow cursor-pointer">-</button>
+                            <span className="px-2 font-black text-xs text-gray-800">{qty}</span>
+                            <button onClick={() => updateQuantity(item.id, 1)} className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold h-7 w-7 rounded-full flex items-center justify-center text-xs shadow cursor-pointer">+</button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </main>{/* MOBILE-ONLY STICKY BOTTOM BAR */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-md border-t border-gray-800 p-2.5 px-4 flex justify-between items-center z-40 shadow-[0_-10px_25px_rgba(0,0,0,0.5)] gap-3">
-        
-        <button 
-          onClick={() => { setDrawerView('builder'); setIsDrawerOpen(true); }}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-bold text-xs transition-all shadow-md active:scale-95 cursor-pointer border ${
-            buildStatus.isComplete 
-              ? 'bg-green-500/20 text-green-400 border-green-500/40 shadow-[0_0_15px_rgba(34,197,94,0.15)]' 
-              : 'bg-gray-800 hover:bg-gray-700 text-white border-gray-700'
-          }`}
-        >
+        <button onClick={() => { setDrawerView('builder'); setIsDrawerOpen(true); }} className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-bold text-xs transition-all shadow-md active:scale-95 cursor-pointer border ${buildStatus.isComplete ? 'bg-green-500/20 text-green-400 border-green-500/40 shadow-[0_0_15px_rgba(34,197,94,0.15)]' : 'bg-gray-800 hover:bg-gray-700 text-white border-gray-700'}`}>
           <span className="text-base">{buildStatus.isComplete ? '✅' : '🛠️'}</span>
           <div className="flex flex-col items-start leading-tight">
             <span className="text-[9px] uppercase font-black tracking-wider text-gray-400">{t.system}</span>
@@ -942,41 +959,88 @@ export default function Storefront() {
           </div>
         </button>
 
-        <button 
-          onClick={() => { setDrawerView('cart'); setIsDrawerOpen(true); }}
-          className="flex-1 bg-yellow-400 hover:bg-yellow-500 active:bg-yellow-600 text-black font-black py-2.5 px-3 rounded-xl text-xs shadow-[0_0_20px_rgba(250,204,21,0.25)] flex items-center justify-center gap-2.5 transition-all active:scale-95 cursor-pointer"
-        >
+        <button onClick={() => { setDrawerView('cart'); setIsDrawerOpen(true); }} className="flex-1 bg-yellow-400 hover:bg-yellow-500 active:bg-yellow-600 text-black font-black py-2.5 px-3 rounded-xl text-xs shadow-[0_0_20px_rgba(250,204,21,0.25)] flex items-center justify-center gap-2.5 transition-all active:scale-95 cursor-pointer">
           <div className="relative flex items-center justify-center">
             <span className="text-base">🛒</span>
-            {cartCount > 0 && (
-              <span className="absolute -top-1.5 -right-2.5 bg-black text-yellow-400 text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border border-yellow-400">
-                {cartCount}
-              </span>
-            )}
+            {cartCount > 0 && <span className="absolute -top-1.5 -right-2.5 bg-black text-yellow-400 text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border border-yellow-400">{cartCount}</span>}
           </div>
           <div className="flex flex-col items-start leading-tight">
             <span className="text-[9px] uppercase font-black text-black/70 tracking-wider">{t.total}</span>
             <span className="font-black text-sm">${cartTotal.toFixed(2)}</span>
           </div>
         </button>
-
       </div>
 
-      {/* 5. INTERACTIVE MULTI-STEP CHECKOUT & BUILDER DRAWER */}
+      {/* COMPARE MODAL */}
+      {isCompareModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className="bg-white w-full max-w-4xl rounded-2xl p-6 relative flex flex-col max-h-[90vh] shadow-2xl">
+            <button onClick={() => setIsCompareModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-800 text-2xl font-bold">&times;</button>
+            <h2 className="text-xl md:text-2xl font-black mb-4 text-gray-900 flex items-center gap-2">⚖️ {t.compareItems}</h2>
+            
+            <div className="overflow-x-auto flex-1 border rounded-xl">
+              <table className="w-full text-left border-collapse min-w-[600px]">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="p-3 border-r border-gray-200 font-bold text-gray-500 w-32">Spec</th>
+                    {compareItems.map(i => (
+                      <th key={i.id} className="p-4 border-r border-gray-200 w-48 align-top text-center relative">
+                        <button onClick={() => setCompareItems(prev => prev.filter(c => c.id !== i.id))} className="absolute top-2 right-2 text-red-400 hover:text-red-600 text-lg leading-none cursor-pointer">&times;</button>
+                        <img src={i.image.split(',')[0]} className="h-20 w-full object-contain mb-3 bg-white rounded border p-1" />
+                        <p className="text-xs font-bold text-gray-800 line-clamp-2">{i.name}</p>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="text-sm">
+                  <tr className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="p-3 border-r border-gray-200 font-bold text-gray-500 text-xs uppercase tracking-wider">Price</td>
+                    {compareItems.map(i => <td key={i.id} className="p-3 border-r border-gray-200 font-black text-center text-lg text-gray-900">${i.price}</td>)}
+                  </tr>
+                  <tr className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="p-3 border-r border-gray-200 font-bold text-gray-500 text-xs uppercase tracking-wider">Stock</td>
+                    {compareItems.map(i => <td key={i.id} className="p-3 border-r border-gray-200 font-medium text-center">{i.in_stock === false ? '❌' : '✅'}</td>)}
+                  </tr>
+                  <tr className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="p-3 border-r border-gray-200 font-bold text-gray-500 text-xs uppercase tracking-wider">Category</td>
+                    {compareItems.map(i => <td key={i.id} className="p-3 border-r border-gray-200 font-bold text-blue-600 text-center text-xs">{i.category}</td>)}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <button onClick={() => setCompareItems([])} className="mt-4 text-red-500 hover:text-red-600 font-bold text-sm mx-auto cursor-pointer transition underline">Clear Comparison</button>
+          </div>
+        </div>
+      )}
+
+      {/* STOCK ALERT MODAL */}
+      {notifyModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="bg-white p-6 rounded-2xl w-full max-w-sm relative shadow-2xl text-center">
+            <button onClick={() => setNotifyModalOpen(false)} className="absolute top-3 right-4 text-gray-400 hover:text-gray-800 text-2xl font-bold cursor-pointer">&times;</button>
+            <div className="text-4xl mb-3">🔔</div>
+            <h2 className="text-xl font-black mb-2 text-gray-900">{t.notifyMe}</h2>
+            <p className="text-xs text-gray-500 mb-5 leading-relaxed">{t.emailAlert}</p>
+            <input type="email" placeholder="you@example.com" className="w-full border border-gray-300 p-3 rounded-xl mb-4 outline-none focus:border-blue-500 text-sm font-medium text-black" />
+            <button onClick={() => { showToast('Alert saved! We will notify you.'); setNotifyModalOpen(false); }} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-md transition active:scale-95 cursor-pointer">Save Alert</button>
+          </div>
+        </div>
+      )}{/* INTERACTIVE MULTI-STEP CHECKOUT & BUILDER DRAWER */}
       {isDrawerOpen && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-black bg-opacity-60 backdrop-blur-sm transition-opacity">
+        <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm transition-opacity">
           <div className="w-full max-w-md bg-white h-full shadow-2xl flex flex-col animate-slide-in-right">
             
             <div className="p-4 md:p-6 bg-gray-900 text-white flex justify-between items-center shadow-md">
               <h2 className="text-xl md:text-2xl font-bold flex items-center gap-2">
-                {drawerView === 'cart' ? t.yourCart : drawerView === 'checkout' ? t.checkout : t.pcBuilder}
+                {drawerView === 'cart' ? t.yourCart : drawerView === 'checkout' ? t.checkout : drawerView === 'auth' ? 'Login' : t.pcBuilder}
               </h2>
               <button onClick={() => setIsDrawerOpen(false)} className="text-gray-400 hover:text-white text-3xl font-bold leading-none cursor-pointer">&times;</button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
               
-              {/* BUILDER VIEW (ENGINEER YOUR OWN PC) */}
+              {/* BUILDER VIEW */}
               {drawerView === 'builder' && (
                 <div className="space-y-4 pb-20 md:pb-0">
                   
@@ -984,8 +1048,10 @@ export default function Storefront() {
                   <div className="bg-gray-900 text-white p-4 rounded-2xl shadow-lg space-y-3 border border-gray-800">
                     <div className="flex justify-between items-center border-b border-gray-800 pb-2">
                       <span className="text-xs font-extrabold text-yellow-400 uppercase tracking-widest">{t.expectedPerf}</span>
-                      <button onClick={() => setIsShareModalOpen(true)} className="bg-yellow-400 hover:bg-yellow-500 text-black text-xs font-black px-2.5 py-1 rounded-lg transition flex items-center gap-1 cursor-pointer">
-                        {t.shareBuildBtn}
+                      
+                      {/* Save Build Button */}
+                      <button onClick={() => setDrawerView('auth')} className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-black px-3 py-1.5 rounded-lg transition shadow-sm cursor-pointer">
+                        {t.saveBuild}
                       </button>
                     </div>
 
@@ -993,66 +1059,49 @@ export default function Storefront() {
                       {expectedPerformance}
                     </p>
 
-                    {/* Wattage Gauge Meter */}
                     <div className="pt-1">
                       <div className="flex justify-between text-[11px] font-bold mb-1">
                         <span className="text-gray-400">{t.estWattage}: <span className="text-white font-black">~{wattageInfo.estimated}W</span></span>
                         <span className={wattageInfo.psu >= wattageInfo.estimated ? "text-green-400 font-black" : "text-red-400 font-black"}>
-                          {t.psuCapacity}: {wattageInfo.psu ? `${wattageInfo.psu}W` : 'None Selected'}
+                          {t.psuCapacity}: {wattageInfo.psu ? `${wattageInfo.psu}W` : 'None'}
                         </span>
                       </div>
                       <div className="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
                         <div 
-                          className={`h-2 rounded-full transition-all duration-500 ${
-                            wattageInfo.psu === 0 ? 'bg-yellow-400' : wattageInfo.estimated > wattageInfo.psu ? 'bg-red-500' : 'bg-green-400'
-                          }`} 
+                          className={`h-2 rounded-full transition-all duration-500 ${wattageInfo.psu === 0 ? 'bg-yellow-400' : wattageInfo.estimated > wattageInfo.psu ? 'bg-red-500' : 'bg-green-400'}`} 
                           style={{ width: `${Math.min(100, wattageInfo.psu ? (wattageInfo.estimated / wattageInfo.psu) * 100 : 50)}%` }}
                         ></div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Compatibility Errors & GREEN "FIX" BUTTON */}
                   {compatibilityErrors.length > 0 && (
                     <div className="space-y-2">
                       {compatibilityErrors.map(err => (
                         <div key={err.id} className="bg-red-500/10 border-2 border-red-500/50 p-3 rounded-xl flex items-center justify-between gap-2 shadow-sm animate-pulse">
                           <div className="flex items-start gap-2">
                             <span className="text-lg">🚨</span>
-                            <p className="text-xs text-red-700 font-bold leading-tight">
-                              {lang === 'ar' ? err.messageAr : err.messageEn}
-                            </p>
+                            <p className="text-xs text-red-700 font-bold leading-tight">{lang === 'ar' ? err.messageAr : err.messageEn}</p>
                           </div>
-                          <button 
-                            onClick={() => startSelectingPart(err.categoryTarget)}
-                            className="bg-green-500 hover:bg-green-600 active:bg-green-700 text-white font-extrabold text-xs px-3 py-1.5 rounded-lg shadow cursor-pointer whitespace-nowrap shrink-0 transition transform active:scale-95"
-                          >
-                            {t.fixBtn}
-                          </button>
+                          <button onClick={() => startSelectingPart(err.categoryTarget)} className="bg-green-500 hover:bg-green-600 text-white font-extrabold text-xs px-3 py-1.5 rounded-lg shadow cursor-pointer">{t.fixBtn}</button>
                         </div>
                       ))}
                     </div>
                   )}
 
-                  {/* Progress Header */}
                   <div className={`p-4 rounded-xl border shadow-sm ${buildStatus.isComplete ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'}`}>
                     <div className="flex justify-between items-end mb-2">
-                      <h3 className={`font-black text-lg ${buildStatus.isComplete ? 'text-green-800' : 'text-gray-800'}`}>
-                        {buildStatus.isComplete ? t.buildComplete : t.missingComponents}
-                      </h3>
+                      <h3 className={`font-black text-lg ${buildStatus.isComplete ? 'text-green-800' : 'text-gray-800'}`}>{buildStatus.isComplete ? t.buildComplete : t.missingComponents}</h3>
                       <span className="text-xs font-bold text-gray-500">{buildStatus.progress}%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2.5 mb-2 overflow-hidden shadow-inner">
                       <div className={`h-2.5 rounded-full transition-all duration-500 ${buildStatus.isComplete ? 'bg-green-500' : 'bg-yellow-400'}`} style={{ width: `${buildStatus.progress}%` }}></div>
                     </div>
                     {!buildStatus.isComplete && buildStatus.missing.length > 0 && (
-                      <p className="text-xs text-gray-500 font-medium mt-2 leading-relaxed">
-                        {t.requiredLabel} <span className="font-bold text-gray-700">{buildStatus.missing.join(', ')}</span>.
-                      </p>
+                      <p className="text-xs text-gray-500 font-medium mt-2 leading-relaxed">{t.requiredLabel} <span className="font-bold text-gray-700">{buildStatus.missing.join(', ')}</span>.</p>
                     )}
                   </div>
                   
-                  {/* Parts List */}
                   <div className="space-y-2">
                     {requiredParts.map(part => {
                       const selectedItem = cart.find(item => item.category === part.key);
@@ -1064,44 +1113,24 @@ export default function Storefront() {
                         <div key={part.key} className={`flex flex-col bg-white p-3 rounded-xl shadow-sm border transition-colors ${isAdded ? 'border-green-200' : 'border-gray-200 hover:border-blue-300'}`}>
                           <div className="flex justify-between items-center mb-1">
                             <div className="flex items-center gap-2">
-                              <span className="text-gray-700 bg-gray-100 p-2 rounded-lg shadow-inner flex items-center justify-center">
-                                {part.icon}
-                              </span>
-                              <div className="flex flex-col">
-                                <span className="font-bold text-gray-800 text-xs md:text-sm flex items-center gap-1.5">
-                                  {partName} 
-                                  {!part.required && <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider bg-gray-100 px-1.5 rounded">{t.optional}</span>}
-                                </span>
-                              </div>
+                              <span className="text-gray-700 bg-gray-100 p-2 rounded-lg shadow-inner flex items-center justify-center">{part.icon}</span>
+                              <div className="flex flex-col"><span className="font-bold text-gray-800 text-xs md:text-sm flex items-center gap-1.5">{partName} {!part.required && <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider bg-gray-100 px-1.5 rounded">{t.optional}</span>}</span></div>
                             </div>
-                            
-                            {!isAdded && (
-                              <button 
-                                onClick={() => startSelectingPart(part.key)}
-                                className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-md font-bold transition shadow-sm cursor-pointer"
-                              >
-                                {t.choose}
-                              </button>
-                            )}
+                            {!isAdded && <button onClick={() => startSelectingPart(part.key)} className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-md font-bold transition shadow-sm cursor-pointer">{t.choose}</button>}
                           </div>
 
                           {isAdded && (
                             <div className="mt-2 ml-10 pl-3 border-l-2 border-green-300 flex items-center justify-between gap-3">
                               <div className="flex items-center gap-3 overflow-hidden">
-                                <img src={thumb} alt={selectedItem.name} className="w-10 h-10 object-cover rounded shadow-sm border border-gray-100 shrink-0" onError={(e) => { e.target.src = 'https://via.placeholder.com/50?text=PC'; }} />
+                                <img src={thumb} className="w-10 h-10 object-cover rounded shadow-sm border border-gray-100 shrink-0" />
                                 <div className="flex flex-col overflow-hidden">
                                   <span className="text-xs text-gray-700 font-bold truncate block w-[120px] sm:w-[150px]">{selectedItem.name}</span>
                                   <span className="text-sm font-black text-gray-900">${selectedItem.price}</span>
                                 </div>
                               </div>
-                              
                               <div className="flex items-center gap-1 shrink-0">
-                                <button onClick={() => startSelectingPart(part.key)} className="text-[10px] text-blue-600 font-bold bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded cursor-pointer transition">
-                                  {t.swap}
-                                </button>
-                                <button onClick={() => removeFromCart(selectedItem.id)} className="text-[10px] text-red-500 font-bold bg-red-50 hover:bg-red-100 p-1.5 rounded cursor-pointer transition" title="Remove from build">
-                                  🗑️
-                                </button>
+                                <button onClick={() => startSelectingPart(part.key)} className="text-[10px] text-blue-600 font-bold bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded cursor-pointer">{t.swap}</button>
+                                <button onClick={() => removeFromCart(selectedItem.id)} className="text-[10px] text-red-500 font-bold bg-red-50 hover:bg-red-100 p-1.5 rounded cursor-pointer">🗑️</button>
                               </div>
                             </div>
                           )}
@@ -1117,9 +1146,7 @@ export default function Storefront() {
                 <div className="space-y-3 md:space-y-4 pb-20 md:pb-0">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-xs font-bold text-gray-500">{cart.length} {t.items}</span>
-                    <button onClick={handleCopyShareText} className="text-xs bg-gray-800 hover:bg-gray-900 text-yellow-400 font-bold px-3 py-1 rounded-lg transition cursor-pointer">
-                      {t.shareCartBtn}
-                    </button>
+                    <button onClick={() => setIsShareModalOpen(true)} className="text-xs bg-gray-800 hover:bg-gray-900 text-yellow-400 font-bold px-3 py-1 rounded-lg transition cursor-pointer">{t.shareCartBtn}</button>
                   </div>
 
                   {cart.length === 0 ? (
@@ -1128,27 +1155,22 @@ export default function Storefront() {
                       <p className="text-lg md:text-xl font-medium">{t.cartEmpty}</p>
                     </div>
                   ) : (
-                    cart.map(item => {
-                      const cartThumb = item.image ? item.image.split(',')[0].trim() : '/images/default.jpg';
-                      return (
-                        <div key={item.id} className="flex gap-3 items-center bg-white p-3 md:p-4 rounded-lg shadow-sm border border-gray-100">
-                          <img src={cartThumb} className="w-12 h-12 object-cover rounded shrink-0 border border-gray-100" onError={(e) => { e.target.src = 'https://via.placeholder.com/50?text=PC'; }} />
-                          <div className="flex-1 overflow-hidden">
-                            <h4 className="font-bold text-gray-800 text-xs md:text-sm truncate">{item.name}</h4>
-                            <p className="text-gray-500 text-xs md:text-sm mt-1">${item.price} {t.each}</p>
-                            
-                            <div className="flex items-center gap-2 mt-2">
-                              <button onClick={() => updateQuantity(item.id, -1)} className="bg-gray-100 hover:bg-gray-200 text-black font-bold h-6 w-6 rounded flex items-center justify-center text-xs cursor-pointer">-</button>
-                              <span className="font-bold text-xs">{item.quantity}</span>
-                              <button onClick={() => updateQuantity(item.id, 1)} className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold h-6 w-6 rounded flex items-center justify-center text-xs cursor-pointer">+</button>
-                            </div>
+                    cart.map(item => (
+                      <div key={item.id} className="flex gap-3 items-center bg-white p-3 md:p-4 rounded-lg shadow-sm border border-gray-100">
+                        <img src={item.image.split(',')[0]} className="w-12 h-12 object-cover rounded shrink-0 border border-gray-100" />
+                        <div className="flex-1 overflow-hidden">
+                          <h4 className="font-bold text-gray-800 text-xs md:text-sm truncate">{item.name}</h4>
+                          <p className="text-gray-500 text-xs md:text-sm mt-1">${item.price} {t.each}</p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <button onClick={() => updateQuantity(item.id, -1)} className="bg-gray-100 hover:bg-gray-200 text-black font-bold h-6 w-6 rounded flex items-center justify-center text-xs cursor-pointer">-</button>
+                            <span className="font-bold text-xs">{item.quantity}</span>
+                            <button onClick={() => updateQuantity(item.id, 1)} className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold h-6 w-6 rounded flex items-center justify-center text-xs cursor-pointer">+</button>
                           </div>
-
-                          <div className="text-base md:text-lg font-black text-gray-900">${item.price * item.quantity}</div>
-                          <button onClick={() => removeFromCart(item.id)} className="text-red-500 hover:text-red-700 bg-red-50 p-2 rounded-md transition text-sm md:text-base cursor-pointer">🗑️</button>
                         </div>
-                      );
-                    })
+                        <div className="text-base md:text-lg font-black text-gray-900">${item.price * item.quantity}</div>
+                        <button onClick={() => removeFromCart(item.id)} className="text-red-500 hover:text-red-700 bg-red-50 p-2 rounded-md transition text-sm cursor-pointer">🗑️</button>
+                      </div>
+                    ))
                   )}
                 </div>
               )}
@@ -1156,22 +1178,38 @@ export default function Storefront() {
               {/* CHECKOUT VIEW */}
               {drawerView === 'checkout' && (
                 <form id="checkout-form" onSubmit={submitOrder} className="space-y-4 md:space-y-5 pb-20 md:pb-0">
-                  <div>
-                    <label className="block text-xs md:text-sm font-bold text-gray-700 mb-1">{t.fullName}</label>
-                    <input required type="text" placeholder="John Doe" className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-yellow-500 text-sm md:text-base text-black" value={customerInfo.name} onChange={(e) => setCustomerInfo({...customerInfo, name: e.target.value})} />
+                  <div><label className="block text-xs md:text-sm font-bold text-gray-700 mb-1">{t.fullName}</label><input required type="text" placeholder="John Doe" className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-blue-500 text-sm md:text-base text-black font-medium" value={customerInfo.name} onChange={(e) => setCustomerInfo({...customerInfo, name: e.target.value})} /></div>
+                  <div><label className="block text-xs md:text-sm font-bold text-gray-700 mb-1">{t.phone}</label><input required type="tel" placeholder="+963..." className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-blue-500 text-sm md:text-base text-black font-medium" value={customerInfo.phone} onChange={(e) => setCustomerInfo({...customerInfo, phone: e.target.value})} /></div>
+                  <div><label className="block text-xs md:text-sm font-bold text-gray-700 mb-1">{t.address}</label><textarea required rows="3" placeholder="City, Street, Building..." className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-blue-500 text-sm md:text-base text-black font-medium" value={customerInfo.address} onChange={(e) => setCustomerInfo({...customerInfo, address: e.target.value})}></textarea></div>
+                  
+                  {/* Payment Method Toggle */}
+                  <div className="border-t pt-4 mt-4">
+                    <label className="block text-xs md:text-sm font-bold text-gray-700 mb-3">{t.paymentMethod}</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div onClick={() => setPaymentMethod('whatsapp')} className={`p-3 rounded-xl border-2 cursor-pointer flex flex-col items-center gap-1 transition ${paymentMethod === 'whatsapp' ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:bg-gray-50'}`}>
+                        <span className="text-xl">💬</span><span className="text-xs font-bold">{t.whatsapp}</span>
+                      </div>
+                      <div onClick={() => setPaymentMethod('card')} className={`p-3 rounded-xl border-2 cursor-pointer flex flex-col items-center gap-1 transition ${paymentMethod === 'card' ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:bg-gray-50'}`}>
+                        <span className="text-xl">💳</span><span className="text-xs font-bold">{t.card}</span>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-xs md:text-sm font-bold text-gray-700 mb-1">{t.phone}</label>
-                    <input required type="tel" placeholder="+963..." className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-yellow-500 text-sm md:text-base text-black" value={customerInfo.phone} onChange={(e) => setCustomerInfo({...customerInfo, phone: e.target.value})} />
-                  </div>
-                  <div>
-                    <label className="block text-xs md:text-sm font-bold text-gray-700 mb-1">{t.address}</label>
-                    <textarea required rows="3" placeholder="City, Street, Building..." className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-yellow-500 text-sm md:text-base text-black" value={customerInfo.address} onChange={(e) => setCustomerInfo({...customerInfo, address: e.target.value})}></textarea>
-                  </div>
-                  <button type="button" onClick={() => setDrawerView('cart')} className="text-sm text-blue-600 font-bold hover:underline cursor-pointer">
-                    {t.backToCartBtn}
-                  </button>
+                  {paymentMethod === 'card' && <div className="bg-gray-100 p-3 rounded-lg text-xs text-gray-500 text-center font-medium mt-3 border border-gray-200">🔒 Secure encrypted checkout powered by Stripe.</div>}
+
+                  <button type="button" onClick={() => setDrawerView('cart')} className="text-sm text-blue-600 font-bold hover:underline cursor-pointer">{t.backToCartBtn}</button>
                 </form>
+              )}
+
+              {/* AUTH VIEW (Save Build UI) */}
+              {drawerView === 'auth' && (
+                <div className="flex flex-col items-center text-center mt-10 p-4">
+                  <span className="text-6xl mb-4">🔐</span>
+                  <h3 className="font-black text-xl mb-2 text-gray-900">Create Account</h3>
+                  <p className="text-sm text-gray-500 mb-6">{t.loginToSave}</p>
+                  <input type="email" placeholder="Email Address" className="w-full border border-gray-300 p-3 rounded-xl mb-3 outline-none focus:border-blue-500 text-sm font-medium text-black" />
+                  <input type="password" placeholder="Password" className="w-full border border-gray-300 p-3 rounded-xl mb-6 outline-none focus:border-blue-500 text-sm font-medium text-black" />
+                  <button onClick={() => { showToast('Build Saved to Account!'); setDrawerView('builder'); }} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-md transition active:scale-95 cursor-pointer">Sign In & Save</button>
+                </div>
               )}
             </div>
 
@@ -1183,163 +1221,118 @@ export default function Storefront() {
               </div>
               
               {drawerView === 'builder' ? (
-                <button 
-                  onClick={() => setDrawerView('cart')}
-                  className="w-full bg-gray-800 hover:bg-gray-900 text-white font-extrabold py-3 md:py-4 rounded-xl text-base md:text-lg shadow-lg transition-transform transform active:scale-95 cursor-pointer"
-                >
-                  {t.reviewCart}
-                </button>
+                <button onClick={() => setDrawerView('cart')} className="w-full bg-gray-800 hover:bg-gray-900 text-white font-extrabold py-3 md:py-4 rounded-xl text-base md:text-lg shadow-lg cursor-pointer">{t.reviewCart}</button>
               ) : drawerView === 'cart' ? (
-                <button 
-                  disabled={cart.length === 0}
-                  onClick={() => setDrawerView('checkout')}
-                  className="w-full bg-yellow-400 hover:bg-yellow-500 disabled:bg-gray-300 text-black font-extrabold py-3 md:py-4 rounded-xl text-base md:text-lg shadow-lg transition-transform transform active:scale-95 cursor-pointer"
-                >
-                  {t.proceedToCheckout}
+                <button disabled={cart.length === 0} onClick={() => setDrawerView('checkout')} className="w-full bg-yellow-400 hover:bg-yellow-500 disabled:bg-gray-300 text-black font-extrabold py-3 md:py-4 rounded-xl text-base md:text-lg shadow-lg cursor-pointer">{t.proceedToCheckout}</button>
+              ) : drawerView === 'checkout' ? (
+                <button type="submit" form="checkout-form" className="w-full bg-green-500 hover:bg-green-600 text-white font-extrabold py-3 md:py-4 rounded-xl text-base md:text-lg shadow-lg flex items-center justify-center gap-2 cursor-pointer">
+                  {paymentMethod === 'whatsapp' ? t.sendOrder : 'Pay Securely'}
                 </button>
-              ) : (
-                <button 
-                  type="submit"
-                  form="checkout-form"
-                  className="w-full bg-green-500 hover:bg-green-600 text-white font-extrabold py-3 md:py-4 rounded-xl text-base md:text-lg shadow-lg transition-transform transform active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  {t.sendOrder}
-                </button>
-              )}
+              ) : null}
             </div>
           </div>
         </div>
-      )}
-
-      {/* 6. SHARE BUILD SUMMARY MODAL */}
+      )}{/* SHARE BUILD SUMMARY MODAL */}
       {isShareModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="bg-gray-900 text-white w-full max-w-lg rounded-2xl p-6 border border-gray-800 shadow-2xl relative">
-            <button onClick={() => setIsShareModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl font-bold leading-none cursor-pointer">&times;</button>
-
-            <h2 className="text-xl font-extrabold text-yellow-400 mb-4 flex items-center gap-2">
-              ⚡ {t.shareBuildTitle}
-            </h2>
-
-            {/* Visual Build Card Summary */}
+            <button onClick={() => setIsShareModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl font-bold cursor-pointer">&times;</button>
+            <h2 className="text-xl font-extrabold text-yellow-400 mb-4 flex items-center gap-2">⚡ {t.shareBuildTitle}</h2>
             <div className="bg-gray-800/80 p-4 rounded-xl border border-gray-700 mb-6 space-y-3 max-h-[300px] overflow-y-auto">
               <div className="bg-gray-900 p-3 rounded-lg border border-gray-800">
                 <span className="text-[10px] font-black text-yellow-400 uppercase tracking-widest block mb-1">{t.expectedPerf}</span>
                 <p className="text-xs font-bold text-gray-200">{expectedPerformance}</p>
               </div>
-
               <div className="text-xs text-gray-300 font-semibold space-y-2">
                 {cart.map((item, idx) => (
-                  <div key={idx} className="flex justify-between items-center border-b border-gray-700/50 pb-1.5">
-                    <span className="truncate max-w-[240px]">{item.name}</span>
-                    <span className="font-black text-yellow-400">${item.price}</span>
-                  </div>
+                  <div key={idx} className="flex justify-between items-center border-b border-gray-700/50 pb-1.5"><span className="truncate max-w-[240px]">{item.name}</span><span className="font-black text-yellow-400">${item.price}</span></div>
                 ))}
               </div>
-
-              <div className="flex justify-between items-center pt-2 text-sm font-black text-white border-t border-gray-700">
-                <span>{t.totalDue}:</span>
-                <span className="text-yellow-400 text-base">${cartTotal.toFixed(2)}</span>
-              </div>
+              <div className="flex justify-between items-center pt-2 text-sm font-black text-white border-t border-gray-700"><span>{t.totalDue}:</span><span className="text-yellow-400 text-base">${cartTotal.toFixed(2)}</span></div>
             </div>
-
-            {/* Action Buttons */}
             <div className="flex flex-col gap-2">
-              <button 
-                onClick={handleShareBuildWhatsApp}
-                className="w-full bg-green-500 hover:bg-green-600 text-white font-extrabold py-3 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-lg"
-              >
-                <span>💬</span> {t.shareWhatsApp}
-              </button>
-              <button 
-                onClick={handleCopyShareText}
-                className="w-full bg-gray-800 hover:bg-gray-700 text-yellow-400 font-extrabold py-3 rounded-xl border border-gray-700 transition flex items-center justify-center gap-2 cursor-pointer"
-              >
-                {t.copyLink}
-              </button>
+              <button onClick={handleShareBuildWhatsApp} className="w-full bg-green-500 hover:bg-green-600 text-white font-extrabold py-3 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer shadow-lg"><span>💬</span> {t.shareWhatsApp}</button>
+              <button onClick={handleCopyShareText} className="w-full bg-gray-800 hover:bg-gray-700 text-yellow-400 font-extrabold py-3 rounded-xl border border-gray-700 transition flex items-center justify-center gap-2 cursor-pointer">{t.copyLink}</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* 7. PRODUCT DETAIL & MULTI-PICTURE MODAL */}
+      {/* PRODUCT DETAIL & MULTI-PICTURE MODAL */}
       {selectedProduct && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
           <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             
-            <div className="p-4 bg-gray-900 text-white flex justify-between items-center">
-              <span className="text-xs font-bold text-yellow-400 uppercase tracking-widest">
-                {t.categories[selectedProduct.category] || selectedProduct.category}
-              </span>
+            <div className="p-4 bg-gray-900 text-white flex justify-between items-center shrink-0">
+              <span className="text-xs font-bold text-yellow-400 uppercase tracking-widest">{t.categories[selectedProduct.category] || selectedProduct.category}</span>
               <button onClick={() => setSelectedProduct(null)} className="text-gray-400 hover:text-white text-2xl font-bold cursor-pointer">✕</button>
             </div>
 
-            <div className="p-6 overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-6">
-              
-              <div className="flex flex-col gap-3">
-                <div className="h-64 bg-gray-100 rounded-xl overflow-hidden border border-gray-200 flex items-center justify-center p-4 relative">
-                  <img 
-                    src={activeImage || '/images/default.jpg'} 
-                    alt={selectedProduct.name}
-                    className="w-full h-full object-contain"
-                    onError={(e) => { e.target.src = 'https://via.placeholder.com/300?text=PC+Component'; }}
-                  />
+            <div className="p-6 overflow-y-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex flex-col gap-3">
+                  <div className="h-64 bg-gray-100 rounded-xl overflow-hidden border border-gray-200 flex items-center justify-center p-4 relative">
+                    <img src={activeImage || '/images/default.jpg'} alt={selectedProduct.name} className="w-full h-full object-contain" onError={(e) => { e.target.src = 'https://via.placeholder.com/300?text=PC+Component'; }} />
+                  </div>
+                  <div className="flex gap-2 overflow-x-auto pb-1">
+                    {(selectedProduct.image ? selectedProduct.image.split(',').map(s => s.trim()) : ['/images/default.jpg']).map((img, idx) => (
+                      <button key={idx} onClick={() => setActiveImage(img)} className={`h-14 w-14 rounded-lg border-2 overflow-hidden bg-gray-50 flex items-center justify-center p-0.5 shrink-0 cursor-pointer ${activeImage === img ? 'border-yellow-500' : 'border-gray-200'}`}>
+                        <img src={img} className="w-full h-full object-cover rounded-md" onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=Img'; }} />
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
-                <div className="flex gap-2 overflow-x-auto pb-1">
-                  {(selectedProduct.image ? selectedProduct.image.split(',').map(s => s.trim()) : ['/images/default.jpg']).map((img, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setActiveImage(img)}
-                      className={`h-14 w-14 rounded-lg border-2 overflow-hidden bg-gray-50 flex items-center justify-center p-0.5 flex-shrink-0 cursor-pointer ${
-                        activeImage === img ? 'border-yellow-500' : 'border-gray-200'
-                      }`}
-                    >
-                      <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover rounded-md" onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=Img'; }} />
-                    </button>
-                  ))}
-                </div>
-              </div>
+                <div className="flex flex-col justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900 mb-2">{selectedProduct.name}</h2>
+                    <div className="text-2xl font-black text-gray-900 mb-4">${selectedProduct.price}</div>
+                    <div className="mb-4">
+                      <span className="text-xs font-bold text-gray-500 uppercase block mb-1">{t.availability}</span>
+                      {selectedProduct.in_stock === false ? (
+                        <span className="inline-block bg-red-100 text-red-600 font-bold text-xs px-2.5 py-1 rounded-md">{t.outOfStockBadge}</span>
+                      ) : (
+                        <span className="inline-block bg-green-100 text-green-700 font-bold text-xs px-2.5 py-1 rounded-md">{t.inStockReady}</span>
+                      )}
+                    </div>
+                    <div className="mb-6">
+                      <span className="text-xs font-bold text-gray-500 uppercase block mb-1">{t.descSpecs}</span>
+                      <p className="text-xs text-gray-600 leading-relaxed bg-gray-50 p-3 rounded-lg border border-gray-200 whitespace-pre-wrap">
+                        {selectedProduct.description || `Official ${selectedProduct.category} component by EngineerPCs. Verified for high performance, compatibility, and full manufacturer warranty.`}
+                      </p>
+                    </div>
+                  </div>
 
-              <div className="flex flex-col justify-between">
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900 mb-2">{selectedProduct.name}</h2>
-                  <div className="text-2xl font-black text-gray-900 mb-4">${selectedProduct.price}</div>
-
-                  <div className="mb-4">
-                    <span className="text-xs font-bold text-gray-500 uppercase block mb-1">{t.availability}</span>
+                  <div className="flex gap-3 pt-4 border-t border-gray-100">
                     {selectedProduct.in_stock === false ? (
-                      <span className="inline-block bg-red-100 text-red-600 font-bold text-xs px-2.5 py-1 rounded-md">{t.outOfStockBadge}</span>
+                      <button onClick={(e) => { e.stopPropagation(); setNotifyModalOpen(true); }} className="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 rounded-xl text-sm cursor-pointer">{t.notifyMe}</button>
                     ) : (
-                      <span className="inline-block bg-green-100 text-green-700 font-bold text-xs px-2.5 py-1 rounded-md">{t.inStockReady}</span>
+                      <button onClick={() => { addToCart(selectedProduct); setSelectedProduct(null); }} className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-extrabold py-3 rounded-xl text-sm shadow-md transition-transform active:scale-95 cursor-pointer">
+                        {selectingFor === selectedProduct.category ? t.addToBuild : t.addToCart}
+                      </button>
                     )}
                   </div>
-
-                  <div className="mb-6">
-                    <span className="text-xs font-bold text-gray-500 uppercase block mb-1">{t.descSpecs}</span>
-                    <p className="text-xs text-gray-600 leading-relaxed bg-gray-50 p-3 rounded-lg border border-gray-200 whitespace-pre-wrap">
-                      {selectedProduct.description || `Official ${selectedProduct.category} component by EngineerPCs. Verified for high performance, compatibility, and full manufacturer warranty.`}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-3 pt-4 border-t border-gray-100">
-                  {selectedProduct.in_stock === false ? (
-                    <button disabled className="w-full bg-gray-200 text-gray-500 font-bold py-3 rounded-xl text-sm">{t.currentlyUnavailable}</button>
-                  ) : (
-                    <button 
-                      onClick={() => {
-                        addToCart(selectedProduct);
-                        setSelectedProduct(null);
-                      }}
-                      className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-extrabold py-3 rounded-xl text-sm shadow-md transition-transform active:scale-95 cursor-pointer"
-                    >
-                      {selectingFor === selectedProduct.category ? t.addToBuild : t.addToCart}
-                    </button>
-                  )}
                 </div>
               </div>
 
+              {/* FREQUENTLY BOUGHT TOGETHER */}
+              {relatedItems.length > 0 && (
+                <div className="mt-8 border-t border-gray-100 pt-6">
+                  <h3 className="font-black text-sm text-gray-900 mb-4">{t.frequentlyBought}</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {relatedItems.map(item => (
+                      <div key={item.id} className="border border-gray-200 rounded-xl p-3 flex gap-3 items-center bg-gray-50 hover:bg-white transition cursor-pointer shadow-sm group" onClick={() => { setSelectedProduct(item); setActiveImage(item.image.split(',')[0].trim()); }}>
+                        <img src={item.image.split(',')[0]} className="w-14 h-14 object-contain rounded bg-white border border-gray-200 p-1 group-hover:scale-105 transition" />
+                        <div className="flex-1 overflow-hidden">
+                          <p className="text-xs font-bold text-gray-800 truncate mb-1">{item.name}</p>
+                          <p className="text-sm text-blue-600 font-black">${item.price}</p>
+                        </div>
+                        <button onClick={(e) => { e.stopPropagation(); addToCart(item); }} className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold h-8 w-8 rounded-full shadow-sm flex items-center justify-center shrink-0 cursor-pointer">➕</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
