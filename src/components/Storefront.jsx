@@ -54,7 +54,9 @@ const customStyles = `
   .btn-morph {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
-`;// =========================================================================
+`;
+
+// =========================================================================
 // 🌟 SCROLL REVEAL ANIMATION COMPONENT
 // =========================================================================
 const ScrollFadeItem = ({ children }) => {
@@ -84,64 +86,66 @@ const ScrollFadeItem = ({ children }) => {
       ref={domRef}
       style={{ willChange: 'opacity, transform' }}
       className={`transition-all duration-[700ms] ease-out w-full h-full ${
-        isVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-12 scale-[0.96]'
+        isVisible 
+          ? 'opacity-100 translate-y-0 scale-100' 
+          : 'opacity-0 translate-y-12 scale-[0.96]'
       }`}
     >
       {children}
     </div>
   );
-};
-
-// =========================================================================
-// 🌟 DEFAULT FALLBACK SLIDES (Used if DB is empty)
+};// =========================================================================
+// 🌟 DEFAULT FALLBACK SLIDES (Uses your exact DB schema names)
 // =========================================================================
 const fallbackSlides = [
   {
     id: '1',
-    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=2000&auto=format&fit=crop',
-    title_en: 'Ultimate Gaming Power',
+    images: [{ url: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=2000&auto=format&fit=crop' }],
+    title: 'Ultimate Gaming Power',
     title_ar: 'قوة ألعاب لا مثيل لها',
-    desc_en: 'Experience the next generation of graphics with the RTX 50-Series and elite components.',
-    desc_ar: 'اختبر الجيل القادم من الرسومات مع سلسلة RTX 50 وقطع الحاسوب النخبة.',
-    btn_en: 'Explore Components',
-    btn_ar: 'استكشف القطع',
-    icon: '🚀',
-    action: 'explore',
-    gradient: 'from-blue-900/90 via-black/80 to-transparent',
-    sort_order: 1
+    subtitle: 'Experience the next generation of graphics with the RTX 50-Series and elite components.',
+    subtitle_ar: 'اختبر الجيل القادم من الرسومات مع سلسلة RTX 50 وقطع الحاسوب النخبة.',
+    button_text: 'Explore Components',
+    button_text_ar: 'استكشف القطع',
+    tag: 'PRO PC BUILDERS',
+    tag_ar: 'خبراء تجميع الحاسوب',
+    category_target: 'explore',
+    text_alignment: 'left'
   },
   {
     id: '2',
-    image: 'https://images.unsplash.com/photo-1587202372634-32705e3bf49c?q=80&w=2000&auto=format&fit=crop',
-    title_en: 'Engineer Your Dream',
+    images: [{ url: 'https://images.unsplash.com/photo-1587202372634-32705e3bf49c?q=80&w=2000&auto=format&fit=crop' }],
+    title: 'Engineer Your Dream',
     title_ar: 'صمم حاسوب أحلامك',
-    desc_en: 'Custom PC building made effortless, perfectly compatible, and tailored to your needs.',
-    desc_ar: 'تجميع الحاسوب المخصص أصبح سهلاً، متوافقاً تماماً، ومصمماً لاحتياجاتك.',
-    btn_en: 'Start Building Now',
-    btn_ar: 'ابدأ التجميع الآن',
-    icon: '🛠️',
-    action: 'builder',
-    gradient: 'from-purple-900/90 via-black/80 to-transparent',
-    sort_order: 2
+    subtitle: 'Custom PC building made effortless, perfectly compatible, and tailored to your needs.',
+    subtitle_ar: 'تجميع الحاسوب المخصص أصبح سهلاً، متوافقاً تماماً، ومصمماً لاحتياجاتك.',
+    button_text: 'Start Building Now',
+    button_text_ar: 'ابدأ التجميع الآن',
+    tag: 'CUSTOM BUILDS',
+    tag_ar: 'تجميعات مخصصة',
+    category_target: 'builder',
+    text_alignment: 'center'
   },
   {
     id: '3',
-    image: 'https://images.unsplash.com/photo-1611078709841-11d4db9e34cd?q=80&w=2000&auto=format&fit=crop',
-    title_en: 'Stay Frosty Under Pressure',
+    images: [{ url: 'https://images.unsplash.com/photo-1611078709841-11d4db9e34cd?q=80&w=2000&auto=format&fit=crop' }],
+    title: 'Stay Frosty Under Pressure',
     title_ar: 'أداء فائق البرودة',
-    desc_en: 'Premium liquid cooling solutions like the Thermalright Wonder Vision 360 ensuring maximum performance.',
-    desc_ar: 'حلول تبريد مائي ممتازة مثل Thermalright Wonder Vision 360 تضمن لك أقصى أداء.',
-    btn_en: 'View Cooling Systems',
-    btn_ar: 'عرض أنظمة التبريد',
-    icon: '❄️',
-    action: 'cooling',
-    gradient: 'from-cyan-900/90 via-black/80 to-transparent',
-    sort_order: 3
+    subtitle: 'Premium liquid cooling solutions like the Thermalright Wonder Vision 360 ensuring maximum performance.',
+    subtitle_ar: 'حلول تبريد مائي ممتازة مثل Thermalright Wonder Vision 360 تضمن لك أقصى أداء.',
+    button_text: 'View Cooling Systems',
+    button_text_ar: 'عرض أنظمة التبريد',
+    tag: 'EXTREME COOLING',
+    tag_ar: 'تبريد احترافي',
+    category_target: 'Liquid & Air Cooling',
+    text_alignment: 'right'
   }
-];// =========================================================================
+];
+
+// =========================================================================
 // 🌟 INTERACTIVE SLIDING HERO BANNER COMPONENT
 // =========================================================================
-const SlidingHeroBanner = ({ slides, onAction, lang, proBuildersText }) => {
+const SlidingHeroBanner = ({ slides, onAction, lang, t }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -166,9 +170,7 @@ const SlidingHeroBanner = ({ slides, onAction, lang, proBuildersText }) => {
       interval = setInterval(() => { nextSlide(); }, 6000);
     }
     return () => clearInterval(interval);
-  }, [isHovered, currentSlide, displaySlides.length]);
-
-  return (
+  }, [isHovered, currentSlide, displaySlides.length]);return (
     <div 
       ref={heroRef}
       onMouseMove={handleMouseMove}
@@ -183,39 +185,67 @@ const SlidingHeroBanner = ({ slides, onAction, lang, proBuildersText }) => {
       />
 
       {displaySlides.map((slide, index) => {
-        const title = lang === 'ar' ? slide.title_ar : slide.title_en;
-        const desc = lang === 'ar' ? slide.desc_ar : slide.desc_en;
-        const btnText = lang === 'ar' ? slide.btn_ar : slide.btn_en;
+        // Smart Bilingual Support (Uses existing columns, but supports _ar if added later)
+        const title = lang === 'ar' && slide.title_ar ? slide.title_ar : slide.title;
+        const subtitle = lang === 'ar' && slide.subtitle_ar ? slide.subtitle_ar : slide.subtitle;
+        const btnText = lang === 'ar' && slide.button_text_ar ? slide.button_text_ar : slide.button_text;
+        const tag = lang === 'ar' && slide.tag_ar ? slide.tag_ar : slide.tag;
+
+        // Extracting image from your specific JSONB Array structure
+        let imageUrl = '/images/default.jpg';
+        try {
+          const imgData = typeof slide.images === 'string' ? JSON.parse(slide.images) : slide.images;
+          if (Array.isArray(imgData) && imgData.length > 0) {
+            imageUrl = imgData[0].url || imgData[0];
+          }
+        } catch(e) { console.error("Error parsing hero image JSONB", e) }
+
+        // Dynamic Alignment based on your DB column 'text_alignment'
+        let alignClass = "items-start text-left";
+        if (slide.text_alignment === 'center') alignClass = "items-center text-center mx-auto";
+        if (slide.text_alignment === 'right') alignClass = "items-end text-right ml-auto";
+        if (lang === 'ar' && slide.text_alignment !== 'center') alignClass = "items-start text-right"; // Override for RTL
 
         return (
           <div key={slide.id} className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ${currentSlide === index ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}>
             <div className="absolute inset-0 overflow-hidden w-full h-full">
-              <img src={slide.image} alt="Hero Background" className={`w-full h-full object-cover origin-center ${currentSlide === index ? 'slide-active' : 'slide-inactive'}`} />
+              <img src={imageUrl} alt={title} className={`w-full h-full object-cover origin-center ${currentSlide === index ? 'slide-active' : 'slide-inactive'}`} />
             </div>
-            <div className={`absolute inset-0 bg-gradient-to-r ${slide.gradient || 'from-blue-900/90 via-black/80 to-transparent'} z-10`}></div>
-            <div className="absolute inset-0 bg-black/30 z-10"></div>
+            
+            {/* Custom Gradient to ensure text is always readable */}
+            <div className={`absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/60 to-transparent z-10`}></div>
+            <div className="absolute inset-0 bg-black/20 z-10"></div>
 
             <div className="absolute inset-0 z-20 flex flex-col justify-center px-6 md:px-16 max-w-7xl mx-auto w-full">
-              <div className={`max-w-2xl transform transition-all duration-1000 delay-300 ${currentSlide === index ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-                <span className="inline-block px-4 py-1 mb-4 text-xs md:text-sm font-black tracking-widest text-yellow-400 bg-yellow-400/10 border border-yellow-400/30 rounded-full uppercase shadow-[0_0_15px_rgba(250,204,21,0.2)]">
-                  {proBuildersText}
-                </span>
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white leading-[1.1] mb-6 drop-shadow-2xl">
+              <div className={`max-w-3xl flex flex-col ${alignClass} transform transition-all duration-1000 delay-300 ${currentSlide === index ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+                
+                {tag && (
+                  <span className="inline-block px-4 py-1 mb-4 text-xs md:text-sm font-black tracking-widest text-yellow-400 bg-yellow-400/10 border border-yellow-400/30 rounded-full uppercase shadow-[0_0_15px_rgba(250,204,21,0.2)]">
+                    {tag}
+                  </span>
+                )}
+                
+                <h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-white leading-[1.15] mb-4 drop-shadow-2xl">
                   {title}
                 </h1>
-                <p className="text-gray-300 text-base md:text-xl font-medium mb-8 leading-relaxed max-w-xl drop-shadow-lg">
-                  {desc}
-                </p>
                 
-                <button 
-                  onClick={() => onAction(slide.action)}
-                  className="group/btn relative px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all hover:shadow-[0_0_35px_rgba(37,99,235,0.6)] hover:-translate-y-1 active:scale-95 cursor-pointer overflow-hidden border border-blue-500/50"
-                >
-                  <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover/btn:animate-[shimmer_1.5s_infinite] pointer-events-none" />
-                  <span className="flex items-center gap-3 text-sm md:text-base relative z-10">
-                    <span className="text-xl">{slide.icon || '🚀'}</span> {btnText}
-                  </span>
-                </button>
+                {subtitle && (
+                  <p className="text-gray-200 text-sm md:text-lg font-medium mb-8 leading-relaxed max-w-2xl drop-shadow-lg">
+                    {subtitle}
+                  </p>
+                )}
+                
+                {btnText && (
+                  <button 
+                    onClick={() => onAction(slide.category_target)}
+                    className="group/btn relative px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all hover:shadow-[0_0_35px_rgba(37,99,235,0.6)] hover:-translate-y-1 active:scale-95 cursor-pointer overflow-hidden border border-blue-500/50 inline-flex"
+                  >
+                    <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover/btn:animate-[shimmer_1.5s_infinite] pointer-events-none" />
+                    <span className="flex items-center justify-center gap-3 text-sm md:text-base relative z-10 w-full">
+                      {btnText}
+                    </span>
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -293,7 +323,6 @@ const dictionary = {
     addToCart: '➕ Add to Cart',
     currentlyUnavailable: 'Currently Unavailable',
     
-    // BUILDER, VIEW SWITCHER & SHARE FEATURES
     estWattage: 'Estimated Wattage',
     psuCapacity: 'PSU Capacity',
     fixBtn: '🔧 Fix Item',
@@ -308,7 +337,6 @@ const dictionary = {
     viewGrid: '🔳 Grid',
     add: 'Add',
 
-    // ADVANCED E-COMMERCE & SIDEBAR FEATURES
     filters: 'Filters',
     compare: 'Compare',
     compareItems: 'Compare Items',
@@ -420,7 +448,6 @@ const dictionary = {
     addToCart: '➕ إضافة للسلة',
     currentlyUnavailable: 'غير متوفر حالياً',
 
-    // BUILDER, VIEW SWITCHER & SHARE FEATURES
     estWattage: 'استهلاك الطاقة المقدر',
     psuCapacity: 'سعة مزود الطاقة',
     fixBtn: '🔧 إصلاح القطعة',
@@ -435,7 +462,6 @@ const dictionary = {
     viewGrid: '🔳 شبكة',
     add: 'إضافة',
 
-    // ADVANCED E-COMMERCE & SIDEBAR FEATURES
     filters: 'تصفية',
     compare: 'مقارنة',
     compareItems: 'مقارنة المنتجات',
@@ -504,18 +530,7 @@ const dictionary = {
 };
 
 const categories = [
-  'All', 
-  'CPUs',
-  'Motherboards', 
-  'GPUs',
-  'RAM',
-  'Storage',
-  'PC Cases', 
-  'Power Supplies', 
-  'Liquid & Air Cooling', 
-  'Case Fans & Hubs', 
-  'Monitors', 
-  'Chairs & Accessories'
+  'All', 'CPUs', 'Motherboards', 'GPUs', 'RAM', 'Storage', 'PC Cases', 'Power Supplies', 'Liquid & Air Cooling', 'Case Fans & Hubs', 'Monitors', 'Chairs & Accessories'
 ];
 
 const requiredParts = [
@@ -557,7 +572,7 @@ export default function Storefront() {
 
   const [viewMode, setViewMode] = useState('list');
   const [dbProducts, setDbProducts] = useState([]);
-  const [heroSlides, setHeroSlides] = useState([]); // NEW: Dynamic DB Slides
+  const [heroSlides, setHeroSlides] = useState([]); // FETCHED HERO SLIDES
   const [cart, setCart] = useState([]);
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -581,13 +596,13 @@ export default function Storefront() {
 
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [activeImage, setActiveImage] = useState('');// NEW: Fetch both Products AND Hero Slides from Supabase
+  const [activeImage, setActiveImage] = useState('');// Fetch Products & Hero Slides (Uses your existing table schema perfectly)
   useEffect(() => {
     async function fetchData() {
       try {
         const [prodRes, slideRes] = await Promise.all([
           supabase.from('products').select('*'),
-          supabase.from('hero_slides').select('*').order('sort_order', { ascending: true })
+          supabase.from('hero_slides').select('*').eq('is_active', true)
         ]);
         if (!prodRes.error && prodRes.data) setDbProducts(prodRes.data);
         if (!slideRes.error && slideRes.data && slideRes.data.length > 0) setHeroSlides(slideRes.data);
@@ -638,17 +653,18 @@ export default function Storefront() {
     return masterInventory.filter(i => i.category !== selectedProduct.category && i.in_stock !== false).slice(0, 2);
   }, [selectedProduct, masterInventory]);
 
-  // NEW: Dynamic Routing for Hero Banner Buttons
-  const handleHeroAction = (action) => {
-    if (action === 'builder') {
+  // SMART ROUTING FOR DYNAMIC HERO ACTIONS
+  const handleHeroAction = (actionTarget) => {
+    if (!actionTarget) return;
+    if (actionTarget.toLowerCase() === 'builder') {
       setSelectingFor(null);
       setDrawerView('builder');
       setIsDrawerOpen(true);
-    } else if (action === 'explore') {
+    } else if (actionTarget.toLowerCase() === 'explore' || actionTarget.toLowerCase() === 'all') {
       setActiveCategory('All');
       document.getElementById('product-catalog')?.scrollIntoView({ behavior: 'smooth' });
-    } else if (action === 'cooling') {
-      setActiveCategory('Liquid & Air Cooling');
+    } else if (categories.includes(actionTarget)) {
+      setActiveCategory(actionTarget);
       document.getElementById('product-catalog')?.scrollIntoView({ behavior: 'smooth' });
     }
   };
@@ -714,8 +730,10 @@ export default function Storefront() {
     const cpu = cart.find(i => i.category === 'CPUs');
     const mb = cart.find(i => i.category === 'Motherboards');
     if (cpu && mb) {
-      const isAmdCpu = cpu.name.toLowerCase().includes('ryzen') || cpu.name.toLowerCase().includes('7500f') || cpu.name.toLowerCase().includes('7800x3d') || cpu.name.toLowerCase().includes('9800x3d');
-      const isIntelMb = mb.name.toLowerCase().includes('h610') || mb.name.toLowerCase().includes('b760') || mb.name.toLowerCase().includes('z790') || mb.name.toLowerCase().includes('z890');
+      const cpuName = cpu.name.toLowerCase();
+      const mbName = mb.name.toLowerCase();
+      const isAmdCpu = cpuName.includes('ryzen') || cpuName.includes('7500f') || cpuName.includes('7800x3d') || cpuName.includes('9800x3d');
+      const isIntelMb = mbName.includes('h610') || mbName.includes('b760') || mbName.includes('z790') || mbName.includes('z890');
       if (isAmdCpu && isIntelMb) {
         errors.push({ id: 'socket-mismatch', categoryTarget: 'Motherboards', messageEn: `Incompatible Socket! Your AMD Ryzen CPU will not fit into Intel Motherboard (${mb.name}).`, messageAr: `قطع غير متوافقة! معالج AMD Ryzen لا يعمل مع لوحة أم Intel (${mb.name}).` });
       }
@@ -750,9 +768,7 @@ export default function Storefront() {
     cart.forEach(item => text += `▪️ ${item.name} - $${item.price}\n`);
     text += `\n💰 *Total Price: $${cartTotal.toFixed(2)}*`;
     return text;
-  };
-
-  const handleShareBuildWhatsApp = () => window.open(`https://wa.me/?text=${encodeURIComponent(generateShareBuildText())}`, '_blank');
+  };const handleShareBuildWhatsApp = () => window.open(`https://wa.me/?text=${encodeURIComponent(generateShareBuildText())}`, '_blank');
   const handleCopyShareText = () => { navigator.clipboard.writeText(generateShareBuildText()); showToast(lang === 'ar' ? 'تم نسخ التجميعة إلى الحافظة! 📋' : 'Build summary copied to clipboard! 📋'); };
   const openDetailModal = (product) => { setSelectedProduct(product); setActiveImage(product.image ? product.image.split(',')[0].trim() : '/images/default.jpg'); };
   const startSelectingPart = (category) => { setActiveCategory(category); setSelectingFor(category); setIsDrawerOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); };
@@ -764,7 +780,9 @@ export default function Storefront() {
     cart.forEach(item => message += `▪️ ${item.quantity}x ${item.name} - $${item.price * item.quantity}\n`);
     message += `\n*💰 Total Due: $${cartTotal.toFixed(2)}*`;
     window.open(`https://wa.me/963946508988?text=${encodeURIComponent(message)}`, '_blank');
-  };const renderProductSpecs = (item) => {
+  };
+
+  const renderProductSpecs = (item) => {
     const s = item.specs || {};
     const cat = item.category;
 
@@ -785,9 +803,7 @@ export default function Storefront() {
     if (cat === 'PC Cases') return <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full"><SpecBox label="Type" val={s.type || 'ATX Mid Tower'} /><SpecBox label="Color" val={s.color || 'Black'} /><SpecBox label="Side Panel" val={s.sidePanel || 'Tempered Glass'} /><SpecBox label="External Vol." val={s.volume || '45.0 L'} /></div>;
     if (cat === 'Liquid & Air Cooling') return <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full"><SpecBox label="Fan RPM" val={s.rpm || '1550 RPM'} /><SpecBox label="Noise Level" val={s.noise || '25.6 dB'} /><SpecBox label="Radiator Size" val={s.radSize || '360 mm'} /><SpecBox label="Color" val={s.color || 'Black'} /></div>;
     return <p className="text-xs text-gray-500 mt-2">{item.description || `Official ${item.category} component verified by EngineerPCs.`}</p>;
-  };
-
-  return (
+  };return (
     <div className="min-h-screen bg-gray-50 font-sans pb-24 md:pb-0 relative" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       <style dangerouslySetInnerHTML={{__html: customStyles}} />
       
@@ -833,27 +849,23 @@ export default function Storefront() {
             <svg className="w-3.5 h-3.5 fill-green-400 group-hover:scale-110 transition-transform" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg> WhatsApp
           </a>
         </div>
-      </div>{/* 🌟 SLIDING HERO BANNER INVOCATION */}
-      <SlidingHeroBanner slides={heroSlides} t={t} onAction={handleHeroAction} lang={lang} proBuildersText={t.heroProBuilders} />
+      </div>
 
-      {/* 3. CATEGORY NAVIGATION MENU */}
+      {/* 🌟 SLIDING HERO BANNER INVOCATION (DB DRIVEN) */}
+      <SlidingHeroBanner slides={heroSlides} t={t} onAction={handleHeroAction} lang={lang} />
+
+      {/* CATEGORY NAVIGATION MENU */}
       <nav className="bg-[#232F3E] text-white text-sm py-2 px-2 md:px-4 shadow-md overflow-x-auto whitespace-nowrap hide-scrollbar sticky top-0 z-30">
         <div className="max-w-7xl mx-auto flex gap-4 md:gap-6 px-2">
           {categories.map((category) => (
-            <button 
-              key={category}
-              onClick={() => setActiveCategory(category)}
-              className={`transition-all pb-1 border-b-2 text-sm md:text-base cursor-pointer ${
-                activeCategory === category ? 'border-yellow-400 text-yellow-400 font-bold' : 'border-transparent hover:border-gray-300 text-gray-300'
-              }`}
-            >
+            <button key={category} onClick={() => setActiveCategory(category)} className={`transition-all pb-1 border-b-2 text-sm md:text-base cursor-pointer ${activeCategory === category ? 'border-yellow-400 text-yellow-400 font-bold' : 'border-transparent hover:border-gray-300 text-gray-300'}`}>
               {t.categories[category] || category}
             </button>
           ))}
         </div>
       </nav>
 
-      {/* 4. MAIN PRODUCT DISPLAY HEADER & SIDEBAR FILTERS */}
+      {/* MAIN PRODUCT DISPLAY HEADER & SIDEBAR FILTERS */}
       <main id="product-catalog" className="max-w-7xl mx-auto p-3 md:p-6 flex flex-col lg:flex-row gap-6">
         
         {/* DESKTOP PROFESSIONAL SIDEBAR */}
@@ -900,9 +912,7 @@ export default function Storefront() {
               <span className="text-[9px] text-gray-400 font-bold tracking-wider uppercase">{t.createdBy}</span>
             </div>
           </div>
-        </aside>
-
-        <div className="flex-1 pb-32">
+        </aside><div className="flex-1 pb-32">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 md:mb-6 border-b-2 border-gray-200 pb-3 pt-4">
             <h2 className="text-lg md:text-2xl font-bold text-gray-800">{searchQuery ? `${t.search} "${searchQuery}"` : (t.categories[activeCategory] || activeCategory)}</h2>
             <div className="flex items-center justify-between sm:justify-end gap-3 flex-wrap">
