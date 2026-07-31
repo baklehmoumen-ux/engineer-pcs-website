@@ -834,7 +834,7 @@ export default function Storefront() {
           </a>
         </div>
       </div>{/* 🌟 SLIDING HERO BANNER INVOCATION */}
-      <SlidingHeroBanner slides={heroSlideshow} t={t} onAction={handleHeroAction} lang={lang} proBuildersText={t.heroProBuilders} />
+      <SlidingHeroBanner slides={heroSlides} t={t} onAction={handleHeroAction} lang={lang} proBuildersText={t.heroProBuilders} />
 
       {/* 3. CATEGORY NAVIGATION MENU */}
       <nav className="bg-[#232F3E] text-white text-sm py-2 px-2 md:px-4 shadow-md overflow-x-auto whitespace-nowrap hide-scrollbar sticky top-0 z-30">
