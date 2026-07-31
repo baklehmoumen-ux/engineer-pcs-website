@@ -804,7 +804,7 @@ const staticInventory = [
     return <p className="text-xs text-gray-500 mt-2">{item.description || `Official ${item.category} component verified by EngineerPCs.`}</p>;
   };return (
     <div className="min-h-screen bg-gray-50 font-sans pb-24 md:pb-0 relative" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
-      <style dangerouslySetInnerHTML={{__html: customStyles + utilityStyles}} />
+      <style dangerouslySetInnerHTML={{__html: customStyles}} />
       
       {toastMessage && (
         <div className="fixed top-16 left-1/2 transform -translate-x-1/2 z-50 bg-gray-900 text-white px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 border border-yellow-400 text-xs md:text-sm font-semibold animate-bounce">
