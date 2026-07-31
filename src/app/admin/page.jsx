@@ -46,11 +46,9 @@ const staticInventory = [
   { id: 'cpu-amd-5', category: 'CPUs', name: 'Ryzen 7 9800X3D', price: 420, image: '/images/r7-9800x3d.jpg', in_stock: true, specs: { cores: '8', clock: '4.7 GHz', boost: '5.2 GHz', arch: 'Zen 5', tdp: '120 W', igpu: 'Radeon' } },
   { id: 'cpu-amd-3', category: 'CPUs', name: 'Ryzen 7 7800X3D', price: 315, image: '/images/r7-7800x3d.jpg', in_stock: true, specs: { cores: '8', clock: '4.2 GHz', boost: '5.0 GHz', arch: 'Zen 4', tdp: '120 W', igpu: 'Radeon' } },
   { id: 'mb-2', category: 'Motherboards', name: 'ASUS B850M AYW GAMING WIFI', price: 185, image: '/images/asus-b850m.jpg', in_stock: true, specs: { socket: 'AM5', formFactor: 'Micro ATX', memoryMax: '256 GB', memorySlots: '4', color: 'Black / Silver' } },
-];
-
-export default function AdminDashboard() {
-  // Tabs State
-  const [activeTab, setActiveTab] = useState('products'); // 'products' or 'banners'
+];export default function AdminDashboard() {
+  // Tabs State (3 Tabs now)
+  const [activeTab, setActiveTab] = useState('products'); // 'products', 'banners', or 'newHero'
 
   // --- PRODUCT MANAGER STATE ---
   const [dbProducts, setDbProducts] = useState([]);
@@ -69,7 +67,7 @@ export default function AdminDashboard() {
     specs: {}
   });
 
-  // --- BANNER MANAGER STATE ---
+  // --- BANNER MANAGER STATE (OLD) ---
   const [dbSlides, setDbSlides] = useState([]);
   const [loadingSlides, setLoadingSlides] = useState(true);
   const [editingSlide, setEditingSlide] = useState(null);
@@ -105,9 +103,7 @@ export default function AdminDashboard() {
     if (error) console.error('Error fetching slides:', error);
     else setDbSlides(data || []);
     setLoadingSlides(false);
-  };
-
-  // --- PRODUCT FUNCTIONS ---
+  };// --- PRODUCT FUNCTIONS ---
   const allProducts = useMemo(() => {
     const dbIds = new Set(dbProducts.map(p => p.id));
     const remainingStatic = staticInventory.filter(item => !dbIds.has(item.id));
@@ -277,10 +273,9 @@ export default function AdminDashboard() {
     return null;
   };
 
-  // --- BANNER FUNCTIONS ---
+  // --- OLD BANNER FUNCTIONS ---
   const handleSlideSubmit = async (e) => {
     e.preventDefault();
-    
     const payload = {
       tag: slideFormData.tag,
       title: slideFormData.title,
@@ -324,15 +319,8 @@ export default function AdminDashboard() {
     }
   };
 
-  // --- DYNAMIC IMAGE BUILDER FUNCTIONS ---
   const addSlideImage = () => {
-    const newImage = { 
-      url: '', 
-      width: 'w-32 md:w-48', 
-      position: 'top-[10%] left-[10%]', 
-      animation: 'anim-float-1 delay-100', 
-      zIndex: 'z-10' 
-    };
+    const newImage = { url: '', width: 'w-32 md:w-48', position: 'top-[10%] left-[10%]', animation: 'anim-float-1 delay-100', zIndex: 'z-10' };
     setSlideFormData(prev => ({ ...prev, images: [...prev.images, newImage] }));
   };
 
@@ -345,10 +333,7 @@ export default function AdminDashboard() {
   const removeSlideImage = (index) => {
     const updatedImages = slideFormData.images.filter((_, i) => i !== index);
     setSlideFormData(prev => ({ ...prev, images: updatedImages }));
-  };
-
-
-  return (
+  };return (
     <div className="min-h-screen bg-gray-100 p-4 md:p-8 font-sans pb-20">
       <div className="max-w-7xl mx-auto">
         
@@ -360,19 +345,25 @@ export default function AdminDashboard() {
           </a>
         </div>
 
-        {/* TAB NAVIGATION */}
-        <div className="flex gap-4 mb-6 border-b-2 border-gray-200 pb-2">
+        {/* 3-TAB NAVIGATION */}
+        <div className="flex gap-2 sm:gap-4 mb-6 border-b-2 border-gray-200 pb-2 overflow-x-auto">
           <button 
             onClick={() => setActiveTab('products')}
-            className={`text-lg font-bold px-4 py-2 rounded-t-lg transition cursor-pointer ${activeTab === 'products' ? 'text-blue-600 border-b-4 border-blue-600 bg-white shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
+            className={`text-sm sm:text-lg font-bold px-4 py-2 rounded-t-lg transition cursor-pointer whitespace-nowrap ${activeTab === 'products' ? 'text-blue-600 border-b-4 border-blue-600 bg-white shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
           >
             📦 Product Catalog
           </button>
           <button 
             onClick={() => setActiveTab('banners')}
-            className={`text-lg font-bold px-4 py-2 rounded-t-lg transition cursor-pointer ${activeTab === 'banners' ? 'text-blue-600 border-b-4 border-blue-600 bg-white shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
+            className={`text-sm sm:text-lg font-bold px-4 py-2 rounded-t-lg transition cursor-pointer whitespace-nowrap ${activeTab === 'banners' ? 'text-blue-600 border-b-4 border-blue-600 bg-white shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
           >
-            🖼️ Hero Banner Builder
+            🖼️ Old Hero Builder
+          </button>
+          <button 
+            onClick={() => setActiveTab('newHero')}
+            className={`text-sm sm:text-lg font-bold px-4 py-2 rounded-t-lg transition cursor-pointer whitespace-nowrap ${activeTab === 'newHero' ? 'text-blue-600 border-b-4 border-blue-600 bg-white shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
+          >
+            ✨ New Sliding Hero
           </button>
         </div>
 
@@ -385,56 +376,16 @@ export default function AdminDashboard() {
                 {editingItem ? '✏️ Edit Product' : '➕ Add New Product'}
               </h2>
               <form onSubmit={handleProductSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-gray-600 mb-1">Product Name</label>
-                  <input required type="text" className="w-full p-2.5 border rounded-lg outline-none text-sm text-black font-medium" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="e.g. Ryzen 7 9800X3D" />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-gray-600 mb-1">Category</label>
-                  <select className="w-full p-2.5 border rounded-lg outline-none text-sm text-black font-medium bg-white" value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})}>
-                    {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-gray-600 mb-1">Retail Price ($)</label>
-                  <input required type="number" step="0.01" className="w-full p-2.5 border rounded-lg outline-none text-sm text-black font-medium" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} placeholder="422" />
-                </div>
-
-                {/* DYNAMIC CATEGORY SPECIFICATIONS FORM */}
-                <div>
-                  <label className="block text-xs font-bold text-blue-600 mb-1">⚙️ Technical Specifications ({formData.category})</label>
-                  {renderSpecFields()}
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-gray-600 mb-1">Description & Overview</label>
-                  <textarea rows="3" className="w-full p-2.5 border rounded-lg outline-none text-sm text-black font-medium resize-y" value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} placeholder="Enter general overview..." />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-gray-600 mb-1">Image Path(s) / URL(s)</label>
-                  <input type="text" className="w-full p-2.5 border rounded-lg outline-none text-sm text-black font-medium" value={formData.image} onChange={(e) => setFormData({...formData, image: e.target.value})} placeholder="url1.jpg, url2.jpg" />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-gray-600 mb-1">Availability Status</label>
-                  <select className="w-full p-2.5 border rounded-lg outline-none text-sm text-black bg-white font-medium" value={formData.in_stock ? 'true' : 'false'} onChange={(e) => setFormData({...formData, in_stock: e.target.value === 'true'})}>
-                    <option value="true">In Stock ✅</option>
-                    <option value="false">Out of Stock ❌</option>
-                  </select>
-                </div>
-
+                <div><label className="block text-xs font-bold text-gray-600 mb-1">Product Name</label><input required type="text" className="w-full p-2.5 border rounded-lg outline-none text-sm text-black font-medium" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder="e.g. Ryzen 7 9800X3D" /></div>
+                <div><label className="block text-xs font-bold text-gray-600 mb-1">Category</label><select className="w-full p-2.5 border rounded-lg outline-none text-sm text-black font-medium bg-white" value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})}>{categories.map(c => <option key={c} value={c}>{c}</option>)}</select></div>
+                <div><label className="block text-xs font-bold text-gray-600 mb-1">Retail Price ($)</label><input required type="number" step="0.01" className="w-full p-2.5 border rounded-lg outline-none text-sm text-black font-medium" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} placeholder="422" /></div>
+                <div><label className="block text-xs font-bold text-blue-600 mb-1">⚙️ Technical Specifications ({formData.category})</label>{renderSpecFields()}</div>
+                <div><label className="block text-xs font-bold text-gray-600 mb-1">Description & Overview</label><textarea rows="3" className="w-full p-2.5 border rounded-lg outline-none text-sm text-black font-medium resize-y" value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} placeholder="Enter general overview..." /></div>
+                <div><label className="block text-xs font-bold text-gray-600 mb-1">Image Path(s) / URL(s)</label><input type="text" className="w-full p-2.5 border rounded-lg outline-none text-sm text-black font-medium" value={formData.image} onChange={(e) => setFormData({...formData, image: e.target.value})} placeholder="url1.jpg, url2.jpg" /></div>
+                <div><label className="block text-xs font-bold text-gray-600 mb-1">Availability Status</label><select className="w-full p-2.5 border rounded-lg outline-none text-sm text-black bg-white font-medium" value={formData.in_stock ? 'true' : 'false'} onChange={(e) => setFormData({...formData, in_stock: e.target.value === 'true'})}><option value="true">In Stock ✅</option><option value="false">Out of Stock ❌</option></select></div>
                 <div className="flex gap-2 pt-2">
-                  <button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg transition shadow-md cursor-pointer">
-                    {editingItem ? 'Update Product' : 'Save Product'}
-                  </button>
-                  {editingItem && (
-                    <button type="button" onClick={() => { setEditingItem(null); setFormData({ id: '', name: '', category: 'CPUs', price: '', image: '', in_stock: true, description: '', specs: {} }); }} className="bg-gray-200 hover:bg-gray-300 px-4 py-2.5 rounded-lg font-bold text-gray-700 cursor-pointer">
-                      Cancel
-                    </button>
-                  )}
+                  <button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg transition shadow-md cursor-pointer">{editingItem ? 'Update Product' : 'Save Product'}</button>
+                  {editingItem && (<button type="button" onClick={() => { setEditingItem(null); setFormData({ id: '', name: '', category: 'CPUs', price: '', image: '', in_stock: true, description: '', specs: {} }); }} className="bg-gray-200 hover:bg-gray-300 px-4 py-2.5 rounded-lg font-bold text-gray-700 cursor-pointer">Cancel</button>)}
                 </div>
               </form>
             </div>
@@ -442,11 +393,7 @@ export default function AdminDashboard() {
             {/* PRODUCT LIST */}
             <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-md border-t-4 border-gray-800">
               <h2 className="text-xl font-bold mb-4 text-gray-800">📦 All Store Catalog ({allProducts.length})</h2>
-              
-              <div className="mb-4">
-                <input type="text" placeholder="Search products by name or category..." className="w-full p-2.5 border border-gray-300 rounded-lg outline-none text-sm text-black font-medium focus:border-blue-500 transition-colors bg-gray-50" value={adminSearch} onChange={(e) => setAdminSearch(e.target.value)} />
-              </div>
-
+              <div className="mb-4"><input type="text" placeholder="Search products by name or category..." className="w-full p-2.5 border border-gray-300 rounded-lg outline-none text-sm text-black font-medium focus:border-blue-500 transition-colors bg-gray-50" value={adminSearch} onChange={(e) => setAdminSearch(e.target.value)} /></div>
               {loadingProducts ? (
                 <div className="text-center py-10 text-gray-500 font-bold animate-pulse">Loading catalog...</div>
               ) : displayedProducts.length === 0 ? (
@@ -456,13 +403,9 @@ export default function AdminDashboard() {
                   {displayedProducts.map(item => (
                     <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50/50 transition">
                       <div className="mb-2 sm:mb-0">
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-bold text-gray-800 text-sm">{item.name}</h4>
-                          {item.in_stock === false && <span className="text-[10px] bg-red-100 text-red-600 font-bold px-1.5 py-0.5 rounded">Out of Stock</span>}
-                        </div>
+                        <div className="flex items-center gap-2"><h4 className="font-bold text-gray-800 text-sm">{item.name}</h4>{item.in_stock === false && <span className="text-[10px] bg-red-100 text-red-600 font-bold px-1.5 py-0.5 rounded">Out of Stock</span>}</div>
                         <p className="text-xs text-blue-600 font-medium">{item.category} — <span className="text-gray-900 font-bold">${item.price}</span></p>
                       </div>
-                      
                       <div className="flex gap-2">
                         <button onClick={() => handleProductEdit(item)} className="bg-white border border-gray-300 text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded text-xs font-bold shadow-sm cursor-pointer">Edit</button>
                         <button onClick={() => handleProductDelete(item.id)} className="bg-white border border-gray-300 text-red-600 hover:bg-red-50 px-3 py-1.5 rounded text-xs font-bold shadow-sm cursor-pointer">Delete</button>
@@ -473,9 +416,7 @@ export default function AdminDashboard() {
               )}
             </div>
           </div>
-        )}
-
-        {/* BANNER BUILDER */}
+        )}{/* OLD BANNER BUILDER */}
         {activeTab === 'banners' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fade-in">
             {/* SLIDE FORM */}
@@ -483,52 +424,24 @@ export default function AdminDashboard() {
               <h2 className="text-xl font-bold mb-4 text-gray-800 flex items-center gap-2">
                 {editingSlide ? '✏️ Edit Slide' : '➕ Create New Slide'}
               </h2>
-              
               <form onSubmit={handleSlideSubmit} className="space-y-6">
                 <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                   <h3 className="font-bold text-gray-800 mb-3 border-b pb-2">1. Text & Content</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-gray-600 mb-1">Badge / Tagline</label>
-                      <input required type="text" className="w-full p-2 border rounded-lg text-sm text-black font-medium" value={slideFormData.tag} onChange={e => setSlideFormData({...slideFormData, tag: e.target.value})} placeholder="e.g. GEFORCE RTX 40 SERIES" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-gray-600 mb-1">Main Title</label>
-                      <input required type="text" className="w-full p-2 border rounded-lg text-sm text-black font-medium" value={slideFormData.title} onChange={e => setSlideFormData({...slideFormData, title: e.target.value})} placeholder="e.g. Next-Level Performance" />
-                    </div>
-                    <div className="sm:col-span-2">
-                      <label className="block text-xs font-bold text-gray-600 mb-1">Subtitle</label>
-                      <input required type="text" className="w-full p-2 border rounded-lg text-sm text-black font-medium" value={slideFormData.subtitle} onChange={e => setSlideFormData({...slideFormData, subtitle: e.target.value})} placeholder="e.g. RTX Graphics · Fast Memory" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-gray-600 mb-1">Button Text</label>
-                      <input required type="text" className="w-full p-2 border rounded-lg text-sm text-black font-medium" value={slideFormData.button_text} onChange={e => setSlideFormData({...slideFormData, button_text: e.target.value})} placeholder="e.g. Shop Build Parts" />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-gray-600 mb-1">Button Category Target</label>
-                      <select className="w-full p-2 border rounded-lg text-sm text-black font-medium bg-white" value={slideFormData.category_target} onChange={e => setSlideFormData({...slideFormData, category_target: e.target.value})}>
-                        {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                        <option value="All">All Store</option>
-                      </select>
-                    </div>
-                    <div className="sm:col-span-2">
-                      <label className="block text-xs font-bold text-gray-600 mb-1">Text Alignment (Left or Right side of banner)</label>
-                      <select className="w-full p-2 border rounded-lg text-sm text-black font-medium bg-white" value={slideFormData.text_alignment} onChange={e => setSlideFormData({...slideFormData, text_alignment: e.target.value})}>
-                        <option value="left">Left Side</option>
-                        <option value="right">Right Side</option>
-                      </select>
-                    </div>
+                    <div><label className="block text-xs font-bold text-gray-600 mb-1">Badge / Tagline</label><input required type="text" className="w-full p-2 border rounded-lg text-sm text-black font-medium" value={slideFormData.tag} onChange={e => setSlideFormData({...slideFormData, tag: e.target.value})} placeholder="e.g. GEFORCE RTX 40 SERIES" /></div>
+                    <div><label className="block text-xs font-bold text-gray-600 mb-1">Main Title</label><input required type="text" className="w-full p-2 border rounded-lg text-sm text-black font-medium" value={slideFormData.title} onChange={e => setSlideFormData({...slideFormData, title: e.target.value})} placeholder="e.g. Next-Level Performance" /></div>
+                    <div className="sm:col-span-2"><label className="block text-xs font-bold text-gray-600 mb-1">Subtitle</label><input required type="text" className="w-full p-2 border rounded-lg text-sm text-black font-medium" value={slideFormData.subtitle} onChange={e => setSlideFormData({...slideFormData, subtitle: e.target.value})} placeholder="e.g. RTX Graphics · Fast Memory" /></div>
+                    <div><label className="block text-xs font-bold text-gray-600 mb-1">Button Text</label><input required type="text" className="w-full p-2 border rounded-lg text-sm text-black font-medium" value={slideFormData.button_text} onChange={e => setSlideFormData({...slideFormData, button_text: e.target.value})} placeholder="e.g. Shop Build Parts" /></div>
+                    <div><label className="block text-xs font-bold text-gray-600 mb-1">Button Category Target</label><select className="w-full p-2 border rounded-lg text-sm text-black font-medium bg-white" value={slideFormData.category_target} onChange={e => setSlideFormData({...slideFormData, category_target: e.target.value})}>{categories.map(c => <option key={c} value={c}>{c}</option>)}<option value="All">All Store</option></select></div>
+                    <div className="sm:col-span-2"><label className="block text-xs font-bold text-gray-600 mb-1">Text Alignment</label><select className="w-full p-2 border rounded-lg text-sm text-black font-medium bg-white" value={slideFormData.text_alignment} onChange={e => setSlideFormData({...slideFormData, text_alignment: e.target.value})}><option value="left">Left Side</option><option value="right">Right Side</option></select></div>
                   </div>
                 </div>
 
                 <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                   <div className="flex justify-between items-center mb-3 border-b pb-2">
                     <h3 className="font-bold text-gray-800">2. Floating Images Layering</h3>
-                    <button type="button" onClick={addSlideImage} className="bg-yellow-400 hover:bg-yellow-500 text-black text-xs font-bold px-3 py-1.5 rounded shadow cursor-pointer">
-                      + Add Image
-                    </button>
+                    <button type="button" onClick={addSlideImage} className="bg-yellow-400 hover:bg-yellow-500 text-black text-xs font-bold px-3 py-1.5 rounded shadow cursor-pointer">+ Add Image</button>
                   </div>
-
                   {slideFormData.images.length === 0 ? (
                     <p className="text-sm text-gray-500 text-center py-4">No images added to this slide yet. Click "+ Add Image".</p>
                   ) : (
@@ -537,29 +450,13 @@ export default function AdminDashboard() {
                         <div key={idx} className="bg-white border border-gray-300 rounded-lg p-3 shadow-sm relative">
                           <button type="button" onClick={() => removeSlideImage(idx)} className="absolute top-2 right-2 text-red-500 hover:text-red-700 font-bold text-xl leading-none cursor-pointer">&times;</button>
                           <h4 className="text-xs font-extrabold text-blue-600 mb-2 uppercase">Image Layer {idx + 1}</h4>
-                          
                           <div className="space-y-3">
-                            <div>
-                              <label className="block text-[10px] font-bold text-gray-500 uppercase">Direct Image URL (.png / .jpg)</label>
-                              <input type="text" className="w-full p-2 border rounded text-sm text-black font-medium" value={img.url} onChange={(e) => updateSlideImage(idx, 'url', e.target.value)} placeholder="https://..." />
-                            </div>
+                            <div><label className="block text-[10px] font-bold text-gray-500 uppercase">Direct Image URL (.png / .jpg)</label><input type="text" className="w-full p-2 border rounded text-sm text-black font-medium" value={img.url} onChange={(e) => updateSlideImage(idx, 'url', e.target.value)} placeholder="https://..." /></div>
                             <div className="grid grid-cols-2 gap-3">
-                              <div>
-                                <label className="block text-[10px] font-bold text-gray-500 uppercase">Width / Size</label>
-                                <input type="text" className="w-full p-2 border rounded text-sm text-black font-medium" value={img.width} onChange={(e) => updateSlideImage(idx, 'width', e.target.value)} placeholder="e.g. w-32 md:w-48" />
-                              </div>
-                              <div>
-                                <label className="block text-[10px] font-bold text-gray-500 uppercase">X/Y Exact Position</label>
-                                <input type="text" className="w-full p-2 border rounded text-sm text-black font-medium" value={img.position} onChange={(e) => updateSlideImage(idx, 'position', e.target.value)} placeholder="e.g. top-[10%] left-[5%]" />
-                              </div>
-                              <div>
-                                <label className="block text-[10px] font-bold text-gray-500 uppercase">Animation & Delay</label>
-                                <input type="text" className="w-full p-2 border rounded text-sm text-black font-medium" value={img.animation} onChange={(e) => updateSlideImage(idx, 'animation', e.target.value)} placeholder="e.g. anim-float-1 delay-100" />
-                              </div>
-                              <div>
-                                <label className="block text-[10px] font-bold text-gray-500 uppercase">Z-Index (Layer Height)</label>
-                                <input type="text" className="w-full p-2 border rounded text-sm text-black font-medium" value={img.zIndex} onChange={(e) => updateSlideImage(idx, 'zIndex', e.target.value)} placeholder="e.g. z-10, z-20" />
-                              </div>
+                              <div><label className="block text-[10px] font-bold text-gray-500 uppercase">Width / Size</label><input type="text" className="w-full p-2 border rounded text-sm text-black font-medium" value={img.width} onChange={(e) => updateSlideImage(idx, 'width', e.target.value)} placeholder="e.g. w-32 md:w-48" /></div>
+                              <div><label className="block text-[10px] font-bold text-gray-500 uppercase">X/Y Exact Position</label><input type="text" className="w-full p-2 border rounded text-sm text-black font-medium" value={img.position} onChange={(e) => updateSlideImage(idx, 'position', e.target.value)} placeholder="e.g. top-[10%] left-[5%]" /></div>
+                              <div><label className="block text-[10px] font-bold text-gray-500 uppercase">Animation & Delay</label><input type="text" className="w-full p-2 border rounded text-sm text-black font-medium" value={img.animation} onChange={(e) => updateSlideImage(idx, 'animation', e.target.value)} placeholder="e.g. anim-float-1 delay-100" /></div>
+                              <div><label className="block text-[10px] font-bold text-gray-500 uppercase">Z-Index (Layer Height)</label><input type="text" className="w-full p-2 border rounded text-sm text-black font-medium" value={img.zIndex} onChange={(e) => updateSlideImage(idx, 'zIndex', e.target.value)} placeholder="e.g. z-10, z-20" /></div>
                             </div>
                           </div>
                         </div>
@@ -569,14 +466,8 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="flex gap-2 pt-2 border-t">
-                  <button type="submit" className="flex-1 bg-gray-900 hover:bg-black text-white font-bold py-3 rounded-lg transition shadow-md cursor-pointer">
-                    {editingSlide ? '💾 Update Slide' : '💾 Save New Slide'}
-                  </button>
-                  {editingSlide && (
-                    <button type="button" onClick={() => { setEditingSlide(null); setSlideFormData({ id: '', tag: '', title: '', subtitle: '', button_text: 'Shop Now', category_target: 'All', text_alignment: 'right', images: [] }); }} className="bg-gray-200 hover:bg-gray-300 px-6 py-3 rounded-lg font-bold text-gray-700 cursor-pointer">
-                      Cancel
-                    </button>
-                  )}
+                  <button type="submit" className="flex-1 bg-gray-900 hover:bg-black text-white font-bold py-3 rounded-lg transition shadow-md cursor-pointer">{editingSlide ? '💾 Update Slide' : '💾 Save New Slide'}</button>
+                  {editingSlide && (<button type="button" onClick={() => { setEditingSlide(null); setSlideFormData({ id: '', tag: '', title: '', subtitle: '', button_text: 'Shop Now', category_target: 'All', text_alignment: 'right', images: [] }); }} className="bg-gray-200 hover:bg-gray-300 px-6 py-3 rounded-lg font-bold text-gray-700 cursor-pointer">Cancel</button>)}
                 </div>
               </form>
             </div>
@@ -584,7 +475,6 @@ export default function AdminDashboard() {
             {/* LIVE SLIDES LIST */}
             <div className="bg-white p-6 rounded-xl shadow-md border-t-4 border-gray-800">
               <h2 className="text-xl font-bold mb-4 text-gray-800">📋 Active Slides ({dbSlides.length})</h2>
-              
               {loadingSlides ? (
                 <div className="text-center py-10 text-gray-500 font-bold animate-pulse">Loading slides...</div>
               ) : dbSlides.length === 0 ? (
@@ -600,10 +490,7 @@ export default function AdminDashboard() {
                           <p className="text-xs text-gray-500 truncate w-48">{slide.tag}</p>
                         </div>
                       </div>
-                      <div className="text-[10px] text-gray-400 font-bold uppercase mb-3">
-                        {slide.images?.length || 0} Floating Images
-                      </div>
-                      
+                      <div className="text-[10px] text-gray-400 font-bold uppercase mb-3">{slide.images?.length || 0} Floating Images</div>
                       <div className="flex gap-2">
                         <button onClick={() => handleSlideEdit(slide)} className="flex-1 bg-white border border-gray-300 text-gray-800 hover:bg-gray-100 py-1.5 rounded text-xs font-bold shadow-sm cursor-pointer">Edit</button>
                         <button onClick={() => handleSlideDelete(slide.id)} className="bg-white border border-red-200 text-red-600 hover:bg-red-50 px-3 py-1.5 rounded text-xs font-bold shadow-sm cursor-pointer">Trash</button>
@@ -613,11 +500,144 @@ export default function AdminDashboard() {
                 </div>
               )}
             </div>
-
           </div>
+        )}{/* NEW SLIDING HERO MANAGER */}
+        {activeTab === 'newHero' && (
+          <NewHeroManager supabase={supabase} />
         )}
 
       </div>
     </div>
   );
-}
+}// =========================================================================
+// 🌟 NEW SLIDING HERO MANAGER COMPONENT
+// =========================================================================
+const NewHeroManager = ({ supabase }) => {
+  const [slides, setSlides] = useState([]);
+  const [isEditing, setIsEditing] = useState(null);
+  const [formData, setFormData] = useState({
+    image_url: '', title_en: '', title_ar: '', subtitle_en: '', subtitle_ar: '',
+    btn_text_en: '', btn_text_ar: '', btn_icon: '🚀', action_target: 'explore',
+    gradient: 'from-blue-900/90 via-black/80 to-transparent', sort_order: 1, is_active: true
+  });
+
+  useEffect(() => {
+    fetchSlides();
+  }, []);
+
+  const fetchSlides = async () => {
+    const { data } = await supabase.from('new_sliding_hero').select('*').order('sort_order', { ascending: true });
+    if (data) setSlides(data);
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    if (isEditing) {
+      await supabase.from('new_sliding_hero').update(formData).eq('id', isEditing);
+    } else {
+      await supabase.from('new_sliding_hero').insert([formData]);
+    }
+    setFormData({
+      image_url: '', title_en: '', title_ar: '', subtitle_en: '', subtitle_ar: '',
+      btn_text_en: '', btn_text_ar: '', btn_icon: '🚀', action_target: 'explore',
+      gradient: 'from-blue-900/90 via-black/80 to-transparent', sort_order: 1, is_active: true
+    });
+    setIsEditing(null);
+    fetchSlides();
+  };
+
+  const handleEdit = (slide) => {
+    setFormData(slide);
+    setIsEditing(slide.id);
+  };
+
+  const handleDelete = async (id) => {
+    if(window.confirm('Are you sure you want to delete this slide?')) {
+      await supabase.from('new_sliding_hero').delete().eq('id', id);
+      fetchSlides();
+    }
+  };
+
+  return (
+    <div className="bg-white p-6 rounded-xl shadow-md border-t-4 border-purple-500 animate-fade-in">
+      <h2 className="text-xl font-bold mb-6 text-gray-800">✨ Manage New Sliding Hero</h2>
+      
+      {/* Editor Form */}
+      <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-6 rounded-xl border border-gray-200 mb-8">
+        
+        {/* Core Settings */}
+        <div className="col-span-1 md:col-span-2 space-y-4 border-b pb-6 border-gray-300">
+          <div><label className="block text-xs font-bold mb-1">Image URL (Background)</label><input required className="w-full p-2.5 border rounded-lg outline-none text-sm font-medium" type="text" value={formData.image_url} onChange={e => setFormData({...formData, image_url: e.target.value})} placeholder="https://..." /></div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div><label className="block text-xs font-bold mb-1">Button Icon</label><input required className="w-full p-2.5 border rounded-lg outline-none text-sm font-medium" type="text" value={formData.btn_icon} onChange={e => setFormData({...formData, btn_icon: e.target.value})} placeholder="🚀, 🛠️, ❄️" /></div>
+            <div>
+              <label className="block text-xs font-bold mb-1">Action Target</label>
+              <select className="w-full p-2.5 border rounded-lg outline-none text-sm font-medium bg-white" value={formData.action_target} onChange={e => setFormData({...formData, action_target: e.target.value})}>
+                <option value="explore">Explore Catalog (Scrolls down)</option>
+                <option value="builder">Open PC Builder</option>
+                <option value="Liquid & Air Cooling">Filter by Cooling</option>
+                <option value="CPUs">Filter by CPUs</option>
+                <option value="GPUs">Filter by GPUs</option>
+              </select>
+            </div>
+            <div><label className="block text-xs font-bold mb-1">Gradient Overlay Class</label><input className="w-full p-2.5 border rounded-lg outline-none text-sm font-medium" type="text" value={formData.gradient} onChange={e => setFormData({...formData, gradient: e.target.value})} placeholder="from-blue-900/90..." /></div>
+          </div>
+        </div>
+
+        {/* English Content */}
+        <div className="space-y-4">
+          <h3 className="font-bold text-blue-600 border-b pb-2">English Content</h3>
+          <div><label className="block text-xs font-bold mb-1">Title (EN)</label><input required className="w-full p-2.5 border rounded-lg outline-none text-sm font-medium" type="text" value={formData.title_en} onChange={e => setFormData({...formData, title_en: e.target.value})} /></div>
+          <div><label className="block text-xs font-bold mb-1">Subtitle (EN)</label><textarea required rows="2" className="w-full p-2.5 border rounded-lg outline-none text-sm font-medium resize-y" value={formData.subtitle_en} onChange={e => setFormData({...formData, subtitle_en: e.target.value})} /></div>
+          <div><label className="block text-xs font-bold mb-1">Button Text (EN)</label><input required className="w-full p-2.5 border rounded-lg outline-none text-sm font-medium" type="text" value={formData.btn_text_en} onChange={e => setFormData({...formData, btn_text_en: e.target.value})} /></div>
+        </div>
+
+        {/* Arabic Content */}
+        <div className="space-y-4" dir="rtl">
+          <h3 className="font-bold text-green-600 border-b pb-2 text-right">المحتوى العربي</h3>
+          <div><label className="block text-xs font-bold mb-1 text-right">العنوان</label><input required className="w-full p-2.5 border rounded-lg outline-none text-sm font-medium" type="text" value={formData.title_ar} onChange={e => setFormData({...formData, title_ar: e.target.value})} /></div>
+          <div><label className="block text-xs font-bold mb-1 text-right">العنوان الفرعي</label><textarea required rows="2" className="w-full p-2.5 border rounded-lg outline-none text-sm font-medium resize-y" value={formData.subtitle_ar} onChange={e => setFormData({...formData, subtitle_ar: e.target.value})} /></div>
+          <div><label className="block text-xs font-bold mb-1 text-right">نص الزر</label><input required className="w-full p-2.5 border rounded-lg outline-none text-sm font-medium" type="text" value={formData.btn_text_ar} onChange={e => setFormData({...formData, btn_text_ar: e.target.value})} /></div>
+        </div>
+
+        {/* Settings & Save */}
+        <div className="col-span-1 md:col-span-2 flex flex-col sm:flex-row items-center justify-between pt-4 border-t border-gray-300 gap-4">
+          <div className="flex gap-6 w-full sm:w-auto">
+            <label className="flex items-center gap-2 text-sm font-bold"><input type="number" className="w-16 p-2 border rounded-lg text-center" value={formData.sort_order} onChange={e => setFormData({...formData, sort_order: parseInt(e.target.value)})} /> Sort Order</label>
+            <label className="flex items-center gap-2 text-sm font-bold"><input type="checkbox" className="w-5 h-5 accent-blue-600 cursor-pointer" checked={formData.is_active} onChange={e => setFormData({...formData, is_active: e.target.checked})} /> Is Active</label>
+          </div>
+          <div className="flex gap-2 w-full sm:w-auto">
+            {isEditing && <button type="button" onClick={() => setIsEditing(null)} className="flex-1 sm:flex-none px-6 py-2.5 bg-gray-400 text-white font-bold rounded-lg hover:bg-gray-500 transition">Cancel</button>}
+            <button type="submit" className="flex-1 sm:flex-none px-8 py-2.5 bg-blue-600 text-white font-black rounded-lg hover:bg-blue-700 shadow-md transition">
+              {isEditing ? 'Update Slide' : 'Add New Slide'}
+            </button>
+          </div>
+        </div>
+      </form>
+
+      {/* List of Existing Slides */}
+      <div className="space-y-4">
+        {slides.length === 0 && <p className="text-gray-500 text-center py-6">No slides found in the database. Add one above!</p>}
+        {slides.map(slide => (
+          <div key={slide.id} className="flex flex-col sm:flex-row gap-4 items-start sm:items-center bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition">
+            <img src={slide.image_url} alt="thumbnail" className="w-full sm:w-32 h-24 object-cover rounded-lg bg-gray-100" />
+            <div className="flex-1 w-full">
+              <div className="flex flex-wrap items-center gap-2 mb-1">
+                <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase text-white ${slide.is_active ? 'bg-green-500' : 'bg-red-500'}`}>{slide.is_active ? 'Active' : 'Hidden'}</span>
+                <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded border">Order: {slide.sort_order}</span>
+                <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">{slide.btn_icon} Target: {slide.action_target}</span>
+              </div>
+              <h4 className="font-bold text-gray-900 text-sm mb-1">{slide.title_en} <span className="text-gray-300 font-normal mx-1">|</span> <span dir="rtl" className="text-green-700">{slide.title_ar}</span></h4>
+              <p className="text-xs text-gray-500 line-clamp-1">{slide.subtitle_en}</p>
+            </div>
+            <div className="flex sm:flex-col gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+              <button onClick={() => handleEdit(slide)} className="flex-1 sm:flex-none px-4 py-2 bg-yellow-400 text-black font-bold rounded-lg hover:bg-yellow-500 transition text-xs shadow-sm cursor-pointer">Edit</button>
+              <button onClick={() => handleDelete(slide.id)} className="flex-1 sm:flex-none px-4 py-2 bg-red-100 text-red-600 font-bold rounded-lg hover:bg-red-200 transition text-xs shadow-sm cursor-pointer">Delete</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
