@@ -19,6 +19,20 @@ const customStyles = `
     0%, 100% { transform: translateY(0px); }
     50% { transform: translateY(-15px); }
   }
+  @keyframes slideZoom {
+    0% { transform: scale(1.15); opacity: 0; }
+    10% { opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes slideZoomOut {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0; transform: scale(1.05); }
+  }
+  @keyframes progressBar {
+    0% { width: 0%; }
+    100% { width: 100%; }
+  }
+`;const utilityStyles = `
   .animate-kinetic {
     animation: kinetic-shift 4s ease-in-out infinite;
     display: inline-block;
@@ -30,13 +44,16 @@ const customStyles = `
   .animate-float {
     animation: float 6s ease-in-out infinite;
   }
+  .slide-active {
+    animation: slideZoom 6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    z-index: 10;
+  }
+  .slide-inactive {
+    animation: slideZoomOut 1s ease-out forwards;
+    z-index: 1;
+  }
   .btn-morph {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  .glass-panel {
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
   }
 `;
 
@@ -79,73 +96,151 @@ const ScrollFadeItem = ({ children }) => {
     </div>
   );
 };// =========================================================================
-// 🌟 INTERACTIVE HERO BANNER COMPONENT
+// 🌟 INTERACTIVE SLIDING HERO BANNER COMPONENT
 // =========================================================================
-const InteractiveHero = ({ t, onAction, lang }) => {
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const heroRef = useRef(null);
+const SlidingHeroBanner = ({ t, onAction, lang }) => {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  
+  // Simulated data structure for the Admin Panel to edit later
+  const slides = useMemo(() => [
+    {
+      id: 1,
+      image: 'https://images.unsplash.com/photo-1587202372634-32705e3bf49c?q=80&w=2000&auto=format&fit=crop',
+      titleKey: 'heroSlide1Title',
+      descKey: 'heroSlide1Desc',
+      btnKey: 'heroBtn',
+      gradient: 'from-blue-900/90 via-black/80 to-transparent'
+    },
+    {
+      id: 2,
+      image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=2000&auto=format&fit=crop',
+      titleKey: 'heroSlide2Title',
+      descKey: 'heroSlide2Desc',
+      btnKey: 'heroBtn2',
+      gradient: 'from-purple-900/90 via-black/80 to-transparent'
+    },
+    {
+      id: 3,
+      image: 'https://images.unsplash.com/photo-1624704764835-f0ba2d103323?q=80&w=2000&auto=format&fit=crop',
+      titleKey: 'heroSlide3Title',
+      descKey: 'heroSlide3Desc',
+      btnKey: 'heroBtn3',
+      gradient: 'from-gray-900/90 via-black/80 to-transparent'
+    }
+  ], []);
 
-  const handleMouseMove = (e) => {
-    if (!heroRef.current) return;
-    const { left, top, width, height } = heroRef.current.getBoundingClientRect();
-    const x = (e.clientX - left) / width - 0.5;
-    const y = (e.clientY - top) / height - 0.5;
-    setMousePos({ x, y });
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
   };
 
-  return (
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
+  };
+
+  useEffect(() => {
+    let interval;
+    if (!isHovered) {
+      interval = setInterval(() => {
+        nextSlide();
+      }, 6000); // 6 seconds per slide
+    }
+    return () => clearInterval(interval);
+  }, [isHovered, currentSlide, slides.length]);return (
     <div 
-      ref={heroRef}
-      onMouseMove={handleMouseMove}
-      className="relative overflow-hidden bg-gradient-to-br from-[#12182b] via-[#1a233a] to-[#0d111c] py-20 md:py-32 px-6 lg:px-12 flex items-center min-h-[450px] md:min-h-[550px]"
+      className="relative w-full h-[500px] md:h-[600px] overflow-hidden bg-black flex group"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       dir={lang === 'ar' ? 'rtl' : 'ltr'}
     >
-      {/* Interactive Mouse-Tracking Background Glows */}
-      <div 
-        className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/30 rounded-full blur-[120px] mix-blend-screen transition-transform duration-1000 ease-out pointer-events-none"
-        style={{ transform: `translate(${mousePos.x * -60}px, ${mousePos.y * -60}px)` }}
-      />
-      <div 
-        className="absolute bottom-1/4 right-1/4 w-[30rem] h-[30rem] bg-purple-600/20 rounded-full blur-[150px] mix-blend-screen transition-transform duration-1000 ease-out pointer-events-none"
-        style={{ transform: `translate(${mousePos.x * 80}px, ${mousePos.y * 80}px)` }}
-      />
+      {/* Slides Rendering */}
+      {slides.map((slide, index) => (
+        <div 
+          key={slide.id}
+          className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ${
+            currentSlide === index ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+          }`}
+        >
+          {/* Background Image with Parallax Zoom */}
+          <div className="absolute inset-0 overflow-hidden w-full h-full">
+            <img 
+              src={slide.image} 
+              alt="Hero Background" 
+              className={`w-full h-full object-cover origin-center ${currentSlide === index ? 'slide-active' : 'slide-inactive'}`}
+            />
+          </div>
 
-      {/* Floating Geometric Decor */}
-      <div className="absolute top-10 right-20 w-24 h-24 border border-white/10 rounded-xl rotate-45 animate-float pointer-events-none hidden md:block" />
-      <div className="absolute bottom-20 left-20 w-16 h-16 border border-blue-500/20 rounded-full animate-float pointer-events-none hidden md:block" style={{ animationDelay: '2s' }} />
+          {/* Gradient Overlay */}
+          <div className={`absolute inset-0 bg-gradient-to-r ${slide.gradient} z-10`}></div>
+          <div className="absolute inset-0 bg-black/30 z-10"></div>
 
-      <div className="max-w-7xl mx-auto w-full relative z-10 flex flex-col items-start">
-        <p className="text-yellow-500 font-bold tracking-[0.2em] uppercase text-xs md:text-sm mb-4 animate-fade-in-up">
-          {t.heroProBuilders}
-        </p>
-        
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white leading-[1.1] tracking-tight mb-5 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-          {t.heroTitle1} <br/>
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#4d8eff] to-[#a45ee9]">
-            {t.heroTitle2}
-          </span>
-        </h1>
-        
-        <p className="text-gray-300 text-base md:text-lg max-w-xl mb-10 animate-fade-in-up font-medium leading-relaxed" style={{ animationDelay: '0.2s' }}>
-          {t.heroSubtitle}
-        </p>
-        
-        <div className="animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-          <button 
-            onClick={onAction}
-            className="group relative px-8 py-4 bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-extrabold rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all hover:shadow-[0_0_35px_rgba(37,99,235,0.6)] hover:-translate-y-1 active:translate-y-0 cursor-pointer overflow-hidden"
-          >
-            {/* Button Shine Effect */}
-            <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:animate-[shimmer_1.5s_infinite] pointer-events-none" />
-            <span className="flex items-center gap-3 text-sm md:text-base relative z-10">
-              <span className="text-xl">🛠️</span> {t.heroBtn}
-            </span>
-          </button>
+          {/* Text Content */}
+          <div className="absolute inset-0 z-20 flex flex-col justify-center px-6 md:px-16 max-w-7xl mx-auto w-full">
+            <div className={`max-w-2xl transform transition-all duration-1000 delay-300 ${currentSlide === index ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+              <span className="inline-block px-4 py-1 mb-4 text-xs md:text-sm font-black tracking-widest text-yellow-400 bg-yellow-400/10 border border-yellow-400/30 rounded-full uppercase shadow-[0_0_15px_rgba(250,204,21,0.2)]">
+                {t.heroProBuilders}
+              </span>
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white leading-[1.1] mb-6 drop-shadow-2xl">
+                {t[slide.titleKey]}
+              </h1>
+              <p className="text-gray-300 text-base md:text-xl font-medium mb-8 leading-relaxed max-w-xl drop-shadow-lg">
+                {t[slide.descKey]}
+              </p>
+              
+              <button 
+                onClick={onAction}
+                className="group/btn relative px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all hover:shadow-[0_0_35px_rgba(37,99,235,0.6)] hover:-translate-y-1 active:scale-95 cursor-pointer overflow-hidden border border-blue-500/50"
+              >
+                <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover/btn:animate-[shimmer_1.5s_infinite] pointer-events-none" />
+                <span className="flex items-center gap-3 text-sm md:text-base relative z-10">
+                  <span className="text-xl">🛠️</span> {t[slide.btnKey]}
+                </span>
+              </button>
+            </div>
+          </div>
         </div>
+      ))}{/* Navigation Arrows */}
+      <button 
+        onClick={prevSlide}
+        className={`absolute left-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/50 border border-white/10 text-white backdrop-blur-md transition-all duration-300 cursor-pointer ${isHovered ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}
+      >
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" /></svg>
+      </button>
+      <button 
+        onClick={nextSlide}
+        className={`absolute right-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/50 border border-white/10 text-white backdrop-blur-md transition-all duration-300 cursor-pointer ${isHovered ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'}`}
+      >
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg>
+      </button>
+
+      {/* Animated Progress Dots */}
+      <div className="absolute bottom-6 left-0 right-0 z-30 flex justify-center gap-3 px-4">
+        {slides.map((slide, index) => (
+          <button 
+            key={slide.id}
+            onClick={() => setCurrentSlide(index)}
+            className="group/dot relative w-16 h-1.5 rounded-full bg-white/20 overflow-hidden cursor-pointer transition-all hover:bg-white/40"
+          >
+            {currentSlide === index && (
+              <div 
+                className="absolute top-0 left-0 h-full bg-blue-500 rounded-full"
+                style={{ 
+                  animation: isHovered ? 'none' : 'progressBar 6s linear forwards',
+                  width: isHovered ? '100%' : '0%'
+                }}
+              />
+            )}
+            {currentSlide > index && (
+              <div className="absolute top-0 left-0 h-full w-full bg-white/60 rounded-full" />
+            )}
+          </button>
+        ))}
       </div>
     </div>
   );
-};// Dictionary Translations for UI, Categories, & New Features
+};// =========================================================================
+// 🌟 DICTIONARY & TRANSLATIONS
+// =========================================================================
 const dictionary = {
   en: {
     proBuilders: 'Pro PC Builders',
@@ -192,9 +287,7 @@ const dictionary = {
     descSpecs: 'Description & Specifications',
     addToBuild: '✅ Add to Build',
     addToCart: '➕ Add to Cart',
-    currentlyUnavailable: 'Currently Unavailable',
-    
-    // BUILDER, VIEW SWITCHER & SHARE FEATURES
+    currentlyUnavailable: 'Currently Unavailable',// BUILDER, VIEW SWITCHER & SHARE FEATURES
     estWattage: 'Estimated Wattage',
     psuCapacity: 'PSU Capacity',
     fixBtn: '🔧 Fix Item',
@@ -228,12 +321,18 @@ const dictionary = {
     contactUs: 'Contact Us',
     createdBy: 'Credits to the creator of the website Eng. Moumen BaKleh',
     
-    // HERO BANNER & DYNAMIC UI TRANSLATIONS
+    // HERO BANNER TRANSLATIONS
     heroProBuilders: 'PRO PC BUILDERS',
-    heroTitle1: 'Engineer Your Own',
-    heroTitle2: 'Dream Machine.',
-    heroSubtitle: 'Build the ultimate PC for gaming, rendering, and professional workloads.',
-    heroBtn: 'Engineer Your Own PC',
+    heroSlide1Title: 'Ultimate Gaming Power',
+    heroSlide1Desc: 'Experience the next generation of graphics with the RTX 40-Series and elite components.',
+    heroSlide2Title: 'Engineer Your Dream',
+    heroSlide2Desc: 'Custom PC building made effortless, perfectly compatible, and tailored to your needs.',
+    heroSlide3Title: 'Stay Frosty Under Pressure',
+    heroSlide3Desc: 'Premium liquid cooling solutions ensuring maximum performance without the noise.',
+    heroBtn: 'Start Building Now',
+    heroBtn2: 'Explore Components',
+    heroBtn3: 'View Cooling Systems',
+    
     availabilityLabel: 'Availability',
     inStockOnly: 'In Stock Only',
     brandLabel: 'Brand',
@@ -254,9 +353,7 @@ const dictionary = {
     stock: 'Stock',
     category: 'Category',
     clearComparison: 'Clear Comparison',
-    saveAlert: 'Save Alert',
-
-    categories: {
+    saveAlert: 'Save Alert',categories: {
       'All': 'All', 
       'CPUs': 'CPUs',
       'Motherboards': 'Motherboards', 
@@ -280,7 +377,8 @@ const dictionary = {
       'Case': 'Case',
       'Power Supply': 'Power Supply'
     }
-  },ar: {
+  },
+  ar: {
     proBuilders: 'خبراء تجميع الحاسوب',
     selectPartPrefix: 'اختر',
     selectPartSuffix: 'لتجميعتك',
@@ -325,9 +423,7 @@ const dictionary = {
     descSpecs: 'الوصف والمواصفات',
     addToBuild: '✅ إضافة للتجميعة',
     addToCart: '➕ إضافة للسلة',
-    currentlyUnavailable: 'غير متوفر حالياً',
-
-    // BUILDER, VIEW SWITCHER & SHARE FEATURES
+    currentlyUnavailable: 'غير متوفر حالياً',// BUILDER, VIEW SWITCHER & SHARE FEATURES
     estWattage: 'استهلاك الطاقة المقدر',
     psuCapacity: 'سعة مزود الطاقة',
     fixBtn: '🔧 إصلاح القطعة',
@@ -361,12 +457,18 @@ const dictionary = {
     contactUs: 'اتصل بنا',
     createdBy: 'تم إنشاء الموقع بواسطة م. مؤمن بقلة',
 
-    // HERO BANNER & DYNAMIC UI TRANSLATIONS
+    // HERO BANNER TRANSLATIONS
     heroProBuilders: 'خبراء تجميع الحاسوب',
-    heroTitle1: 'صمم حاسوب',
-    heroTitle2: 'أحلامك بنفسك.',
-    heroSubtitle: 'قم ببناء الحاسوب المثالي للألعاب، التصميم، وأعباء العمل الاحترافية.',
-    heroBtn: 'صمّم حاسوبك الخاص',
+    heroSlide1Title: 'قوة ألعاب لا مثيل لها',
+    heroSlide1Desc: 'اختبر الجيل القادم من الرسومات مع سلسلة RTX 40 وقطع الحاسوب النخبة.',
+    heroSlide2Title: 'صمم حاسوب أحلامك',
+    heroSlide2Desc: 'تجميع الحاسوب المخصص أصبح سهلاً، متوافقاً تماماً، ومصمماً لاحتياجاتك.',
+    heroSlide3Title: 'أداء فائق البرودة',
+    heroSlide3Desc: 'حلول تبريد مائي ممتازة تضمن لك أقصى أداء بدون أي إزعاج صوتي.',
+    heroBtn: 'ابدأ التجميع الآن',
+    heroBtn2: 'استكشف القطع',
+    heroBtn3: 'عرض أنظمة التبريد',
+
     availabilityLabel: 'التوفر',
     inStockOnly: 'متوفر فقط',
     brandLabel: 'العلامة التجارية',
@@ -387,9 +489,7 @@ const dictionary = {
     stock: 'المخزون',
     category: 'الفئة',
     clearComparison: 'مسح المقارنة',
-    saveAlert: 'حفظ التنبيه',
-
-    categories: {
+    saveAlert: 'حفظ التنبيه',categories: {
       'All': 'الكل', 
       'CPUs': 'المعالجات',
       'Motherboards': 'اللوحات الأم', 
@@ -414,7 +514,9 @@ const dictionary = {
       'Power Supply': 'مزود الطاقة'
     }
   }
-};const categories = [
+};
+
+const categories = [
   'All', 
   'CPUs',
   'Motherboards', 
@@ -438,9 +540,7 @@ const requiredParts = [
   { key: 'GPUs', labelKey: 'Video Card', icon: <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" strokeWidth="2" fill="none"><rect x="2" y="7" width="20" height="10" rx="2"></rect></svg>, required: true },
   { key: 'PC Cases', labelKey: 'Case', icon: <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" strokeWidth="2" fill="none"><rect x="5" y="3" width="14" height="18" rx="2"></rect></svg>, required: true },
   { key: 'Power Supplies', labelKey: 'Power Supply', icon: <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="6" width="18" height="12" rx="2"></rect></svg>, required: true }
-];
-
-// Master Starter Inventory
+];// Master Starter Inventory
 const staticInventory = [
   { id: 'psu-1', category: 'Power Supplies', name: 'ThermalRight TR-TB650S 650W 80 PLUS', price: 58, image: '/images/tr-tb650s.jpg', specs: { type: 'ATX', efficiency: '80+ Gold', wattage: '650 W', modular: 'Full', color: 'Black' } },
   { id: 'psu-2', category: 'Power Supplies', name: 'ThermalRight TR-TB750S 750W', price: 76, image: '/images/tr-tb750s.jpg', specs: { type: 'ATX', efficiency: '80+ Gold', wattage: '750 W', modular: 'Full', color: 'Black' } },
@@ -449,10 +549,9 @@ const staticInventory = [
   { id: 'psu-5', category: 'Power Supplies', name: 'ThermalRight TR-SP850-W 850W White', price: 118, image: '/images/tr-sp850-w.jpg', specs: { type: 'ATX', efficiency: '80+ Gold', wattage: '850 W', modular: 'Full', color: 'White' } },
   { id: 'psu-6', category: 'Power Supplies', name: 'ThermalRight TR-SP1000 1000W', price: 130, image: '/images/tr-sp1000.jpg', specs: { type: 'ATX', efficiency: '80+ Gold', wattage: '1000 W', modular: 'Full', color: 'Black' } },
   { id: 'psu-7', category: 'Power Supplies', name: 'ThermalRight TR-SP1000-W 1000W White', price: 135, image: '/images/tr-sp1000-w.jpg', specs: { type: 'ATX', efficiency: '80+ Gold', wattage: '1000 W', modular: 'Full', color: 'White' } },
-  { id: 'cool-1', category: 'Liquid & Air Cooling', name: 'ThermalRight Assassin X 120 Refined SE ARGB (AM4,AM5)', price: 18, image: '/images/cool1.jpg', specs: { rpm: '1550 RPM', noise: '25.6 dB', color: 'Black / Silver', radSize: '120 mm' } },
+  { id: 'cool-1', category: 'Liquid & Air Cooling', name: 'ThermalRight Assassin X 120 Refined SE ARGB', price: 18, image: '/images/cool1.jpg', specs: { rpm: '1550 RPM', noise: '25.6 dB', color: 'Black / Silver', radSize: '120 mm' } },
   { id: 'cool-2', category: 'Liquid & Air Cooling', name: 'ThermalRight Burst Assassin 120 SE ARGB', price: 24, image: '/images/burst120.jpg', specs: { rpm: '1550 RPM', noise: '25.6 dB', color: 'Black', radSize: '120 mm' } },
-  { id: 'cool-3', category: 'Liquid & Air Cooling', name: 'ThermalRight Phantom Spirit 120 SE ARGB', price: 40, image: '/images/phantom120.jpg', specs: { rpm: '1500 RPM', noise: '25.6 dB', color: 'Black', radSize: '120 mm' } },
-  { id: 'case-1', category: 'PC Cases', name: 'ThermalRight A70 VISION', price: 160, image: '/images/a70.jpg', specs: { type: 'ATX Mid Tower', color: 'Black', sidePanel: 'Tempered Glass', volume: '45.0 L', bays: '2' } },
+  { id: 'cool-3', category: 'Liquid & Air Cooling', name: 'ThermalRight Phantom Spirit 120 SE ARGB', price: 40, image: '/images/phantom120.jpg', specs: { rpm: '1500 RPM', noise: '25.6 dB', color: 'Black', radSize: '120 mm' } },{ id: 'case-1', category: 'PC Cases', name: 'ThermalRight A70 VISION', price: 160, image: '/images/a70.jpg', specs: { type: 'ATX Mid Tower', color: 'Black', sidePanel: 'Tempered Glass', volume: '45.0 L', bays: '2' } },
   { id: 'case-2', category: 'PC Cases', name: 'ThermalRight A70 VISION WHITE', price: 165, image: '/images/a70w.jpg', specs: { type: 'ATX Mid Tower', color: 'White', sidePanel: 'Tempered Glass', volume: '45.0 L', bays: '2' } },
   { id: 'mon-1', category: 'Monitors', name: 'MSI MAG 271QPX QD-OLED X28', price: 590, image: '/images/msi271.jpg', specs: { size: '27.0"', resolution: '2560 x 1440', refresh: '360 Hz', response: '0.03 ms', panel: 'QD-OLED', aspect: '16:9' } },
   { id: 'mon-2', category: 'Monitors', name: 'MSI MAG 244F', price: 125, image: '/images/msi244.jpg', specs: { size: '23.8"', resolution: '1920 x 1080', refresh: '200 Hz', response: '0.5 ms', panel: 'IPS', aspect: '16:9' } },
@@ -491,9 +590,7 @@ const staticInventory = [
 
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [activeImage, setActiveImage] = useState('');
-
-  useEffect(() => {
+  const [activeImage, setActiveImage] = useState('');useEffect(() => {
     async function fetchLiveProducts() {
       try {
         const { data, error } = await supabase.from('products').select('*');
@@ -516,7 +613,9 @@ const staticInventory = [
   const showToast = (msg) => {
     setToastMessage(msg);
     setTimeout(() => { setToastMessage(''); }, 2200);
-  };const handleToggleCompare = (item) => {
+  };
+
+  const handleToggleCompare = (item) => {
     setCompareItems(prev => {
       if (prev.find(i => i.id === item.id)) return prev.filter(i => i.id !== item.id);
       if (prev.length >= 4) {
@@ -525,9 +624,7 @@ const staticInventory = [
       }
       return [...prev, item];
     });
-  };
-
-  const filteredInventory = useMemo(() => {
+  };const filteredInventory = useMemo(() => {
     let items = masterInventory.filter(item => {
       const matchesCategory = activeCategory === 'All' || item.category === activeCategory;
       const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -555,9 +652,7 @@ const staticInventory = [
       executeAddToCart(product);
       setTimeout(() => { setAddedToCart(prev => ({ ...prev, [product.id]: false })); }, 1500);
     }, 600);
-  };
-
-  const executeAddToCart = (product) => {
+  };const executeAddToCart = (product) => {
     const isBuilderSelection = selectingFor === product.category;
     setCart(prev => {
       let newCart = prev;
@@ -630,9 +725,7 @@ const staticInventory = [
       }
     }
     return errors;
-  }, [cart, wattageInfo]);
-
-  const expectedPerformance = useMemo(() => {
+  }, [cart, wattageInfo]);const expectedPerformance = useMemo(() => {
     const gpu = cart.find(i => i.category === 'GPUs');
     const cpu = cart.find(i => i.category === 'CPUs');
     if (!gpu && !cpu) return lang === 'ar' ? 'الرجاء اختيار قطع لعرض الأداء المتوقع' : 'Select parts to calculate estimated performance';
@@ -659,12 +752,24 @@ const staticInventory = [
     cart.forEach(item => text += `▪️ ${item.name} - $${item.price}\n`);
     text += `\n💰 *Total Price: $${cartTotal.toFixed(2)}*`;
     return text;
+  };const handleShareBuildWhatsApp = () => window.open(`https://wa.me/?text=${encodeURIComponent(generateShareBuildText())}`, '_blank');
+  
+  const handleCopyShareText = () => { 
+    navigator.clipboard.writeText(generateShareBuildText()); 
+    showToast(lang === 'ar' ? 'تم نسخ التجميعة إلى الحافظة! 📋' : 'Build summary copied to clipboard! 📋'); 
   };
-
-  const handleShareBuildWhatsApp = () => window.open(`https://wa.me/?text=${encodeURIComponent(generateShareBuildText())}`, '_blank');
-  const handleCopyShareText = () => { navigator.clipboard.writeText(generateShareBuildText()); showToast(lang === 'ar' ? 'تم نسخ التجميعة إلى الحافظة! 📋' : 'Build summary copied to clipboard! 📋'); };
-  const openDetailModal = (product) => { setSelectedProduct(product); setActiveImage(product.image ? product.image.split(',')[0].trim() : '/images/default.jpg'); };
-  const startSelectingPart = (category) => { setActiveCategory(category); setSelectingFor(category); setIsDrawerOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  
+  const openDetailModal = (product) => { 
+    setSelectedProduct(product); 
+    setActiveImage(product.image ? product.image.split(',')[0].trim() : '/images/default.jpg'); 
+  };
+  
+  const startSelectingPart = (category) => { 
+    setActiveCategory(category); 
+    setSelectingFor(category); 
+    setIsDrawerOpen(false); 
+    window.scrollTo({ top: 0, behavior: 'smooth' }); 
+  };
   
   const submitOrder = (e) => {
     e.preventDefault(); 
@@ -694,11 +799,9 @@ const staticInventory = [
     if (cat === 'PC Cases') return <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full"><SpecBox label="Type" val={s.type || 'ATX Mid Tower'} /><SpecBox label="Color" val={s.color || 'Black'} /><SpecBox label="Side Panel" val={s.sidePanel || 'Tempered Glass'} /><SpecBox label="External Vol." val={s.volume || '45.0 L'} /></div>;
     if (cat === 'Liquid & Air Cooling') return <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full"><SpecBox label="Fan RPM" val={s.rpm || '1550 RPM'} /><SpecBox label="Noise Level" val={s.noise || '25.6 dB'} /><SpecBox label="Radiator Size" val={s.radSize || '360 mm'} /><SpecBox label="Color" val={s.color || 'Black'} /></div>;
     return <p className="text-xs text-gray-500 mt-2">{item.description || `Official ${item.category} component verified by EngineerPCs.`}</p>;
-  };
-
-  return (
+  };return (
     <div className="min-h-screen bg-gray-50 font-sans pb-24 md:pb-0 relative" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
-      <style dangerouslySetInnerHTML={{__html: customStyles}} />
+      <style dangerouslySetInnerHTML={{__html: customStyles + utilityStyles}} />
       
       {toastMessage && (
         <div className="fixed top-16 left-1/2 transform -translate-x-1/2 z-50 bg-gray-900 text-white px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 border border-yellow-400 text-xs md:text-sm font-semibold animate-bounce">
@@ -724,9 +827,7 @@ const staticInventory = [
             <button onClick={() => setSelectingFor(null)} className="text-white hover:text-gray-200 px-2 font-bold cursor-pointer text-lg leading-none">✕</button>
           </div>
         </div>
-      )}
-
-      <div className="bg-[#101423] text-gray-300 text-[11px] md:text-xs py-2 px-3 md:px-6 flex justify-between items-center z-50 relative border-b border-gray-800/50">
+      )}<div className="bg-[#101423] text-gray-300 text-[11px] md:text-xs py-2 px-3 md:px-6 flex justify-between items-center z-50 relative border-b border-gray-800/50">
         <div className="flex items-center gap-2 md:gap-3">
           <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden text-white hover:text-yellow-400 text-lg md:text-xl transition cursor-pointer">☰</button>
           <span className="font-semibold tracking-wide flex items-center gap-2">
@@ -742,8 +843,10 @@ const staticInventory = [
             <svg className="w-3.5 h-3.5 fill-green-400 group-hover:scale-110 transition-transform" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg> WhatsApp
           </a>
         </div>
-      </div>{/* 🌟 NEW INTERACTIVE HERO BANNER */}
-      <InteractiveHero t={t} onAction={() => { setIsDrawerOpen(true); setDrawerView('builder'); }} lang={lang} />
+      </div>
+
+      {/* 🌟 SLIDING HERO BANNER INVOCATION */}
+      <SlidingHeroBanner t={t} onAction={() => { setIsDrawerOpen(true); setDrawerView('builder'); }} lang={lang} />
 
       {/* 3. CATEGORY NAVIGATION MENU */}
       <nav className="bg-[#232F3E] text-white text-sm py-2 px-2 md:px-4 shadow-md overflow-x-auto whitespace-nowrap hide-scrollbar sticky top-0 z-30">
@@ -760,9 +863,7 @@ const staticInventory = [
             </button>
           ))}
         </div>
-      </nav>
-
-      {/* 4. MAIN PRODUCT DISPLAY HEADER & SIDEBAR FILTERS */}
+      </nav>{/* 4. MAIN PRODUCT DISPLAY HEADER & SIDEBAR FILTERS */}
       <main className="max-w-7xl mx-auto p-3 md:p-6 flex flex-col lg:flex-row gap-6">
         
         {/* DESKTOP PROFESSIONAL SIDEBAR */}
@@ -775,8 +876,7 @@ const staticInventory = [
                   <div>
                     <div className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-2">{t.availabilityLabel}</div>
                     <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer text-gray-700 hover:text-blue-600 transition"><input type="checkbox" className="w-4 h-4 rounded accent-blue-600 cursor-pointer" /> {t.inStockOnly}</label>
-                  </div>
-                  {activeCategory !== 'All' ? (
+                  </div>{activeCategory !== 'All' ? (
                     <>
                       <div>
                         <div className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-2">{t.brandLabel}</div>
@@ -809,7 +909,9 @@ const staticInventory = [
               <span className="text-[9px] text-gray-400 font-bold tracking-wider uppercase">{t.createdBy}</span>
             </div>
           </div>
-        </aside><div className="flex-1 pb-32">
+        </aside>
+
+        <div className="flex-1 pb-32">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 md:mb-6 border-b-2 border-gray-200 pb-3 pt-4">
             <h2 className="text-lg md:text-2xl font-bold text-gray-800">{searchQuery ? `${t.search} "${searchQuery}"` : (t.categories[activeCategory] || activeCategory)}</h2>
             <div className="flex items-center justify-between sm:justify-end gap-3 flex-wrap">
@@ -828,9 +930,7 @@ const staticInventory = [
               </div>
               {(activeCategory !== 'All' || searchQuery) && (<button onClick={() => { setActiveCategory('All'); setSearchQuery(''); }} className="text-xs bg-yellow-100 hover:bg-yellow-200 text-yellow-800 px-2.5 py-1.5 rounded-lg font-semibold transition cursor-pointer">{t.reset}</button>)}
             </div>
-          </div>
-
-          {filteredInventory.length === 0 ? (
+          </div>{filteredInventory.length === 0 ? (
             <div className="text-center text-gray-500 py-20 text-lg md:text-xl">{t.noProducts}</div>
           ) : viewMode === 'list' ? (
             <div className="space-y-4 md:space-y-6">
@@ -879,8 +979,7 @@ const staticInventory = [
                   </ScrollFadeItem>
                 );
               })}
-            </div>
-          ) : (
+            </div>) : (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
               {filteredInventory.map((item) => {
                 const qty = getItemQuantity(item.id);
@@ -971,9 +1070,7 @@ const staticInventory = [
             </span>
           </button>
         )}
-      </div>
-
-      {/* 🌟 NEW MOBILE SIDE MENU DRAWER */}
+      </div>{/* 🌟 NEW MOBILE SIDE MENU DRAWER */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-[60] flex lg:hidden bg-black/60 backdrop-blur-sm transition-opacity">
           <div className="w-4/5 max-w-sm bg-white h-full shadow-2xl flex flex-col animate-slide-in-left overflow-hidden">
@@ -1055,9 +1152,7 @@ const staticInventory = [
             <button onClick={() => setCompareItems([])} className="mt-4 text-red-500 hover:text-red-600 font-bold text-sm mx-auto cursor-pointer transition underline">{t.clearComparison}</button>
           </div>
         </div>
-      )}
-
-      {/* STOCK ALERT MODAL */}
+      )}{/* STOCK ALERT MODAL */}
       {notifyModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
           <div className="bg-white p-6 rounded-2xl w-full max-w-sm relative shadow-2xl text-center">
@@ -1193,9 +1288,7 @@ const staticInventory = [
                     ))
                   )}
                 </div>
-              )}
-
-              {drawerView === 'checkout' && (
+              )}{drawerView === 'checkout' && (
                 <form id="checkout-form" onSubmit={submitOrder} className="space-y-4 md:space-y-5 pb-20 md:pb-0">
                   <div><label className="block text-xs md:text-sm font-bold text-gray-700 mb-1">{t.fullName}</label><input required type="text" placeholder="John Doe" className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-blue-500 text-sm md:text-base text-black font-medium" value={customerInfo.name} onChange={(e) => setCustomerInfo({...customerInfo, name: e.target.value})} /></div>
                   <div><label className="block text-xs md:text-sm font-bold text-gray-700 mb-1">{t.phone}</label><input required type="tel" placeholder="+963..." className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-blue-500 text-sm md:text-base text-black font-medium" value={customerInfo.phone} onChange={(e) => setCustomerInfo({...customerInfo, phone: e.target.value})} /></div>
