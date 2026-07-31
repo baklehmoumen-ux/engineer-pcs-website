@@ -4,6 +4,43 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 
 // =========================================================================
+// 🌟 CUSTOM INLINE STYLES FOR ANIMATIONS & MICRO-INTERACTIONS
+// =========================================================================
+const customStyles = `
+  @keyframes kinetic-shift {
+    0%, 100% { transform: translateY(0) skewX(0deg); }
+    50% { transform: translateY(-3px) skewX(-2deg); }
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-15px); }
+  }
+  .animate-kinetic {
+    animation: kinetic-shift 4s ease-in-out infinite;
+    display: inline-block;
+  }
+  .animate-fade-in-up {
+    opacity: 0;
+    animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  .btn-morph {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+`;
+
+// =========================================================================
 // 🌟 SCROLL REVEAL ANIMATION COMPONENT
 // =========================================================================
 const ScrollFadeItem = ({ children }) => {
@@ -41,9 +78,74 @@ const ScrollFadeItem = ({ children }) => {
       {children}
     </div>
   );
-};
+};// =========================================================================
+// 🌟 INTERACTIVE HERO BANNER COMPONENT
+// =========================================================================
+const InteractiveHero = ({ t, onAction, lang }) => {
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const heroRef = useRef(null);
 
-// Dictionary Translations for UI, Categories, & New Features
+  const handleMouseMove = (e) => {
+    if (!heroRef.current) return;
+    const { left, top, width, height } = heroRef.current.getBoundingClientRect();
+    const x = (e.clientX - left) / width - 0.5;
+    const y = (e.clientY - top) / height - 0.5;
+    setMousePos({ x, y });
+  };
+
+  return (
+    <div 
+      ref={heroRef}
+      onMouseMove={handleMouseMove}
+      className="relative overflow-hidden bg-gradient-to-br from-[#12182b] via-[#1a233a] to-[#0d111c] py-20 md:py-32 px-6 lg:px-12 flex items-center min-h-[450px] md:min-h-[550px]"
+      dir={lang === 'ar' ? 'rtl' : 'ltr'}
+    >
+      {/* Interactive Mouse-Tracking Background Glows */}
+      <div 
+        className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/30 rounded-full blur-[120px] mix-blend-screen transition-transform duration-1000 ease-out pointer-events-none"
+        style={{ transform: `translate(${mousePos.x * -60}px, ${mousePos.y * -60}px)` }}
+      />
+      <div 
+        className="absolute bottom-1/4 right-1/4 w-[30rem] h-[30rem] bg-purple-600/20 rounded-full blur-[150px] mix-blend-screen transition-transform duration-1000 ease-out pointer-events-none"
+        style={{ transform: `translate(${mousePos.x * 80}px, ${mousePos.y * 80}px)` }}
+      />
+
+      {/* Floating Geometric Decor */}
+      <div className="absolute top-10 right-20 w-24 h-24 border border-white/10 rounded-xl rotate-45 animate-float pointer-events-none hidden md:block" />
+      <div className="absolute bottom-20 left-20 w-16 h-16 border border-blue-500/20 rounded-full animate-float pointer-events-none hidden md:block" style={{ animationDelay: '2s' }} />
+
+      <div className="max-w-7xl mx-auto w-full relative z-10 flex flex-col items-start">
+        <p className="text-yellow-500 font-bold tracking-[0.2em] uppercase text-xs md:text-sm mb-4 animate-fade-in-up">
+          {t.heroProBuilders}
+        </p>
+        
+        <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white leading-[1.1] tracking-tight mb-5 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+          {t.heroTitle1} <br/>
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#4d8eff] to-[#a45ee9]">
+            {t.heroTitle2}
+          </span>
+        </h1>
+        
+        <p className="text-gray-300 text-base md:text-lg max-w-xl mb-10 animate-fade-in-up font-medium leading-relaxed" style={{ animationDelay: '0.2s' }}>
+          {t.heroSubtitle}
+        </p>
+        
+        <div className="animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+          <button 
+            onClick={onAction}
+            className="group relative px-8 py-4 bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-extrabold rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all hover:shadow-[0_0_35px_rgba(37,99,235,0.6)] hover:-translate-y-1 active:translate-y-0 cursor-pointer overflow-hidden"
+          >
+            {/* Button Shine Effect */}
+            <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:animate-[shimmer_1.5s_infinite] pointer-events-none" />
+            <span className="flex items-center gap-3 text-sm md:text-base relative z-10">
+              <span className="text-xl">🛠️</span> {t.heroBtn}
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};// Dictionary Translations for UI, Categories, & New Features
 const dictionary = {
   en: {
     proBuilders: 'Pro PC Builders',
@@ -90,7 +192,9 @@ const dictionary = {
     descSpecs: 'Description & Specifications',
     addToBuild: '✅ Add to Build',
     addToCart: '➕ Add to Cart',
-    currentlyUnavailable: 'Currently Unavailable',// BUILDER, VIEW SWITCHER & SHARE FEATURES
+    currentlyUnavailable: 'Currently Unavailable',
+    
+    // BUILDER, VIEW SWITCHER & SHARE FEATURES
     estWattage: 'Estimated Wattage',
     psuCapacity: 'PSU Capacity',
     fixBtn: '🔧 Fix Item',
@@ -124,10 +228,12 @@ const dictionary = {
     contactUs: 'Contact Us',
     createdBy: 'Credits to the creator of the website Eng. Moumen BaKleh',
     
-    // NEW DYNAMIC UI TRANSLATIONS
+    // HERO BANNER & DYNAMIC UI TRANSLATIONS
+    heroProBuilders: 'PRO PC BUILDERS',
     heroTitle1: 'Engineer Your Own',
     heroTitle2: 'Dream Machine.',
     heroSubtitle: 'Build the ultimate PC for gaming, rendering, and professional workloads.',
+    heroBtn: 'Engineer Your Own PC',
     availabilityLabel: 'Availability',
     inStockOnly: 'In Stock Only',
     brandLabel: 'Brand',
@@ -174,8 +280,7 @@ const dictionary = {
       'Case': 'Case',
       'Power Supply': 'Power Supply'
     }
-  },
-  ar: {
+  },ar: {
     proBuilders: 'خبراء تجميع الحاسوب',
     selectPartPrefix: 'اختر',
     selectPartSuffix: 'لتجميعتك',
@@ -220,7 +325,9 @@ const dictionary = {
     descSpecs: 'الوصف والمواصفات',
     addToBuild: '✅ إضافة للتجميعة',
     addToCart: '➕ إضافة للسلة',
-    currentlyUnavailable: 'غير متوفر حالياً',// BUILDER, VIEW SWITCHER & SHARE FEATURES
+    currentlyUnavailable: 'غير متوفر حالياً',
+
+    // BUILDER, VIEW SWITCHER & SHARE FEATURES
     estWattage: 'استهلاك الطاقة المقدر',
     psuCapacity: 'سعة مزود الطاقة',
     fixBtn: '🔧 إصلاح القطعة',
@@ -254,10 +361,12 @@ const dictionary = {
     contactUs: 'اتصل بنا',
     createdBy: 'تم إنشاء الموقع بواسطة م. مؤمن بقلة',
 
-    // NEW DYNAMIC UI TRANSLATIONS
+    // HERO BANNER & DYNAMIC UI TRANSLATIONS
+    heroProBuilders: 'خبراء تجميع الحاسوب',
     heroTitle1: 'صمم حاسوب',
     heroTitle2: 'أحلامك بنفسك.',
     heroSubtitle: 'قم ببناء الحاسوب المثالي للألعاب، التصميم، وأعباء العمل الاحترافية.',
+    heroBtn: 'صمّم حاسوبك الخاص',
     availabilityLabel: 'التوفر',
     inStockOnly: 'متوفر فقط',
     brandLabel: 'العلامة التجارية',
@@ -305,9 +414,7 @@ const dictionary = {
       'Power Supply': 'مزود الطاقة'
     }
   }
-};
-
-const categories = [
+};const categories = [
   'All', 
   'CPUs',
   'Motherboards', 
@@ -331,7 +438,9 @@ const requiredParts = [
   { key: 'GPUs', labelKey: 'Video Card', icon: <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" strokeWidth="2" fill="none"><rect x="2" y="7" width="20" height="10" rx="2"></rect></svg>, required: true },
   { key: 'PC Cases', labelKey: 'Case', icon: <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" strokeWidth="2" fill="none"><rect x="5" y="3" width="14" height="18" rx="2"></rect></svg>, required: true },
   { key: 'Power Supplies', labelKey: 'Power Supply', icon: <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" strokeWidth="2" fill="none"><rect x="3" y="6" width="18" height="12" rx="2"></rect></svg>, required: true }
-];// Master Starter Inventory
+];
+
+// Master Starter Inventory
 const staticInventory = [
   { id: 'psu-1', category: 'Power Supplies', name: 'ThermalRight TR-TB650S 650W 80 PLUS', price: 58, image: '/images/tr-tb650s.jpg', specs: { type: 'ATX', efficiency: '80+ Gold', wattage: '650 W', modular: 'Full', color: 'Black' } },
   { id: 'psu-2', category: 'Power Supplies', name: 'ThermalRight TR-TB750S 750W', price: 76, image: '/images/tr-tb750s.jpg', specs: { type: 'ATX', efficiency: '80+ Gold', wattage: '750 W', modular: 'Full', color: 'Black' } },
@@ -353,9 +462,7 @@ const staticInventory = [
   { id: 'cpu-amd-5', category: 'CPUs', name: 'Ryzen 7 9800X3D', price: 420, image: '/images/r7-9800x3d.jpg', specs: { cores: '8', clock: '4.7 GHz', boost: '5.2 GHz', arch: 'Zen 5', tdp: '120 W', igpu: 'Radeon' } },
   { id: 'mb-2', category: 'Motherboards', name: 'ASUS B850M AYW GAMING WIFI', price: 185, image: '/images/asus-b850m.jpg', specs: { socket: 'AM5', formFactor: 'Micro ATX', memoryMax: '256 GB', memorySlots: '4', color: 'Black / Silver' } },
   { id: 'gpu-mock', category: 'GPUs', name: 'NVIDIA GeForce RTX 4090 FE', price: 1599, image: 'https://via.placeholder.com/300?text=RTX+4090', in_stock: false, specs: { chipset: 'RTX 4090', memory: '24 GB', clock: '2235 MHz', boost: '2520 MHz', color: 'Silver/Black' } }
-];
-
-export default function Storefront() {
+];export default function Storefront() {
   const [lang, setLang] = useState('en');
   const t = dictionary[lang];
 
@@ -372,6 +479,9 @@ export default function Storefront() {
   const [paymentMethod, setPaymentMethod] = useState('whatsapp'); 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); 
 
+  const [addingToCart, setAddingToCart] = useState({});
+  const [addedToCart, setAddedToCart] = useState({});
+
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [drawerView, setDrawerView] = useState('cart'); 
   const [customerInfo, setCustomerInfo] = useState({ name: '', phone: '', address: '' });
@@ -381,7 +491,9 @@ export default function Storefront() {
 
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [activeImage, setActiveImage] = useState('');useEffect(() => {
+  const [activeImage, setActiveImage] = useState('');
+
+  useEffect(() => {
     async function fetchLiveProducts() {
       try {
         const { data, error } = await supabase.from('products').select('*');
@@ -404,9 +516,7 @@ export default function Storefront() {
   const showToast = (msg) => {
     setToastMessage(msg);
     setTimeout(() => { setToastMessage(''); }, 2200);
-  };
-
-  const handleToggleCompare = (item) => {
+  };const handleToggleCompare = (item) => {
     setCompareItems(prev => {
       if (prev.find(i => i.id === item.id)) return prev.filter(i => i.id !== item.id);
       if (prev.length >= 4) {
@@ -435,34 +545,32 @@ export default function Storefront() {
     return masterInventory.filter(i => i.category !== selectedProduct.category && i.in_stock !== false).slice(0, 2);
   }, [selectedProduct, masterInventory]);
 
-  const addToCart = (product) => {
-    if (product.in_stock === false) {
-      setNotifyModalOpen(true);
-      return;
-    }
-    
+  const handleAddWithFeedback = (product, e) => {
+    if (e) e.stopPropagation();
+    if (product.in_stock === false) { setNotifyModalOpen(true); return; }
+    setAddingToCart(prev => ({ ...prev, [product.id]: true }));
+    setTimeout(() => {
+      setAddingToCart(prev => ({ ...prev, [product.id]: false }));
+      setAddedToCart(prev => ({ ...prev, [product.id]: true }));
+      executeAddToCart(product);
+      setTimeout(() => { setAddedToCart(prev => ({ ...prev, [product.id]: false })); }, 1500);
+    }, 600);
+  };
+
+  const executeAddToCart = (product) => {
     const isBuilderSelection = selectingFor === product.category;
-    
     setCart(prev => {
       let newCart = prev;
-      if (isBuilderSelection) {
-        newCart = prev.filter(item => item.category !== product.category);
-      }
+      if (isBuilderSelection) newCart = prev.filter(item => item.category !== product.category);
       const existing = newCart.find(item => item.id === product.id);
-      if (existing) {
-        return newCart.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
-      }
+      if (existing) return newCart.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
       return [...newCart, { ...product, quantity: 1 }];
     });
-    
     showToast(`${product.name.slice(0, 22)}...`);
-
-    if (isBuilderSelection) {
-      setSelectingFor(null);
-      setDrawerView('builder');
-      setIsDrawerOpen(true);
-    }
+    if (isBuilderSelection) { setSelectingFor(null); setDrawerView('builder'); setIsDrawerOpen(true); }
   };
+
+  const addToCart = (product) => { executeAddToCart(product); };
 
   const updateQuantity = (id, delta) => {
     setCart(prev => {
@@ -479,10 +587,7 @@ export default function Storefront() {
   const removeFromCart = (id) => setCart(prev => prev.filter(item => item.id !== id));
   const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
-  const getItemQuantity = (id) => {
-    const found = cart.find(item => item.id === id);
-    return found ? found.quantity : 0;
-  };const wattageInfo = useMemo(() => {
+  const getItemQuantity = (id) => { const found = cart.find(item => item.id === id); return found ? found.quantity : 0; };const wattageInfo = useMemo(() => {
     let estimatedWattage = 65; 
     let selectedPsuWattage = 0;
 
@@ -593,6 +698,7 @@ export default function Storefront() {
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans pb-24 md:pb-0 relative" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+      <style dangerouslySetInnerHTML={{__html: customStyles}} />
       
       {toastMessage && (
         <div className="fixed top-16 left-1/2 transform -translate-x-1/2 z-50 bg-gray-900 text-white px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 border border-yellow-400 text-xs md:text-sm font-semibold animate-bounce">
@@ -601,7 +707,7 @@ export default function Storefront() {
       )}
 
       {compareItems.length > 0 && (
-        <div className="fixed bottom-24 md:bottom-8 right-4 z-40 animate-bounce">
+        <div className="fixed bottom-24 md:bottom-24 right-4 z-40 animate-bounce">
           <button onClick={() => setIsCompareModalOpen(true)} className="bg-blue-600 text-white font-black px-6 py-3 rounded-full shadow-2xl border-2 border-white flex items-center gap-2 transition hover:bg-blue-700 active:scale-95 cursor-pointer">
             <span className="text-lg">⚖️</span> {t.compare} ({compareItems.length})
           </button>
@@ -620,7 +726,7 @@ export default function Storefront() {
         </div>
       )}
 
-      <div className="bg-gray-900 text-gray-300 text-[11px] md:text-xs py-2 px-3 md:px-6 flex justify-between items-center z-50 relative border-b border-gray-800">
+      <div className="bg-[#101423] text-gray-300 text-[11px] md:text-xs py-2 px-3 md:px-6 flex justify-between items-center z-50 relative border-b border-gray-800/50">
         <div className="flex items-center gap-2 md:gap-3">
           <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden text-white hover:text-yellow-400 text-lg md:text-xl transition cursor-pointer">☰</button>
           <span className="font-semibold tracking-wide flex items-center gap-2">
@@ -632,40 +738,24 @@ export default function Storefront() {
           <button onClick={() => setLang(lang === 'en' ? 'ar' : 'en')} className="hover:text-yellow-400 text-white font-bold flex items-center gap-1.5 transition text-xs bg-gray-800 hover:bg-gray-700 px-2.5 py-1 rounded-full border border-gray-700 cursor-pointer shadow-sm">
             <span>🌐</span> {lang === 'en' ? 'العربية' : 'English'}
           </button>
-          <a href="https://www.instagram.com/engineer_pcs?igsh=MXA3aTJmZWFmajZsdg==" target="_blank" rel="noreferrer" className="hover:text-white flex items-center gap-1.5 transition font-semibold group">
-            <svg className="w-3.5 h-3.5 fill-pink-500 group-hover:scale-110 transition-transform" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg> WhatsApp
+          <a href="https://wa.me/963946508988" target="_blank" rel="noreferrer" className="hover:text-white flex items-center gap-1.5 transition font-semibold group">
+            <svg className="w-3.5 h-3.5 fill-green-400 group-hover:scale-110 transition-transform" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg> WhatsApp
           </a>
         </div>
-      </div>{/* 🌟 NEW INLINE HERO BANNER (Fully Translated) */}
-      <div className="bg-gradient-to-r from-gray-900 to-gray-800 text-white py-12 md:py-16 px-4 md:px-6 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto relative z-10 flex flex-col items-start">
-          <span className="text-yellow-400 font-bold tracking-wider uppercase text-xs md:text-sm mb-2 animate-pulse">
-            {t.proBuilders}
-          </span>
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-black mb-4 leading-tight">
-            {t.heroTitle1} <br className="hidden md:block" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
-              {t.heroTitle2}
-            </span>
-          </h1>
-          <p className="text-gray-400 text-sm md:text-base max-w-lg mb-8 font-medium">
-            {t.heroSubtitle}
-          </p>
-          <button 
-            onClick={() => { setIsDrawerOpen(true); setDrawerView('builder'); }}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-black px-8 py-3.5 rounded-xl shadow-lg transition transform hover:scale-105 active:scale-95 cursor-pointer"
-          >
-            {t.pcBuilder}
-          </button>
-        </div>
-        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl mix-blend-screen pointer-events-none"></div>
-      </div>
+      </div>{/* 🌟 NEW INTERACTIVE HERO BANNER */}
+      <InteractiveHero t={t} onAction={() => { setIsDrawerOpen(true); setDrawerView('builder'); }} lang={lang} />
 
       {/* 3. CATEGORY NAVIGATION MENU */}
-      <nav className="bg-[#232F3E] text-white text-sm py-2 px-2 md:px-4 shadow-md overflow-x-auto whitespace-nowrap hide-scrollbar">
+      <nav className="bg-[#232F3E] text-white text-sm py-2 px-2 md:px-4 shadow-md overflow-x-auto whitespace-nowrap hide-scrollbar sticky top-0 z-30">
         <div className="max-w-7xl mx-auto flex gap-4 md:gap-6 px-2">
           {categories.map((category) => (
-            <button key={category} onClick={() => setActiveCategory(category)} className={`transition-all pb-1 border-b-2 text-sm md:text-base cursor-pointer ${activeCategory === category ? 'border-yellow-400 text-yellow-400 font-bold' : 'border-transparent hover:border-gray-300 text-gray-300'}`}>
+            <button 
+              key={category}
+              onClick={() => setActiveCategory(category)}
+              className={`transition-all pb-1 border-b-2 text-sm md:text-base cursor-pointer ${
+                activeCategory === category ? 'border-yellow-400 text-yellow-400 font-bold' : 'border-transparent hover:border-gray-300 text-gray-300'
+              }`}
+            >
               {t.categories[category] || category}
             </button>
           ))}
@@ -677,7 +767,7 @@ export default function Storefront() {
         
         {/* DESKTOP PROFESSIONAL SIDEBAR */}
         <aside className="hidden lg:block w-64 shrink-0 pt-4">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 sticky top-24 flex flex-col max-h-[calc(100vh-6rem)] overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 sticky top-16 flex flex-col max-h-[calc(100vh-6rem)] overflow-hidden">
             <div className="p-5 overflow-y-auto hide-scrollbar flex-1 space-y-6">
               <div>
                 <h3 className="font-black text-gray-900 mb-4 flex items-center gap-2"><span>⚙️</span> {t.filters}</h3>
@@ -719,11 +809,9 @@ export default function Storefront() {
               <span className="text-[9px] text-gray-400 font-bold tracking-wider uppercase">{t.createdBy}</span>
             </div>
           </div>
-        </aside><div className="flex-1">
+        </aside><div className="flex-1 pb-32">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 md:mb-6 border-b-2 border-gray-200 pb-3 pt-4">
-            <h2 className="text-lg md:text-2xl font-bold text-gray-800">
-              {searchQuery ? `${t.search} "${searchQuery}"` : (t.categories[activeCategory] || activeCategory)}
-            </h2>
+            <h2 className="text-lg md:text-2xl font-bold text-gray-800">{searchQuery ? `${t.search} "${searchQuery}"` : (t.categories[activeCategory] || activeCategory)}</h2>
             <div className="flex items-center justify-between sm:justify-end gap-3 flex-wrap">
               <div className="flex bg-gray-200 p-1 rounded-lg border border-gray-300">
                 <button onClick={() => setViewMode('list')} className={`px-3 py-1 rounded-md text-xs font-bold transition cursor-pointer ${viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600'}`}>{t.viewList}</button>
@@ -738,9 +826,7 @@ export default function Storefront() {
                   <option value="high-low">{t.highToLow}</option>
                 </select>
               </div>
-              {(activeCategory !== 'All' || searchQuery) && (
-                <button onClick={() => { setActiveCategory('All'); setSearchQuery(''); }} className="text-xs bg-yellow-100 hover:bg-yellow-200 text-yellow-800 px-2.5 py-1.5 rounded-lg font-semibold transition cursor-pointer">{t.reset}</button>
-              )}
+              {(activeCategory !== 'All' || searchQuery) && (<button onClick={() => { setActiveCategory('All'); setSearchQuery(''); }} className="text-xs bg-yellow-100 hover:bg-yellow-200 text-yellow-800 px-2.5 py-1.5 rounded-lg font-semibold transition cursor-pointer">{t.reset}</button>)}
             </div>
           </div>
 
@@ -763,11 +849,7 @@ export default function Storefront() {
                         {images.map((img, idx) => (
                           <div key={idx} className="w-[85%] sm:w-[45%] md:w-[30%] shrink-0 snap-start relative border border-gray-100 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center p-2">
                             <img src={img} alt={`${item.name} - View ${idx + 1}`} className="h-40 md:h-56 w-full object-contain cursor-pointer hover:scale-105 transition-transform" onClick={() => openDetailModal(item)} onError={(e) => { e.target.src = 'https://via.placeholder.com/300?text=PC+Component'; }}/>
-                            {isOutOfStock && idx === 0 && (
-                              <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center z-10 pointer-events-none">
-                                <span className="bg-red-600 text-white font-black text-xs uppercase tracking-widest px-3 py-1.5 rounded-md shadow-lg">{t.outOfStockBadge}</span>
-                              </div>
-                            )}
+                            {isOutOfStock && idx === 0 && (<div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center z-10 pointer-events-none"><span className="bg-red-600 text-white font-black text-xs uppercase tracking-widest px-3 py-1.5 rounded-md shadow-lg">{t.outOfStockBadge}</span></div>)}
                           </div>
                         ))}
                       </div>
@@ -782,9 +864,11 @@ export default function Storefront() {
                         {isOutOfStock ? (
                           <button onClick={(e) => { e.stopPropagation(); setNotifyModalOpen(true); }} className="bg-gray-800 hover:bg-gray-900 text-white font-bold px-4 md:px-6 py-2.5 rounded-xl text-sm shadow-md transition cursor-pointer flex items-center gap-2">{t.notifyMe}</button>
                         ) : qty === 0 ? (
-                          <button onClick={() => addToCart(item)} className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-extrabold px-6 md:px-8 py-2.5 md:py-3 rounded-xl text-sm shadow-md transition transform active:scale-95 cursor-pointer flex items-center gap-2">+ {t.add}</button>
+                          <button onClick={(e) => handleAddWithFeedback(item, e)} className="btn-morph bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-extrabold px-6 md:px-8 py-2.5 md:py-3 rounded-xl text-sm shadow-md cursor-pointer flex items-center justify-center min-w-[100px] h-[44px] md:h-[48px]">
+                            {addingToCart[item.id] ? <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> : addedToCart[item.id] ? <svg className="h-6 w-6 text-green-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg> : `+ ${t.add}`}
+                          </button>
                         ) : (
-                          <div className="flex items-center bg-gray-100 rounded-xl border border-gray-300 p-1 shadow-inner h-10 md:h-12">
+                          <div className="flex items-center bg-gray-100 rounded-xl border border-gray-300 p-1 shadow-inner h-[44px] md:h-[48px]">
                             <button onClick={() => updateQuantity(item.id, -1)} className="bg-white hover:bg-gray-200 text-black font-bold h-full w-10 md:w-12 rounded-lg flex items-center justify-center text-sm shadow-sm cursor-pointer transition">-</button>
                             <span className="px-4 font-black text-sm md:text-base text-gray-800">{qty}</span>
                             <button onClick={() => updateQuantity(item.id, 1)} className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold h-full w-10 md:w-12 rounded-lg flex items-center justify-center text-sm shadow-sm cursor-pointer transition">+</button>
@@ -810,11 +894,7 @@ export default function Storefront() {
                         <input type="checkbox" className="w-4 h-4 cursor-pointer accent-blue-600" checked={compareItems.some(i => i.id === item.id)} onChange={(e) => { e.stopPropagation(); handleToggleCompare(item); }} />
                       </div>
                       <div onClick={() => openDetailModal(item)} className="h-32 md:h-56 bg-gray-50 flex items-center justify-center p-2 md:p-4 relative overflow-hidden cursor-pointer">
-                        {isOutOfStock && (
-                          <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px] flex items-center justify-center z-20">
-                            <span className="bg-red-600 text-white font-black text-xs md:text-sm uppercase tracking-widest px-3 py-1.5 rounded-md shadow-lg border border-red-400">{t.outOfStock}</span>
-                          </div>
-                        )}
+                        {isOutOfStock && (<div className="absolute inset-0 bg-black/60 backdrop-blur-[1px] flex items-center justify-center z-20"><span className="bg-red-600 text-white font-black text-xs md:text-sm uppercase tracking-widest px-3 py-1.5 rounded-md shadow-lg border border-red-400">{t.outOfStock}</span></div>)}
                         <img src={firstImage} alt={item.name} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" onError={(e) => { e.target.src = 'https://via.placeholder.com/300?text=PC+Component'; }} />
                       </div>
                       <div className="p-3 md:p-5 flex flex-col flex-1">
@@ -825,7 +905,9 @@ export default function Storefront() {
                           {isOutOfStock ? (
                             <button onClick={(e) => { e.stopPropagation(); setNotifyModalOpen(true); }} className="bg-gray-800 text-white font-bold px-2 py-1 rounded-lg text-xs cursor-pointer">{t.notifyMe}</button>
                           ) : qty === 0 ? (
-                            <button onClick={() => addToCart(item)} className="bg-yellow-400 hover:bg-yellow-500 active:bg-yellow-600 text-black font-bold h-8 w-8 md:h-10 md:w-10 flex items-center justify-center rounded-full shadow transition-transform active:scale-90 text-sm md:text-base cursor-pointer">➕</button>
+                            <button onClick={(e) => handleAddWithFeedback(item, e)} className="btn-morph bg-yellow-400 hover:bg-yellow-500 active:bg-yellow-600 text-black font-bold h-8 w-8 md:h-10 md:w-10 flex items-center justify-center rounded-full shadow transition-transform active:scale-90 text-sm md:text-base cursor-pointer relative">
+                              {addingToCart[item.id] ? <svg className="animate-spin h-4 w-4 text-black" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> : addedToCart[item.id] ? <svg className="h-5 w-5 text-green-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg> : '➕'}
+                            </button>
                           ) : (
                             <div className="flex items-center bg-gray-100 rounded-full border border-gray-300 p-0.5 shadow-inner">
                               <button onClick={() => updateQuantity(item.id, -1)} className="bg-white hover:bg-gray-200 text-black font-bold h-7 w-7 rounded-full flex items-center justify-center text-xs shadow cursor-pointer">-</button>
@@ -842,22 +924,47 @@ export default function Storefront() {
             </div>
           )}
         </div>
-      </main>{/* 🌟 MOBILE FLOATING CIRCULAR ACTION BUTTONS */}
+      </main>{/* 🌟 DESKTOP FRICTIONLESS STICKY SUMMARY */}
+      <div className={`hidden lg:flex fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-md border-t border-gray-800 p-3 px-8 justify-between items-center z-40 shadow-[0_-10px_25px_rgba(0,0,0,0.5)] transition-transform duration-500 ${cartCount > 0 || selectingFor ? 'translate-y-0' : 'translate-y-full'}`}>
+        <div className="flex items-center gap-8 text-white max-w-7xl mx-auto w-full">
+          <div className="flex items-center gap-3">
+            <span className="text-3xl">{buildStatus.isComplete ? '✅' : '🛠️'}</span>
+            <div className="flex flex-col">
+              <span className="text-[10px] uppercase font-black text-gray-400 tracking-widest">{t.system}</span>
+              <span className="font-extrabold text-sm">{buildStatus.isComplete ? t.buildReady : t.buildPc} ({buildStatus.progress}%)</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-6 border-l border-gray-700 pl-6 flex-1">
+            <div className="flex flex-col">
+              <span className="text-[10px] uppercase font-bold text-gray-400">{t.totalWattage}</span>
+              <span className="font-bold text-sm">~{wattageInfo.estimated}W / <span className={wattageInfo.psu >= wattageInfo.estimated ? "text-green-400" : "text-red-400"}>{wattageInfo.psu ? `${wattageInfo.psu}W PSU` : t.noPsu}</span></span>
+            </div>
+            {!buildStatus.isComplete && buildStatus.missing.length > 0 && (
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase font-bold text-yellow-400">{t.missingParts}</span>
+                <span className="font-bold text-sm text-gray-300 truncate max-w-sm">{buildStatus.missing.join(', ')}</span>
+              </div>
+            )}
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex flex-col text-right">
+              <span className="text-[10px] uppercase font-black text-gray-400">{t.total} ({cartCount} {t.items})</span>
+              <span className="font-black text-xl">${cartTotal.toFixed(2)}</span>
+            </div>
+            <button onClick={() => { setDrawerView('builder'); setIsDrawerOpen(true); }} className="bg-yellow-400 hover:bg-yellow-500 text-black font-extrabold px-6 py-2.5 rounded-lg transition active:scale-95 shadow cursor-pointer">
+              {t.reviewCart}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 🌟 MOBILE FLOATING CIRCULAR ACTION BUTTONS */}
       <div className="md:hidden fixed bottom-6 left-0 right-0 px-4 flex justify-between items-end z-40 pointer-events-none">
-        <button 
-          onClick={() => { setDrawerView('builder'); setIsDrawerOpen(true); }} 
-          className={`pointer-events-auto h-16 w-16 rounded-full shadow-2xl flex items-center justify-center text-2xl transition-transform active:scale-90 border-4 border-white ${buildStatus.isComplete ? 'bg-green-500 text-white' : 'bg-gray-900 text-white'}`}
-          title={t.pcBuilder}
-        >
+        <button onClick={() => { setDrawerView('builder'); setIsDrawerOpen(true); }} className={`pointer-events-auto h-16 w-16 rounded-full shadow-2xl flex items-center justify-center text-2xl transition-transform active:scale-90 border-4 border-white ${buildStatus.isComplete ? 'bg-green-500 text-white' : 'bg-gray-900 text-white'}`} title={t.pcBuilder}>
           {buildStatus.isComplete ? '✅' : '🛠️'}
         </button>
-
         {cartCount > 0 && (
-          <button 
-            onClick={() => { setDrawerView('cart'); setIsDrawerOpen(true); }} 
-            className="pointer-events-auto h-16 w-16 bg-yellow-400 text-black rounded-full shadow-2xl flex items-center justify-center text-2xl transition-transform active:scale-90 border-4 border-white relative cursor-pointer"
-            title={t.yourCart}
-          >
+          <button onClick={() => { setDrawerView('cart'); setIsDrawerOpen(true); }} className="pointer-events-auto h-16 w-16 bg-yellow-400 text-black rounded-full shadow-2xl flex items-center justify-center text-2xl transition-transform active:scale-90 border-4 border-white relative cursor-pointer" title={t.yourCart}>
             🛒
             <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-black w-6 h-6 rounded-full flex items-center justify-center border-2 border-white shadow">
               {cartCount}
@@ -871,13 +978,9 @@ export default function Storefront() {
         <div className="fixed inset-0 z-[60] flex lg:hidden bg-black/60 backdrop-blur-sm transition-opacity">
           <div className="w-4/5 max-w-sm bg-white h-full shadow-2xl flex flex-col animate-slide-in-left overflow-hidden">
             <div className="p-4 bg-gray-900 text-white flex justify-between items-center shrink-0 shadow-md">
-              <span className="font-black flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
-                {t.proBuilders}
-              </span>
+              <span className="font-black flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>{t.proBuilders}</span>
               <button onClick={() => setIsMobileMenuOpen(false)} className="text-3xl font-bold cursor-pointer text-gray-400 hover:text-white leading-none">&times;</button>
             </div>
-            
             <div className="flex-1 overflow-y-auto p-5 space-y-6 bg-gray-50">
               <div>
                 <h3 className="font-black text-gray-900 text-sm mb-3 flex items-center gap-2"><span>📂</span> {t.components}</h3>
@@ -903,9 +1006,7 @@ export default function Storefront() {
               <div><h3 className="font-black text-gray-900 text-sm mb-2 flex items-center gap-1.5"><span>📍</span> {t.location}</h3><p className="text-xs text-gray-500 font-medium">{t.locationText}</p></div>
               <div>
                 <h3 className="font-black text-gray-900 text-sm mb-2 flex items-center gap-1.5"><span>📞</span> {t.contactUs}</h3>
-                <a href="https://wa.me/963946508988" target="_blank" rel="noreferrer" className="inline-block text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition">
-                  +963 946 508 988
-                </a>
+                <a href="https://wa.me/963946508988" target="_blank" rel="noreferrer" className="inline-block text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition">+963 946 508 988</a>
               </div>
             </div>
             <div className="bg-gray-100 border-t border-gray-200 p-4 text-center shrink-0">
@@ -981,7 +1082,6 @@ export default function Storefront() {
               <button onClick={() => setIsDrawerOpen(false)} className="text-gray-400 hover:text-white text-3xl font-bold leading-none cursor-pointer">&times;</button>
             </div>
             <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
-              
               {drawerView === 'builder' && (
                 <div className="space-y-4 pb-20 md:pb-0">
                   <div className="bg-gray-900 text-white p-4 rounded-2xl shadow-lg space-y-3 border border-gray-800">
@@ -1135,7 +1235,7 @@ export default function Storefront() {
       {/* SHARE BUILD SUMMARY MODAL */}
       {isShareModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="bg-white w-full max-w-lg rounded-2xl p-6 border border-gray-800 shadow-2xl relative">
+          <div className="bg-gray-900 text-white w-full max-w-lg rounded-2xl p-6 border border-gray-800 shadow-2xl relative">
             <button onClick={() => setIsShareModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl font-bold cursor-pointer">&times;</button>
             <h2 className="text-xl font-extrabold text-yellow-400 mb-4 flex items-center gap-2">⚡ {t.shareBuildTitle}</h2>
             <div className="bg-gray-800/80 p-4 rounded-xl border border-gray-700 mb-6 space-y-3 max-h-[300px] overflow-y-auto">
@@ -1190,7 +1290,7 @@ export default function Storefront() {
                     {selectedProduct.in_stock === false ? (
                       <button onClick={(e) => { e.stopPropagation(); setNotifyModalOpen(true); }} className="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 rounded-xl text-sm cursor-pointer">{t.notifyMe}</button>
                     ) : (
-                      <button onClick={() => { addToCart(selectedProduct); setSelectedProduct(null); }} className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-extrabold py-3 rounded-xl text-sm shadow-md transition-transform active:scale-95 cursor-pointer">
+                      <button onClick={(e) => { handleAddWithFeedback(selectedProduct, e); setSelectedProduct(null); }} className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-extrabold py-3 rounded-xl text-sm shadow-md transition-transform active:scale-95 cursor-pointer">
                         {selectingFor === selectedProduct.category ? t.addToBuild : t.addToCart}
                       </button>
                     )}
