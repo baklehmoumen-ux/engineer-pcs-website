@@ -54,9 +54,7 @@ const customStyles = `
   .btn-morph {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
-`;
-
-// =========================================================================
+`;// =========================================================================
 // 🌟 SCROLL REVEAL ANIMATION COMPONENT
 // =========================================================================
 const ScrollFadeItem = ({ children }) => {
@@ -86,22 +84,70 @@ const ScrollFadeItem = ({ children }) => {
       ref={domRef}
       style={{ willChange: 'opacity, transform' }}
       className={`transition-all duration-[700ms] ease-out w-full h-full ${
-        isVisible 
-          ? 'opacity-100 translate-y-0 scale-100' 
-          : 'opacity-0 translate-y-12 scale-[0.96]'
+        isVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-12 scale-[0.96]'
       }`}
     >
       {children}
     </div>
   );
-};// =========================================================================
+};
+
+// =========================================================================
+// 🌟 DEFAULT FALLBACK SLIDES (Used if DB is empty)
+// =========================================================================
+const fallbackSlides = [
+  {
+    id: '1',
+    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=2000&auto=format&fit=crop',
+    title_en: 'Ultimate Gaming Power',
+    title_ar: 'قوة ألعاب لا مثيل لها',
+    desc_en: 'Experience the next generation of graphics with the RTX 50-Series and elite components.',
+    desc_ar: 'اختبر الجيل القادم من الرسومات مع سلسلة RTX 50 وقطع الحاسوب النخبة.',
+    btn_en: 'Explore Components',
+    btn_ar: 'استكشف القطع',
+    icon: '🚀',
+    action: 'explore',
+    gradient: 'from-blue-900/90 via-black/80 to-transparent',
+    sort_order: 1
+  },
+  {
+    id: '2',
+    image: 'https://images.unsplash.com/photo-1587202372634-32705e3bf49c?q=80&w=2000&auto=format&fit=crop',
+    title_en: 'Engineer Your Dream',
+    title_ar: 'صمم حاسوب أحلامك',
+    desc_en: 'Custom PC building made effortless, perfectly compatible, and tailored to your needs.',
+    desc_ar: 'تجميع الحاسوب المخصص أصبح سهلاً، متوافقاً تماماً، ومصمماً لاحتياجاتك.',
+    btn_en: 'Start Building Now',
+    btn_ar: 'ابدأ التجميع الآن',
+    icon: '🛠️',
+    action: 'builder',
+    gradient: 'from-purple-900/90 via-black/80 to-transparent',
+    sort_order: 2
+  },
+  {
+    id: '3',
+    image: 'https://images.unsplash.com/photo-1611078709841-11d4db9e34cd?q=80&w=2000&auto=format&fit=crop',
+    title_en: 'Stay Frosty Under Pressure',
+    title_ar: 'أداء فائق البرودة',
+    desc_en: 'Premium liquid cooling solutions like the Thermalright Wonder Vision 360 ensuring maximum performance.',
+    desc_ar: 'حلول تبريد مائي ممتازة مثل Thermalright Wonder Vision 360 تضمن لك أقصى أداء.',
+    btn_en: 'View Cooling Systems',
+    btn_ar: 'عرض أنظمة التبريد',
+    icon: '❄️',
+    action: 'cooling',
+    gradient: 'from-cyan-900/90 via-black/80 to-transparent',
+    sort_order: 3
+  }
+];// =========================================================================
 // 🌟 INTERACTIVE SLIDING HERO BANNER COMPONENT
 // =========================================================================
-const SlidingHeroBanner = ({ t, onAction, lang }) => {
+const SlidingHeroBanner = ({ slides, onAction, lang, proBuildersText }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const heroRef = useRef(null);
+
+  const displaySlides = slides && slides.length > 0 ? slides : fallbackSlides;
 
   const handleMouseMove = (e) => {
     if (!heroRef.current) return;
@@ -110,51 +156,17 @@ const SlidingHeroBanner = ({ t, onAction, lang }) => {
     const y = (e.clientY - top) / height - 0.5;
     setMousePos({ x, y });
   };
-  
-  // Custom Slides with specific images, text, and routing actions
-  const slides = useMemo(() => [
-    {
-      id: 1,
-      image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=2000&auto=format&fit=crop', // Hardware/GPU Vibe
-      titleKey: 'heroSlide1Title',
-      descKey: 'heroSlide1Desc',
-      btnKey: 'heroBtn1',
-      icon: '🚀',
-      action: 'explore',
-      gradient: 'from-blue-900/90 via-black/80 to-transparent'
-    },
-    {
-      id: 2,
-      image: 'https://images.unsplash.com/photo-1587202372634-32705e3bf49c?q=80&w=2000&auto=format&fit=crop', // PC Build Vibe
-      titleKey: 'heroSlide2Title',
-      descKey: 'heroSlide2Desc',
-      btnKey: 'heroBtn2',
-      icon: '🛠️',
-      action: 'builder',
-      gradient: 'from-purple-900/90 via-black/80 to-transparent'
-    },
-    {
-      id: 3,
-      image: 'https://images.unsplash.com/photo-1611078709841-11d4db9e34cd?q=80&w=2000&auto=format&fit=crop', // Liquid Cooling Vibe
-      titleKey: 'heroSlide3Title',
-      descKey: 'heroSlide3Desc',
-      btnKey: 'heroBtn3',
-      icon: '❄️',
-      action: 'cooling',
-      gradient: 'from-cyan-900/90 via-black/80 to-transparent'
-    }
-  ], []);
 
-  const nextSlide = () => setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
-  const prevSlide = () => setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
+  const nextSlide = () => setCurrentSlide((prev) => (prev === displaySlides.length - 1 ? 0 : prev + 1));
+  const prevSlide = () => setCurrentSlide((prev) => (prev === 0 ? displaySlides.length - 1 : prev - 1));
 
   useEffect(() => {
     let interval;
-    if (!isHovered) {
+    if (!isHovered && displaySlides.length > 1) {
       interval = setInterval(() => { nextSlide(); }, 6000);
     }
     return () => clearInterval(interval);
-  }, [isHovered, currentSlide, slides.length]);
+  }, [isHovered, currentSlide, displaySlides.length]);
 
   return (
     <div 
@@ -165,64 +177,69 @@ const SlidingHeroBanner = ({ t, onAction, lang }) => {
       onMouseLeave={() => setIsHovered(false)}
       dir={lang === 'ar' ? 'rtl' : 'ltr'}
     >
-      {/* Interactive Mouse-Tracking Background Glows */}
       <div 
         className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/10 rounded-full blur-[120px] mix-blend-screen transition-transform duration-1000 ease-out pointer-events-none z-20"
         style={{ transform: `translate(${mousePos.x * -80}px, ${mousePos.y * -80}px)` }}
       />
 
-      {/* Slides Rendering */}
-      {slides.map((slide, index) => (
-        <div key={slide.id} className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ${currentSlide === index ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}>
-          <div className="absolute inset-0 overflow-hidden w-full h-full">
-            <img src={slide.image} alt="Hero Background" className={`w-full h-full object-cover origin-center ${currentSlide === index ? 'slide-active' : 'slide-inactive'}`} />
-          </div>
-          <div className={`absolute inset-0 bg-gradient-to-r ${slide.gradient} z-10`}></div>
-          <div className="absolute inset-0 bg-black/30 z-10"></div>
+      {displaySlides.map((slide, index) => {
+        const title = lang === 'ar' ? slide.title_ar : slide.title_en;
+        const desc = lang === 'ar' ? slide.desc_ar : slide.desc_en;
+        const btnText = lang === 'ar' ? slide.btn_ar : slide.btn_en;
 
-          <div className="absolute inset-0 z-20 flex flex-col justify-center px-6 md:px-16 max-w-7xl mx-auto w-full">
-            <div className={`max-w-2xl transform transition-all duration-1000 delay-300 ${currentSlide === index ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-              <span className="inline-block px-4 py-1 mb-4 text-xs md:text-sm font-black tracking-widest text-yellow-400 bg-yellow-400/10 border border-yellow-400/30 rounded-full uppercase shadow-[0_0_15px_rgba(250,204,21,0.2)]">
-                {t.heroProBuilders}
-              </span>
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white leading-[1.1] mb-6 drop-shadow-2xl">
-                {t[slide.titleKey]}
-              </h1>
-              <p className="text-gray-300 text-base md:text-xl font-medium mb-8 leading-relaxed max-w-xl drop-shadow-lg">
-                {t[slide.descKey]}
-              </p>
-              
-              <button 
-                onClick={() => onAction(slide.action)}
-                className="group/btn relative px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all hover:shadow-[0_0_35px_rgba(37,99,235,0.6)] hover:-translate-y-1 active:scale-95 cursor-pointer overflow-hidden border border-blue-500/50"
-              >
-                <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover/btn:animate-[shimmer_1.5s_infinite] pointer-events-none" />
-                <span className="flex items-center gap-3 text-sm md:text-base relative z-10">
-                  <span className="text-xl">{slide.icon}</span> {t[slide.btnKey]}
+        return (
+          <div key={slide.id} className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ${currentSlide === index ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}>
+            <div className="absolute inset-0 overflow-hidden w-full h-full">
+              <img src={slide.image} alt="Hero Background" className={`w-full h-full object-cover origin-center ${currentSlide === index ? 'slide-active' : 'slide-inactive'}`} />
+            </div>
+            <div className={`absolute inset-0 bg-gradient-to-r ${slide.gradient || 'from-blue-900/90 via-black/80 to-transparent'} z-10`}></div>
+            <div className="absolute inset-0 bg-black/30 z-10"></div>
+
+            <div className="absolute inset-0 z-20 flex flex-col justify-center px-6 md:px-16 max-w-7xl mx-auto w-full">
+              <div className={`max-w-2xl transform transition-all duration-1000 delay-300 ${currentSlide === index ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+                <span className="inline-block px-4 py-1 mb-4 text-xs md:text-sm font-black tracking-widest text-yellow-400 bg-yellow-400/10 border border-yellow-400/30 rounded-full uppercase shadow-[0_0_15px_rgba(250,204,21,0.2)]">
+                  {proBuildersText}
                 </span>
-              </button>
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white leading-[1.1] mb-6 drop-shadow-2xl">
+                  {title}
+                </h1>
+                <p className="text-gray-300 text-base md:text-xl font-medium mb-8 leading-relaxed max-w-xl drop-shadow-lg">
+                  {desc}
+                </p>
+                
+                <button 
+                  onClick={() => onAction(slide.action)}
+                  className="group/btn relative px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all hover:shadow-[0_0_35px_rgba(37,99,235,0.6)] hover:-translate-y-1 active:scale-95 cursor-pointer overflow-hidden border border-blue-500/50"
+                >
+                  <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover/btn:animate-[shimmer_1.5s_infinite] pointer-events-none" />
+                  <span className="flex items-center gap-3 text-sm md:text-base relative z-10">
+                    <span className="text-xl">{slide.icon || '🚀'}</span> {btnText}
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
 
-      {/* Navigation Arrows */}
-      <button onClick={prevSlide} className={`absolute left-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/50 border border-white/10 text-white backdrop-blur-md transition-all duration-300 cursor-pointer ${isHovered ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}>
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" /></svg>
-      </button>
-      <button onClick={nextSlide} className={`absolute right-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/50 border border-white/10 text-white backdrop-blur-md transition-all duration-300 cursor-pointer ${isHovered ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'}`}>
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg>
-      </button>
-
-      {/* Animated Progress Dots */}
-      <div className="absolute bottom-6 left-0 right-0 z-30 flex justify-center gap-3 px-4">
-        {slides.map((slide, index) => (
-          <button key={slide.id} onClick={() => setCurrentSlide(index)} className="group/dot relative w-16 h-1.5 rounded-full bg-white/20 overflow-hidden cursor-pointer transition-all hover:bg-white/40">
-            {currentSlide === index && <div className="absolute top-0 left-0 h-full bg-blue-500 rounded-full" style={{ animation: isHovered ? 'none' : 'progressBar 6s linear forwards', width: isHovered ? '100%' : '0%' }} />}
-            {currentSlide > index && <div className="absolute top-0 left-0 h-full w-full bg-white/60 rounded-full" />}
+      {displaySlides.length > 1 && (
+        <>
+          <button onClick={prevSlide} className={`absolute left-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/50 border border-white/10 text-white backdrop-blur-md transition-all duration-300 cursor-pointer ${isHovered ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}>
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" /></svg>
           </button>
-        ))}
-      </div>
+          <button onClick={nextSlide} className={`absolute right-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/50 border border-white/10 text-white backdrop-blur-md transition-all duration-300 cursor-pointer ${isHovered ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'}`}>
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg>
+          </button>
+          <div className="absolute bottom-6 left-0 right-0 z-30 flex justify-center gap-3 px-4">
+            {displaySlides.map((slide, index) => (
+              <button key={slide.id} onClick={() => setCurrentSlide(index)} className="group/dot relative w-16 h-1.5 rounded-full bg-white/20 overflow-hidden cursor-pointer transition-all hover:bg-white/40">
+                {currentSlide === index && <div className="absolute top-0 left-0 h-full bg-blue-500 rounded-full" style={{ animation: isHovered ? 'none' : 'progressBar 6s linear forwards', width: isHovered ? '100%' : '0%' }} />}
+                {currentSlide > index && <div className="absolute top-0 left-0 h-full w-full bg-white/60 rounded-full" />}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 };// =========================================================================
@@ -274,7 +291,9 @@ const dictionary = {
     descSpecs: 'Description & Specifications',
     addToBuild: '✅ Add to Build',
     addToCart: '➕ Add to Cart',
-    currentlyUnavailable: 'Currently Unavailable',// BUILDER, VIEW SWITCHER & SHARE FEATURES
+    currentlyUnavailable: 'Currently Unavailable',
+    
+    // BUILDER, VIEW SWITCHER & SHARE FEATURES
     estWattage: 'Estimated Wattage',
     psuCapacity: 'PSU Capacity',
     fixBtn: '🔧 Fix Item',
@@ -307,18 +326,6 @@ const dictionary = {
     locationText: 'Al Bahsa, Sook Sarooja',
     contactUs: 'Contact Us',
     createdBy: 'Credits to the creator of the website Eng. Moumen BaKleh',
-    
-    // HERO BANNER TRANSLATIONS
-    heroProBuilders: 'PRO PC BUILDERS',
-    heroSlide1Title: 'Ultimate Gaming Power',
-    heroSlide1Desc: 'Experience the next generation of graphics with the RTX 50-Series and elite components.',
-    heroSlide2Title: 'Engineer Your Dream',
-    heroSlide2Desc: 'Custom PC building made effortless, perfectly compatible, and tailored to your needs.',
-    heroSlide3Title: 'Stay Frosty Under Pressure',
-    heroSlide3Desc: 'Premium liquid cooling solutions like the Thermalright Wonder Vision 360 ensuring maximum performance.',
-    heroBtn1: 'Explore Components',
-    heroBtn2: 'Start Building Now',
-    heroBtn3: 'View Cooling Systems',
     
     availabilityLabel: 'Availability',
     inStockOnly: 'In Stock Only',
@@ -366,8 +373,7 @@ const dictionary = {
       'Case': 'Case',
       'Power Supply': 'Power Supply'
     }
-  },
-  ar: {
+  },ar: {
     proBuilders: 'خبراء تجميع الحاسوب',
     selectPartPrefix: 'اختر',
     selectPartSuffix: 'لتجميعتك',
@@ -412,7 +418,9 @@ const dictionary = {
     descSpecs: 'الوصف والمواصفات',
     addToBuild: '✅ إضافة للتجميعة',
     addToCart: '➕ إضافة للسلة',
-    currentlyUnavailable: 'غير متوفر حالياً',// BUILDER, VIEW SWITCHER & SHARE FEATURES
+    currentlyUnavailable: 'غير متوفر حالياً',
+
+    // BUILDER, VIEW SWITCHER & SHARE FEATURES
     estWattage: 'استهلاك الطاقة المقدر',
     psuCapacity: 'سعة مزود الطاقة',
     fixBtn: '🔧 إصلاح القطعة',
@@ -445,18 +453,6 @@ const dictionary = {
     locationText: 'البحصة، سوق ساروجة',
     contactUs: 'اتصل بنا',
     createdBy: 'تم إنشاء الموقع بواسطة م. مؤمن بقلة',
-
-    // HERO BANNER TRANSLATIONS
-    heroProBuilders: 'خبراء تجميع الحاسوب',
-    heroSlide1Title: 'قوة ألعاب لا مثيل لها',
-    heroSlide1Desc: 'اختبر الجيل القادم من الرسومات مع سلسلة RTX 50 وقطع الحاسوب النخبة.',
-    heroSlide2Title: 'صمم حاسوب أحلامك',
-    heroSlide2Desc: 'تجميع الحاسوب المخصص أصبح سهلاً، متوافقاً تماماً، ومصمماً لاحتياجاتك.',
-    heroSlide3Title: 'أداء فائق البرودة',
-    heroSlide3Desc: 'حلول تبريد مائي ممتازة مثل Thermalright Wonder Vision 360 تضمن لك أقصى أداء.',
-    heroBtn1: 'استكشف القطع',
-    heroBtn2: 'ابدأ التجميع الآن',
-    heroBtn3: 'عرض أنظمة التبريد',
 
     availabilityLabel: 'التوفر',
     inStockOnly: 'متوفر فقط',
@@ -553,12 +549,15 @@ const staticInventory = [
   { id: 'cpu-amd-5', category: 'CPUs', name: 'Ryzen 7 9800X3D', price: 420, image: '/images/r7-9800x3d.jpg', specs: { cores: '8', clock: '4.7 GHz', boost: '5.2 GHz', arch: 'Zen 5', tdp: '120 W', igpu: 'Radeon' } },
   { id: 'mb-2', category: 'Motherboards', name: 'ASUS B850M AYW GAMING WIFI', price: 185, image: '/images/asus-b850m.jpg', specs: { socket: 'AM5', formFactor: 'Micro ATX', memoryMax: '256 GB', memorySlots: '4', color: 'Black / Silver' } },
   { id: 'gpu-mock', category: 'GPUs', name: 'NVIDIA GeForce RTX 5090 FE', price: 1999, image: 'https://via.placeholder.com/300?text=RTX+5090', in_stock: false, specs: { chipset: 'RTX 5090', memory: '32 GB', clock: '2435 MHz', boost: '2820 MHz', color: 'Silver/Black' } }
-];export default function Storefront() {
+];
+
+export default function Storefront() {
   const [lang, setLang] = useState('en');
   const t = dictionary[lang];
 
   const [viewMode, setViewMode] = useState('list');
   const [dbProducts, setDbProducts] = useState([]);
+  const [heroSlides, setHeroSlides] = useState([]); // NEW: Dynamic DB Slides
   const [cart, setCart] = useState([]);
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -582,20 +581,21 @@ const staticInventory = [
 
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [activeImage, setActiveImage] = useState('');
-
+  const [activeImage, setActiveImage] = useState('');// NEW: Fetch both Products AND Hero Slides from Supabase
   useEffect(() => {
-    async function fetchLiveProducts() {
+    async function fetchData() {
       try {
-        const { data, error } = await supabase.from('products').select('*');
-        if (!error && data) {
-          setDbProducts(data);
-        }
+        const [prodRes, slideRes] = await Promise.all([
+          supabase.from('products').select('*'),
+          supabase.from('hero_slides').select('*').order('sort_order', { ascending: true })
+        ]);
+        if (!prodRes.error && prodRes.data) setDbProducts(prodRes.data);
+        if (!slideRes.error && slideRes.data && slideRes.data.length > 0) setHeroSlides(slideRes.data);
       } catch (err) {
-        console.error('Error fetching live inventory:', err);
+        console.error('Error fetching data:', err);
       }
     }
-    fetchLiveProducts();
+    fetchData();
   }, []);
 
   const masterInventory = useMemo(() => {
@@ -607,7 +607,9 @@ const staticInventory = [
   const showToast = (msg) => {
     setToastMessage(msg);
     setTimeout(() => { setToastMessage(''); }, 2200);
-  };const handleToggleCompare = (item) => {
+  };
+
+  const handleToggleCompare = (item) => {
     setCompareItems(prev => {
       if (prev.find(i => i.id === item.id)) return prev.filter(i => i.id !== item.id);
       if (prev.length >= 4) {
@@ -636,7 +638,7 @@ const staticInventory = [
     return masterInventory.filter(i => i.category !== selectedProduct.category && i.in_stock !== false).slice(0, 2);
   }, [selectedProduct, masterInventory]);
 
-  // NEW: Advanced Routing for the Sliding Hero Banner
+  // NEW: Dynamic Routing for Hero Banner Buttons
   const handleHeroAction = (action) => {
     if (action === 'builder') {
       setSelectingFor(null);
@@ -661,9 +663,7 @@ const staticInventory = [
       executeAddToCart(product);
       setTimeout(() => { setAddedToCart(prev => ({ ...prev, [product.id]: false })); }, 1500);
     }, 600);
-  };
-
-  const executeAddToCart = (product) => {
+  };const executeAddToCart = (product) => {
     const isBuilderSelection = selectingFor === product.category;
     setCart(prev => {
       let newCart = prev;
@@ -677,41 +677,28 @@ const staticInventory = [
   };
 
   const addToCart = (product) => { executeAddToCart(product); };
-
-  const updateQuantity = (id, delta) => {
-    setCart(prev => {
-      return prev.map(item => {
-        if (item.id === id) {
-          const newQty = item.quantity + delta;
-          return newQty > 0 ? { ...item, quantity: newQty } : null;
-        }
-        return item;
-      }).filter(Boolean);
-    });
-  };
-
+  const updateQuantity = (id, delta) => { setCart(prev => { return prev.map(item => { if (item.id === id) { const newQty = item.quantity + delta; return newQty > 0 ? { ...item, quantity: newQty } : null; } return item; }).filter(Boolean); }); };
   const removeFromCart = (id) => setCart(prev => prev.filter(item => item.id !== id));
   const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
-  const getItemQuantity = (id) => { const found = cart.find(item => item.id === id); return found ? found.quantity : 0; };const wattageInfo = useMemo(() => {
+  const getItemQuantity = (id) => { const found = cart.find(item => item.id === id); return found ? found.quantity : 0; };
+
+  const wattageInfo = useMemo(() => {
     let estimatedWattage = 65; 
     let selectedPsuWattage = 0;
-
     cart.forEach(item => {
       const name = item.name.toLowerCase();
-      const cat = item.category;
-
-      if (cat === 'CPUs') {
+      if (item.category === 'CPUs') {
         if (name.includes('9950x3d') || name.includes('9900x')) estimatedWattage += 170;
         else if (name.includes('7800x3d') || name.includes('9800x3d') || name.includes('9700x')) estimatedWattage += 120;
         else if (name.includes('7500f') || name.includes('9600x')) estimatedWattage += 88;
         else estimatedWattage += 105;
-      } else if (cat === 'GPUs') {
+      } else if (item.category === 'GPUs') {
         if (name.includes('4090') || name.includes('5090')) estimatedWattage += 450;
         else if (name.includes('4080') || name.includes('5080')) estimatedWattage += 320;
         else if (name.includes('4070') || name.includes('5070')) estimatedWattage += 240;
         else estimatedWattage += 180;
-      } else if (cat === 'Power Supplies') {
+      } else if (item.category === 'Power Supplies') {
         const match = name.match(/(\d{3,4})\s*w/i) || name.match(/(\d{3,4})/);
         if (match) selectedPsuWattage = parseInt(match[1]);
       }
@@ -727,10 +714,8 @@ const staticInventory = [
     const cpu = cart.find(i => i.category === 'CPUs');
     const mb = cart.find(i => i.category === 'Motherboards');
     if (cpu && mb) {
-      const cpuName = cpu.name.toLowerCase();
-      const mbName = mb.name.toLowerCase();
-      const isAmdCpu = cpuName.includes('ryzen') || cpuName.includes('7500f') || cpuName.includes('7800x3d') || cpuName.includes('9800x3d');
-      const isIntelMb = mbName.includes('h610') || mbName.includes('b760') || mbName.includes('z790') || mbName.includes('z890');
+      const isAmdCpu = cpu.name.toLowerCase().includes('ryzen') || cpu.name.toLowerCase().includes('7500f') || cpu.name.toLowerCase().includes('7800x3d') || cpu.name.toLowerCase().includes('9800x3d');
+      const isIntelMb = mb.name.toLowerCase().includes('h610') || mb.name.toLowerCase().includes('b760') || mb.name.toLowerCase().includes('z790') || mb.name.toLowerCase().includes('z890');
       if (isAmdCpu && isIntelMb) {
         errors.push({ id: 'socket-mismatch', categoryTarget: 'Motherboards', messageEn: `Incompatible Socket! Your AMD Ryzen CPU will not fit into Intel Motherboard (${mb.name}).`, messageAr: `قطع غير متوافقة! معالج AMD Ryzen لا يعمل مع لوحة أم Intel (${mb.name}).` });
       }
@@ -779,9 +764,7 @@ const staticInventory = [
     cart.forEach(item => message += `▪️ ${item.quantity}x ${item.name} - $${item.price * item.quantity}\n`);
     message += `\n*💰 Total Due: $${cartTotal.toFixed(2)}*`;
     window.open(`https://wa.me/963946508988?text=${encodeURIComponent(message)}`, '_blank');
-  };
-
-  const renderProductSpecs = (item) => {
+  };const renderProductSpecs = (item) => {
     const s = item.specs || {};
     const cat = item.category;
 
@@ -802,7 +785,9 @@ const staticInventory = [
     if (cat === 'PC Cases') return <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full"><SpecBox label="Type" val={s.type || 'ATX Mid Tower'} /><SpecBox label="Color" val={s.color || 'Black'} /><SpecBox label="Side Panel" val={s.sidePanel || 'Tempered Glass'} /><SpecBox label="External Vol." val={s.volume || '45.0 L'} /></div>;
     if (cat === 'Liquid & Air Cooling') return <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full"><SpecBox label="Fan RPM" val={s.rpm || '1550 RPM'} /><SpecBox label="Noise Level" val={s.noise || '25.6 dB'} /><SpecBox label="Radiator Size" val={s.radSize || '360 mm'} /><SpecBox label="Color" val={s.color || 'Black'} /></div>;
     return <p className="text-xs text-gray-500 mt-2">{item.description || `Official ${item.category} component verified by EngineerPCs.`}</p>;
-  };return (
+  };
+
+  return (
     <div className="min-h-screen bg-gray-50 font-sans pb-24 md:pb-0 relative" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       <style dangerouslySetInnerHTML={{__html: customStyles}} />
       
@@ -848,12 +833,10 @@ const staticInventory = [
             <svg className="w-3.5 h-3.5 fill-green-400 group-hover:scale-110 transition-transform" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg> WhatsApp
           </a>
         </div>
-      </div>
+      </div>{/* 🌟 SLIDING HERO BANNER INVOCATION */}
+      <SlidingHeroBanner slides={heroSlideshow} t={t} onAction={handleHeroAction} lang={lang} proBuildersText={t.heroProBuilders} />
 
-      {/* 🌟 SLIDING HERO BANNER INVOCATION */}
-      <SlidingHeroBanner t={t} onAction={handleHeroAction} lang={lang} />
-
-      {/* CATEGORY NAVIGATION MENU */}
+      {/* 3. CATEGORY NAVIGATION MENU */}
       <nav className="bg-[#232F3E] text-white text-sm py-2 px-2 md:px-4 shadow-md overflow-x-auto whitespace-nowrap hide-scrollbar sticky top-0 z-30">
         <div className="max-w-7xl mx-auto flex gap-4 md:gap-6 px-2">
           {categories.map((category) => (
@@ -870,7 +853,7 @@ const staticInventory = [
         </div>
       </nav>
 
-      {/* MAIN PRODUCT DISPLAY HEADER & SIDEBAR FILTERS */}
+      {/* 4. MAIN PRODUCT DISPLAY HEADER & SIDEBAR FILTERS */}
       <main id="product-catalog" className="max-w-7xl mx-auto p-3 md:p-6 flex flex-col lg:flex-row gap-6">
         
         {/* DESKTOP PROFESSIONAL SIDEBAR */}
@@ -917,7 +900,9 @@ const staticInventory = [
               <span className="text-[9px] text-gray-400 font-bold tracking-wider uppercase">{t.createdBy}</span>
             </div>
           </div>
-        </aside><div className="flex-1 pb-32">
+        </aside>
+
+        <div className="flex-1 pb-32">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 md:mb-6 border-b-2 border-gray-200 pb-3 pt-4">
             <h2 className="text-lg md:text-2xl font-bold text-gray-800">{searchQuery ? `${t.search} "${searchQuery}"` : (t.categories[activeCategory] || activeCategory)}</h2>
             <div className="flex items-center justify-between sm:justify-end gap-3 flex-wrap">
@@ -1343,7 +1328,7 @@ const staticInventory = [
       {/* SHARE BUILD SUMMARY MODAL */}
       {isShareModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="bg-gray-900 text-white w-full max-w-lg rounded-2xl p-6 border border-gray-800 shadow-2xl relative">
+          <div className="bg-white w-full max-w-lg rounded-2xl p-6 border border-gray-800 shadow-2xl relative">
             <button onClick={() => setIsShareModalOpen(false)} className="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl font-bold cursor-pointer">&times;</button>
             <h2 className="text-xl font-extrabold text-yellow-400 mb-4 flex items-center gap-2">⚡ {t.shareBuildTitle}</h2>
             <div className="bg-gray-800/80 p-4 rounded-xl border border-gray-700 mb-6 space-y-3 max-h-[300px] overflow-y-auto">
