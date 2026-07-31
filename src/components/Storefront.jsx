@@ -32,7 +32,6 @@ const customStyles = `
     0% { width: 0%; }
     100% { width: 100%; }
   }
-`;const utilityStyles = `
   .animate-kinetic {
     animation: kinetic-shift 4s ease-in-out infinite;
     display: inline-block;
@@ -101,80 +100,86 @@ const ScrollFadeItem = ({ children }) => {
 const SlidingHeroBanner = ({ t, onAction, lang }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const heroRef = useRef(null);
+
+  const handleMouseMove = (e) => {
+    if (!heroRef.current) return;
+    const { left, top, width, height } = heroRef.current.getBoundingClientRect();
+    const x = (e.clientX - left) / width - 0.5;
+    const y = (e.clientY - top) / height - 0.5;
+    setMousePos({ x, y });
+  };
   
-  // Simulated data structure for the Admin Panel to edit later
+  // Custom Slides with specific images, text, and routing actions
   const slides = useMemo(() => [
     {
       id: 1,
-      image: 'https://images.unsplash.com/photo-1587202372634-32705e3bf49c?q=80&w=2000&auto=format&fit=crop',
+      image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=2000&auto=format&fit=crop', // Hardware/GPU Vibe
       titleKey: 'heroSlide1Title',
       descKey: 'heroSlide1Desc',
-      btnKey: 'heroBtn',
+      btnKey: 'heroBtn1',
+      icon: '🚀',
+      action: 'explore',
       gradient: 'from-blue-900/90 via-black/80 to-transparent'
     },
     {
       id: 2,
-      image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=2000&auto=format&fit=crop',
+      image: 'https://images.unsplash.com/photo-1587202372634-32705e3bf49c?q=80&w=2000&auto=format&fit=crop', // PC Build Vibe
       titleKey: 'heroSlide2Title',
       descKey: 'heroSlide2Desc',
       btnKey: 'heroBtn2',
+      icon: '🛠️',
+      action: 'builder',
       gradient: 'from-purple-900/90 via-black/80 to-transparent'
     },
     {
       id: 3,
-      image: 'https://images.unsplash.com/photo-1624704764835-f0ba2d103323?q=80&w=2000&auto=format&fit=crop',
+      image: 'https://images.unsplash.com/photo-1611078709841-11d4db9e34cd?q=80&w=2000&auto=format&fit=crop', // Liquid Cooling Vibe
       titleKey: 'heroSlide3Title',
       descKey: 'heroSlide3Desc',
       btnKey: 'heroBtn3',
-      gradient: 'from-gray-900/90 via-black/80 to-transparent'
+      icon: '❄️',
+      action: 'cooling',
+      gradient: 'from-cyan-900/90 via-black/80 to-transparent'
     }
   ], []);
 
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
-  };
-
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
-  };
+  const nextSlide = () => setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
+  const prevSlide = () => setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
 
   useEffect(() => {
     let interval;
     if (!isHovered) {
-      interval = setInterval(() => {
-        nextSlide();
-      }, 6000); // 6 seconds per slide
+      interval = setInterval(() => { nextSlide(); }, 6000);
     }
     return () => clearInterval(interval);
-  }, [isHovered, currentSlide, slides.length]);return (
+  }, [isHovered, currentSlide, slides.length]);
+
+  return (
     <div 
+      ref={heroRef}
+      onMouseMove={handleMouseMove}
       className="relative w-full h-[500px] md:h-[600px] overflow-hidden bg-black flex group"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       dir={lang === 'ar' ? 'rtl' : 'ltr'}
     >
+      {/* Interactive Mouse-Tracking Background Glows */}
+      <div 
+        className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/10 rounded-full blur-[120px] mix-blend-screen transition-transform duration-1000 ease-out pointer-events-none z-20"
+        style={{ transform: `translate(${mousePos.x * -80}px, ${mousePos.y * -80}px)` }}
+      />
+
       {/* Slides Rendering */}
       {slides.map((slide, index) => (
-        <div 
-          key={slide.id}
-          className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ${
-            currentSlide === index ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
-          }`}
-        >
-          {/* Background Image with Parallax Zoom */}
+        <div key={slide.id} className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ${currentSlide === index ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}>
           <div className="absolute inset-0 overflow-hidden w-full h-full">
-            <img 
-              src={slide.image} 
-              alt="Hero Background" 
-              className={`w-full h-full object-cover origin-center ${currentSlide === index ? 'slide-active' : 'slide-inactive'}`}
-            />
+            <img src={slide.image} alt="Hero Background" className={`w-full h-full object-cover origin-center ${currentSlide === index ? 'slide-active' : 'slide-inactive'}`} />
           </div>
-
-          {/* Gradient Overlay */}
           <div className={`absolute inset-0 bg-gradient-to-r ${slide.gradient} z-10`}></div>
           <div className="absolute inset-0 bg-black/30 z-10"></div>
 
-          {/* Text Content */}
           <div className="absolute inset-0 z-20 flex flex-col justify-center px-6 md:px-16 max-w-7xl mx-auto w-full">
             <div className={`max-w-2xl transform transition-all duration-1000 delay-300 ${currentSlide === index ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
               <span className="inline-block px-4 py-1 mb-4 text-xs md:text-sm font-black tracking-widest text-yellow-400 bg-yellow-400/10 border border-yellow-400/30 rounded-full uppercase shadow-[0_0_15px_rgba(250,204,21,0.2)]">
@@ -188,51 +193,33 @@ const SlidingHeroBanner = ({ t, onAction, lang }) => {
               </p>
               
               <button 
-                onClick={onAction}
+                onClick={() => onAction(slide.action)}
                 className="group/btn relative px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all hover:shadow-[0_0_35px_rgba(37,99,235,0.6)] hover:-translate-y-1 active:scale-95 cursor-pointer overflow-hidden border border-blue-500/50"
               >
                 <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover/btn:animate-[shimmer_1.5s_infinite] pointer-events-none" />
                 <span className="flex items-center gap-3 text-sm md:text-base relative z-10">
-                  <span className="text-xl">🛠️</span> {t[slide.btnKey]}
+                  <span className="text-xl">{slide.icon}</span> {t[slide.btnKey]}
                 </span>
               </button>
             </div>
           </div>
         </div>
-      ))}{/* Navigation Arrows */}
-      <button 
-        onClick={prevSlide}
-        className={`absolute left-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/50 border border-white/10 text-white backdrop-blur-md transition-all duration-300 cursor-pointer ${isHovered ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}
-      >
+      ))}
+
+      {/* Navigation Arrows */}
+      <button onClick={prevSlide} className={`absolute left-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/50 border border-white/10 text-white backdrop-blur-md transition-all duration-300 cursor-pointer ${isHovered ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}>
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" /></svg>
       </button>
-      <button 
-        onClick={nextSlide}
-        className={`absolute right-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/50 border border-white/10 text-white backdrop-blur-md transition-all duration-300 cursor-pointer ${isHovered ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'}`}
-      >
+      <button onClick={nextSlide} className={`absolute right-4 top-1/2 -translate-y-1/2 z-30 w-12 h-12 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/50 border border-white/10 text-white backdrop-blur-md transition-all duration-300 cursor-pointer ${isHovered ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'}`}>
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" /></svg>
       </button>
 
       {/* Animated Progress Dots */}
       <div className="absolute bottom-6 left-0 right-0 z-30 flex justify-center gap-3 px-4">
         {slides.map((slide, index) => (
-          <button 
-            key={slide.id}
-            onClick={() => setCurrentSlide(index)}
-            className="group/dot relative w-16 h-1.5 rounded-full bg-white/20 overflow-hidden cursor-pointer transition-all hover:bg-white/40"
-          >
-            {currentSlide === index && (
-              <div 
-                className="absolute top-0 left-0 h-full bg-blue-500 rounded-full"
-                style={{ 
-                  animation: isHovered ? 'none' : 'progressBar 6s linear forwards',
-                  width: isHovered ? '100%' : '0%'
-                }}
-              />
-            )}
-            {currentSlide > index && (
-              <div className="absolute top-0 left-0 h-full w-full bg-white/60 rounded-full" />
-            )}
+          <button key={slide.id} onClick={() => setCurrentSlide(index)} className="group/dot relative w-16 h-1.5 rounded-full bg-white/20 overflow-hidden cursor-pointer transition-all hover:bg-white/40">
+            {currentSlide === index && <div className="absolute top-0 left-0 h-full bg-blue-500 rounded-full" style={{ animation: isHovered ? 'none' : 'progressBar 6s linear forwards', width: isHovered ? '100%' : '0%' }} />}
+            {currentSlide > index && <div className="absolute top-0 left-0 h-full w-full bg-white/60 rounded-full" />}
           </button>
         ))}
       </div>
@@ -324,13 +311,13 @@ const dictionary = {
     // HERO BANNER TRANSLATIONS
     heroProBuilders: 'PRO PC BUILDERS',
     heroSlide1Title: 'Ultimate Gaming Power',
-    heroSlide1Desc: 'Experience the next generation of graphics with the RTX 40-Series and elite components.',
+    heroSlide1Desc: 'Experience the next generation of graphics with the RTX 50-Series and elite components.',
     heroSlide2Title: 'Engineer Your Dream',
     heroSlide2Desc: 'Custom PC building made effortless, perfectly compatible, and tailored to your needs.',
     heroSlide3Title: 'Stay Frosty Under Pressure',
-    heroSlide3Desc: 'Premium liquid cooling solutions ensuring maximum performance without the noise.',
-    heroBtn: 'Start Building Now',
-    heroBtn2: 'Explore Components',
+    heroSlide3Desc: 'Premium liquid cooling solutions like the Thermalright Wonder Vision 360 ensuring maximum performance.',
+    heroBtn1: 'Explore Components',
+    heroBtn2: 'Start Building Now',
     heroBtn3: 'View Cooling Systems',
     
     availabilityLabel: 'Availability',
@@ -353,7 +340,9 @@ const dictionary = {
     stock: 'Stock',
     category: 'Category',
     clearComparison: 'Clear Comparison',
-    saveAlert: 'Save Alert',categories: {
+    saveAlert: 'Save Alert',
+
+    categories: {
       'All': 'All', 
       'CPUs': 'CPUs',
       'Motherboards': 'Motherboards', 
@@ -460,13 +449,13 @@ const dictionary = {
     // HERO BANNER TRANSLATIONS
     heroProBuilders: 'خبراء تجميع الحاسوب',
     heroSlide1Title: 'قوة ألعاب لا مثيل لها',
-    heroSlide1Desc: 'اختبر الجيل القادم من الرسومات مع سلسلة RTX 40 وقطع الحاسوب النخبة.',
+    heroSlide1Desc: 'اختبر الجيل القادم من الرسومات مع سلسلة RTX 50 وقطع الحاسوب النخبة.',
     heroSlide2Title: 'صمم حاسوب أحلامك',
     heroSlide2Desc: 'تجميع الحاسوب المخصص أصبح سهلاً، متوافقاً تماماً، ومصمماً لاحتياجاتك.',
     heroSlide3Title: 'أداء فائق البرودة',
-    heroSlide3Desc: 'حلول تبريد مائي ممتازة تضمن لك أقصى أداء بدون أي إزعاج صوتي.',
-    heroBtn: 'ابدأ التجميع الآن',
-    heroBtn2: 'استكشف القطع',
+    heroSlide3Desc: 'حلول تبريد مائي ممتازة مثل Thermalright Wonder Vision 360 تضمن لك أقصى أداء.',
+    heroBtn1: 'استكشف القطع',
+    heroBtn2: 'ابدأ التجميع الآن',
     heroBtn3: 'عرض أنظمة التبريد',
 
     availabilityLabel: 'التوفر',
@@ -489,7 +478,9 @@ const dictionary = {
     stock: 'المخزون',
     category: 'الفئة',
     clearComparison: 'مسح المقارنة',
-    saveAlert: 'حفظ التنبيه',categories: {
+    saveAlert: 'حفظ التنبيه',
+
+    categories: {
       'All': 'الكل', 
       'CPUs': 'المعالجات',
       'Motherboards': 'اللوحات الأم', 
@@ -551,7 +542,8 @@ const staticInventory = [
   { id: 'psu-7', category: 'Power Supplies', name: 'ThermalRight TR-SP1000-W 1000W White', price: 135, image: '/images/tr-sp1000-w.jpg', specs: { type: 'ATX', efficiency: '80+ Gold', wattage: '1000 W', modular: 'Full', color: 'White' } },
   { id: 'cool-1', category: 'Liquid & Air Cooling', name: 'ThermalRight Assassin X 120 Refined SE ARGB', price: 18, image: '/images/cool1.jpg', specs: { rpm: '1550 RPM', noise: '25.6 dB', color: 'Black / Silver', radSize: '120 mm' } },
   { id: 'cool-2', category: 'Liquid & Air Cooling', name: 'ThermalRight Burst Assassin 120 SE ARGB', price: 24, image: '/images/burst120.jpg', specs: { rpm: '1550 RPM', noise: '25.6 dB', color: 'Black', radSize: '120 mm' } },
-  { id: 'cool-3', category: 'Liquid & Air Cooling', name: 'ThermalRight Phantom Spirit 120 SE ARGB', price: 40, image: '/images/phantom120.jpg', specs: { rpm: '1500 RPM', noise: '25.6 dB', color: 'Black', radSize: '120 mm' } },{ id: 'case-1', category: 'PC Cases', name: 'ThermalRight A70 VISION', price: 160, image: '/images/a70.jpg', specs: { type: 'ATX Mid Tower', color: 'Black', sidePanel: 'Tempered Glass', volume: '45.0 L', bays: '2' } },
+  { id: 'cool-3', category: 'Liquid & Air Cooling', name: 'ThermalRight Phantom Spirit 120 SE ARGB', price: 40, image: '/images/phantom120.jpg', specs: { rpm: '1500 RPM', noise: '25.6 dB', color: 'Black', radSize: '120 mm' } },
+  { id: 'case-1', category: 'PC Cases', name: 'ThermalRight A70 VISION', price: 160, image: '/images/a70.jpg', specs: { type: 'ATX Mid Tower', color: 'Black', sidePanel: 'Tempered Glass', volume: '45.0 L', bays: '2' } },
   { id: 'case-2', category: 'PC Cases', name: 'ThermalRight A70 VISION WHITE', price: 165, image: '/images/a70w.jpg', specs: { type: 'ATX Mid Tower', color: 'White', sidePanel: 'Tempered Glass', volume: '45.0 L', bays: '2' } },
   { id: 'mon-1', category: 'Monitors', name: 'MSI MAG 271QPX QD-OLED X28', price: 590, image: '/images/msi271.jpg', specs: { size: '27.0"', resolution: '2560 x 1440', refresh: '360 Hz', response: '0.03 ms', panel: 'QD-OLED', aspect: '16:9' } },
   { id: 'mon-2', category: 'Monitors', name: 'MSI MAG 244F', price: 125, image: '/images/msi244.jpg', specs: { size: '23.8"', resolution: '1920 x 1080', refresh: '200 Hz', response: '0.5 ms', panel: 'IPS', aspect: '16:9' } },
@@ -560,7 +552,7 @@ const staticInventory = [
   { id: 'cpu-amd-3', category: 'CPUs', name: 'Ryzen 7 7800X3D', price: 315, image: '/images/r7-7800x3d.jpg', specs: { cores: '8', clock: '4.2 GHz', boost: '5.0 GHz', arch: 'Zen 4', tdp: '120 W', igpu: 'Radeon' } },
   { id: 'cpu-amd-5', category: 'CPUs', name: 'Ryzen 7 9800X3D', price: 420, image: '/images/r7-9800x3d.jpg', specs: { cores: '8', clock: '4.7 GHz', boost: '5.2 GHz', arch: 'Zen 5', tdp: '120 W', igpu: 'Radeon' } },
   { id: 'mb-2', category: 'Motherboards', name: 'ASUS B850M AYW GAMING WIFI', price: 185, image: '/images/asus-b850m.jpg', specs: { socket: 'AM5', formFactor: 'Micro ATX', memoryMax: '256 GB', memorySlots: '4', color: 'Black / Silver' } },
-  { id: 'gpu-mock', category: 'GPUs', name: 'NVIDIA GeForce RTX 4090 FE', price: 1599, image: 'https://via.placeholder.com/300?text=RTX+4090', in_stock: false, specs: { chipset: 'RTX 4090', memory: '24 GB', clock: '2235 MHz', boost: '2520 MHz', color: 'Silver/Black' } }
+  { id: 'gpu-mock', category: 'GPUs', name: 'NVIDIA GeForce RTX 5090 FE', price: 1999, image: 'https://via.placeholder.com/300?text=RTX+5090', in_stock: false, specs: { chipset: 'RTX 5090', memory: '32 GB', clock: '2435 MHz', boost: '2820 MHz', color: 'Silver/Black' } }
 ];export default function Storefront() {
   const [lang, setLang] = useState('en');
   const t = dictionary[lang];
@@ -590,7 +582,9 @@ const staticInventory = [
 
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [activeImage, setActiveImage] = useState('');useEffect(() => {
+  const [activeImage, setActiveImage] = useState('');
+
+  useEffect(() => {
     async function fetchLiveProducts() {
       try {
         const { data, error } = await supabase.from('products').select('*');
@@ -613,9 +607,7 @@ const staticInventory = [
   const showToast = (msg) => {
     setToastMessage(msg);
     setTimeout(() => { setToastMessage(''); }, 2200);
-  };
-
-  const handleToggleCompare = (item) => {
+  };const handleToggleCompare = (item) => {
     setCompareItems(prev => {
       if (prev.find(i => i.id === item.id)) return prev.filter(i => i.id !== item.id);
       if (prev.length >= 4) {
@@ -624,7 +616,9 @@ const staticInventory = [
       }
       return [...prev, item];
     });
-  };const filteredInventory = useMemo(() => {
+  };
+
+  const filteredInventory = useMemo(() => {
     let items = masterInventory.filter(item => {
       const matchesCategory = activeCategory === 'All' || item.category === activeCategory;
       const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -642,6 +636,21 @@ const staticInventory = [
     return masterInventory.filter(i => i.category !== selectedProduct.category && i.in_stock !== false).slice(0, 2);
   }, [selectedProduct, masterInventory]);
 
+  // NEW: Advanced Routing for the Sliding Hero Banner
+  const handleHeroAction = (action) => {
+    if (action === 'builder') {
+      setSelectingFor(null);
+      setDrawerView('builder');
+      setIsDrawerOpen(true);
+    } else if (action === 'explore') {
+      setActiveCategory('All');
+      document.getElementById('product-catalog')?.scrollIntoView({ behavior: 'smooth' });
+    } else if (action === 'cooling') {
+      setActiveCategory('Liquid & Air Cooling');
+      document.getElementById('product-catalog')?.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   const handleAddWithFeedback = (product, e) => {
     if (e) e.stopPropagation();
     if (product.in_stock === false) { setNotifyModalOpen(true); return; }
@@ -652,7 +661,9 @@ const staticInventory = [
       executeAddToCart(product);
       setTimeout(() => { setAddedToCart(prev => ({ ...prev, [product.id]: false })); }, 1500);
     }, 600);
-  };const executeAddToCart = (product) => {
+  };
+
+  const executeAddToCart = (product) => {
     const isBuilderSelection = selectingFor === product.category;
     setCart(prev => {
       let newCart = prev;
@@ -725,7 +736,9 @@ const staticInventory = [
       }
     }
     return errors;
-  }, [cart, wattageInfo]);const expectedPerformance = useMemo(() => {
+  }, [cart, wattageInfo]);
+
+  const expectedPerformance = useMemo(() => {
     const gpu = cart.find(i => i.category === 'GPUs');
     const cpu = cart.find(i => i.category === 'CPUs');
     if (!gpu && !cpu) return lang === 'ar' ? 'الرجاء اختيار قطع لعرض الأداء المتوقع' : 'Select parts to calculate estimated performance';
@@ -752,24 +765,12 @@ const staticInventory = [
     cart.forEach(item => text += `▪️ ${item.name} - $${item.price}\n`);
     text += `\n💰 *Total Price: $${cartTotal.toFixed(2)}*`;
     return text;
-  };const handleShareBuildWhatsApp = () => window.open(`https://wa.me/?text=${encodeURIComponent(generateShareBuildText())}`, '_blank');
-  
-  const handleCopyShareText = () => { 
-    navigator.clipboard.writeText(generateShareBuildText()); 
-    showToast(lang === 'ar' ? 'تم نسخ التجميعة إلى الحافظة! 📋' : 'Build summary copied to clipboard! 📋'); 
   };
-  
-  const openDetailModal = (product) => { 
-    setSelectedProduct(product); 
-    setActiveImage(product.image ? product.image.split(',')[0].trim() : '/images/default.jpg'); 
-  };
-  
-  const startSelectingPart = (category) => { 
-    setActiveCategory(category); 
-    setSelectingFor(category); 
-    setIsDrawerOpen(false); 
-    window.scrollTo({ top: 0, behavior: 'smooth' }); 
-  };
+
+  const handleShareBuildWhatsApp = () => window.open(`https://wa.me/?text=${encodeURIComponent(generateShareBuildText())}`, '_blank');
+  const handleCopyShareText = () => { navigator.clipboard.writeText(generateShareBuildText()); showToast(lang === 'ar' ? 'تم نسخ التجميعة إلى الحافظة! 📋' : 'Build summary copied to clipboard! 📋'); };
+  const openDetailModal = (product) => { setSelectedProduct(product); setActiveImage(product.image ? product.image.split(',')[0].trim() : '/images/default.jpg'); };
+  const startSelectingPart = (category) => { setActiveCategory(category); setSelectingFor(category); setIsDrawerOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); };
   
   const submitOrder = (e) => {
     e.preventDefault(); 
@@ -778,7 +779,9 @@ const staticInventory = [
     cart.forEach(item => message += `▪️ ${item.quantity}x ${item.name} - $${item.price * item.quantity}\n`);
     message += `\n*💰 Total Due: $${cartTotal.toFixed(2)}*`;
     window.open(`https://wa.me/963946508988?text=${encodeURIComponent(message)}`, '_blank');
-  };const renderProductSpecs = (item) => {
+  };
+
+  const renderProductSpecs = (item) => {
     const s = item.specs || {};
     const cat = item.category;
 
@@ -827,7 +830,9 @@ const staticInventory = [
             <button onClick={() => setSelectingFor(null)} className="text-white hover:text-gray-200 px-2 font-bold cursor-pointer text-lg leading-none">✕</button>
           </div>
         </div>
-      )}<div className="bg-[#101423] text-gray-300 text-[11px] md:text-xs py-2 px-3 md:px-6 flex justify-between items-center z-50 relative border-b border-gray-800/50">
+      )}
+
+      <div className="bg-[#101423] text-gray-300 text-[11px] md:text-xs py-2 px-3 md:px-6 flex justify-between items-center z-50 relative border-b border-gray-800/50">
         <div className="flex items-center gap-2 md:gap-3">
           <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden text-white hover:text-yellow-400 text-lg md:text-xl transition cursor-pointer">☰</button>
           <span className="font-semibold tracking-wide flex items-center gap-2">
@@ -846,9 +851,9 @@ const staticInventory = [
       </div>
 
       {/* 🌟 SLIDING HERO BANNER INVOCATION */}
-      <SlidingHeroBanner t={t} onAction={() => { setIsDrawerOpen(true); setDrawerView('builder'); }} lang={lang} />
+      <SlidingHeroBanner t={t} onAction={handleHeroAction} lang={lang} />
 
-      {/* 3. CATEGORY NAVIGATION MENU */}
+      {/* CATEGORY NAVIGATION MENU */}
       <nav className="bg-[#232F3E] text-white text-sm py-2 px-2 md:px-4 shadow-md overflow-x-auto whitespace-nowrap hide-scrollbar sticky top-0 z-30">
         <div className="max-w-7xl mx-auto flex gap-4 md:gap-6 px-2">
           {categories.map((category) => (
@@ -863,8 +868,10 @@ const staticInventory = [
             </button>
           ))}
         </div>
-      </nav>{/* 4. MAIN PRODUCT DISPLAY HEADER & SIDEBAR FILTERS */}
-      <main className="max-w-7xl mx-auto p-3 md:p-6 flex flex-col lg:flex-row gap-6">
+      </nav>
+
+      {/* MAIN PRODUCT DISPLAY HEADER & SIDEBAR FILTERS */}
+      <main id="product-catalog" className="max-w-7xl mx-auto p-3 md:p-6 flex flex-col lg:flex-row gap-6">
         
         {/* DESKTOP PROFESSIONAL SIDEBAR */}
         <aside className="hidden lg:block w-64 shrink-0 pt-4">
@@ -876,7 +883,8 @@ const staticInventory = [
                   <div>
                     <div className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-2">{t.availabilityLabel}</div>
                     <label className="flex items-center gap-2 text-sm font-semibold cursor-pointer text-gray-700 hover:text-blue-600 transition"><input type="checkbox" className="w-4 h-4 rounded accent-blue-600 cursor-pointer" /> {t.inStockOnly}</label>
-                  </div>{activeCategory !== 'All' ? (
+                  </div>
+                  {activeCategory !== 'All' ? (
                     <>
                       <div>
                         <div className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-2">{t.brandLabel}</div>
@@ -909,9 +917,7 @@ const staticInventory = [
               <span className="text-[9px] text-gray-400 font-bold tracking-wider uppercase">{t.createdBy}</span>
             </div>
           </div>
-        </aside>
-
-        <div className="flex-1 pb-32">
+        </aside><div className="flex-1 pb-32">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 md:mb-6 border-b-2 border-gray-200 pb-3 pt-4">
             <h2 className="text-lg md:text-2xl font-bold text-gray-800">{searchQuery ? `${t.search} "${searchQuery}"` : (t.categories[activeCategory] || activeCategory)}</h2>
             <div className="flex items-center justify-between sm:justify-end gap-3 flex-wrap">
@@ -930,7 +936,9 @@ const staticInventory = [
               </div>
               {(activeCategory !== 'All' || searchQuery) && (<button onClick={() => { setActiveCategory('All'); setSearchQuery(''); }} className="text-xs bg-yellow-100 hover:bg-yellow-200 text-yellow-800 px-2.5 py-1.5 rounded-lg font-semibold transition cursor-pointer">{t.reset}</button>)}
             </div>
-          </div>{filteredInventory.length === 0 ? (
+          </div>
+
+          {filteredInventory.length === 0 ? (
             <div className="text-center text-gray-500 py-20 text-lg md:text-xl">{t.noProducts}</div>
           ) : viewMode === 'list' ? (
             <div className="space-y-4 md:space-y-6">
@@ -979,7 +987,8 @@ const staticInventory = [
                   </ScrollFadeItem>
                 );
               })}
-            </div>) : (
+            </div>
+          ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
               {filteredInventory.map((item) => {
                 const qty = getItemQuantity(item.id);
@@ -1070,7 +1079,9 @@ const staticInventory = [
             </span>
           </button>
         )}
-      </div>{/* 🌟 NEW MOBILE SIDE MENU DRAWER */}
+      </div>
+
+      {/* 🌟 NEW MOBILE SIDE MENU DRAWER */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-[60] flex lg:hidden bg-black/60 backdrop-blur-sm transition-opacity">
           <div className="w-4/5 max-w-sm bg-white h-full shadow-2xl flex flex-col animate-slide-in-left overflow-hidden">
@@ -1083,7 +1094,7 @@ const staticInventory = [
                 <h3 className="font-black text-gray-900 text-sm mb-3 flex items-center gap-2"><span>📂</span> {t.components}</h3>
                 <div className="flex flex-col gap-1">
                   {categories.map((c) => (
-                    <button key={c} onClick={() => { setActiveCategory(c); setIsMobileMenuOpen(false); }} className={`text-left text-sm font-bold px-3 py-2 rounded-lg transition ${activeCategory === c ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-200'}`}>
+                    <button key={c} onClick={() => { setActiveCategory(c); setIsMobileMenuOpen(false); document.getElementById('product-catalog')?.scrollIntoView({ behavior: 'smooth' }); }} className={`text-left text-sm font-bold px-3 py-2 rounded-lg transition ${activeCategory === c ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-200'}`}>
                       {t.categories[c] || c}
                     </button>
                   ))}
@@ -1152,7 +1163,9 @@ const staticInventory = [
             <button onClick={() => setCompareItems([])} className="mt-4 text-red-500 hover:text-red-600 font-bold text-sm mx-auto cursor-pointer transition underline">{t.clearComparison}</button>
           </div>
         </div>
-      )}{/* STOCK ALERT MODAL */}
+      )}
+
+      {/* STOCK ALERT MODAL */}
       {notifyModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
           <div className="bg-white p-6 rounded-2xl w-full max-w-sm relative shadow-2xl text-center">
@@ -1182,7 +1195,7 @@ const staticInventory = [
                   <div className="bg-gray-900 text-white p-4 rounded-2xl shadow-lg space-y-3 border border-gray-800">
                     <div className="flex justify-between items-center border-b border-gray-800 pb-2">
                       <span className="text-xs font-extrabold text-yellow-400 uppercase tracking-widest">{t.expectedPerf}</span>
-                      <button onClick={() => setDrawerView('auth')} className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-black px-3 py-1.5 rounded-lg transition shadow-sm cursor-pointer">{t.saveBuild}</button>
+                      <button onClick={() => setDrawerView('auth')} className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-black px-3 py-1.5 rounded-lg transition shadow-sm cursor-pointer">{t.signInSave}</button>
                     </div>
                     <p className="text-xs md:text-sm font-semibold text-gray-200 leading-snug">{expectedPerformance}</p>
                     <div className="pt-1">
@@ -1288,7 +1301,9 @@ const staticInventory = [
                     ))
                   )}
                 </div>
-              )}{drawerView === 'checkout' && (
+              )}
+
+              {drawerView === 'checkout' && (
                 <form id="checkout-form" onSubmit={submitOrder} className="space-y-4 md:space-y-5 pb-20 md:pb-0">
                   <div><label className="block text-xs md:text-sm font-bold text-gray-700 mb-1">{t.fullName}</label><input required type="text" placeholder="John Doe" className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-blue-500 text-sm md:text-base text-black font-medium" value={customerInfo.name} onChange={(e) => setCustomerInfo({...customerInfo, name: e.target.value})} /></div>
                   <div><label className="block text-xs md:text-sm font-bold text-gray-700 mb-1">{t.phone}</label><input required type="tel" placeholder="+963..." className="w-full p-3 border border-gray-300 rounded-lg outline-none focus:border-blue-500 text-sm md:text-base text-black font-medium" value={customerInfo.phone} onChange={(e) => setCustomerInfo({...customerInfo, phone: e.target.value})} /></div>
