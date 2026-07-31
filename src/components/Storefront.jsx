@@ -348,6 +348,9 @@ const dictionary = {
     contactUs: 'Contact Us',
     createdBy: 'Credits to the creator of the website Eng. Moumen BaKleh',
     
+    // RESTORED HERO BADGE TEXT
+    heroProBuilders: 'PRO PC BUILDERS',
+    
     availabilityLabel: 'Availability',
     inStockOnly: 'In Stock Only',
     brandLabel: 'Brand',
@@ -394,7 +397,8 @@ const dictionary = {
       'Case': 'Case',
       'Power Supply': 'Power Supply'
     }
-  },ar: {
+  },
+  ar: {
     proBuilders: 'خبراء تجميع الحاسوب',
     selectPartPrefix: 'اختر',
     selectPartSuffix: 'لتجميعتك',
@@ -472,6 +476,9 @@ const dictionary = {
     locationText: 'البحصة، سوق ساروجة',
     contactUs: 'اتصل بنا',
     createdBy: 'تم إنشاء الموقع بواسطة م. مؤمن بقلة',
+
+    // RESTORED HERO BADGE TEXT (ARABIC)
+    heroProBuilders: 'خبراء تجميع الحاسوب',
 
     availabilityLabel: 'التوفر',
     inStockOnly: 'متوفر فقط',
