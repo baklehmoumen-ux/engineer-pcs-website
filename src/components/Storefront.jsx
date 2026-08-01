@@ -8,6 +8,8 @@ import SlidingHeroBanner from './SlidingHeroBanner';
 import TechMarquee from './TechMarquee';
 import FlyToCart from './FlyToCart';
 import AutoBuilderQuiz from './AutoBuilderQuiz';
+import PerformanceGauge from './PerformanceGauge'; // 🌟 NEW: Speedometer Component
+import SearchOverlay from './SearchOverlay';       // 🌟 NEW: Spotlight Search Component
 
 // 🌟 PHASE 1: NATIVE HAPTIC ENGINE
 const triggerHaptic = (type) => {
@@ -111,6 +113,7 @@ export default function Storefront() {
 
   const [flyingItems, setFlyingItems] = useState([]); 
   const [showAiQuiz, setShowAiQuiz] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false); // 🌟 NEW: Search State
 
   const [viewMode, setViewMode] = useState('list');
   const [dbProducts, setDbProducts] = useState([]);
@@ -149,6 +152,15 @@ export default function Storefront() {
   const isModalSwiping = useRef(false);
 
   const uiAnimations = `
+    /* 🌟 NEW SHAKE ANIMATION FOR MAX SPEEDOMETER */
+    @keyframes maxShake {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      25% { transform: translate(1px, 1px) rotate(0.5deg); }
+      50% { transform: translate(-1px, -1px) rotate(-0.5deg); }
+      75% { transform: translate(-1px, 1px) rotate(0.5deg); }
+    }
+    .animate-max-shake { animation: maxShake 0.15s ease-in-out infinite; }
+
     @keyframes slideOutRight {
       from { transform: translateX(0); box-shadow: -15px 0 35px rgba(0,0,0,0.5); }
       to { transform: translateX(100%); box-shadow: none; }
@@ -525,6 +537,12 @@ export default function Storefront() {
           </span>
         </div>
         <div className="flex gap-3 md:gap-6 items-center">
+          
+          {/* 🌟 2. ADD AI SEARCH BUTTON HERE */}
+          <button onClick={() => setIsSearchOpen(true)} className="hover:text-indigo-400 text-white font-bold flex items-center gap-1.5 transition text-xs bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-full border border-gray-700 cursor-pointer shadow-sm group">
+            <span className="group-hover:scale-110 transition-transform">🧠</span> Search
+          </button>
+
           <button onClick={() => setLang(lang === 'en' ? 'ar' : 'en')} className="hover:text-yellow-400 text-white font-bold flex items-center gap-1.5 transition text-xs bg-gray-800 hover:bg-gray-700 px-2.5 py-1 rounded-full border border-gray-700 cursor-pointer shadow-sm">
             <span>🌐</span> {lang === 'en' ? 'العربية' : 'English'}
           </button>
@@ -929,22 +947,8 @@ export default function Storefront() {
                     </p>
                   </div>
 
-                  <div className="bg-gray-900 text-white p-4 rounded-2xl shadow-lg space-y-3 border border-gray-800">
-                    <div className="flex justify-between items-center border-b border-gray-800 pb-2">
-                      <span className="text-xs font-extrabold text-yellow-400 uppercase tracking-widest">{t.expectedPerf}</span>
-                      <button onClick={() => setDrawerView('auth')} className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-black px-3 py-1.5 rounded-lg transition shadow-sm cursor-pointer">{t.signInSave}</button>
-                    </div>
-                    <p className="text-xs md:text-sm font-semibold text-gray-200 leading-snug">{expectedPerformance}</p>
-                    <div className="pt-1">
-                      <div className="flex justify-between text-[11px] font-bold mb-1">
-                        <span className="text-gray-400">{t.totalWattage}: <span className="text-white font-black">~{wattageInfo.estimated}W</span></span>
-                        <span className={wattageInfo.psu >= wattageInfo.estimated ? "text-green-400 font-black" : "text-red-400 font-black"}>{t.psuCapacity}: {wattageInfo.psu ? `${wattageInfo.psu}W` : t.noPsu}</span>
-                      </div>
-                      <div className="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
-                        <div className={`h-2 rounded-full transition-all duration-500 ${wattageInfo.psu === 0 ? 'bg-yellow-400' : wattageInfo.estimated > wattageInfo.psu ? 'bg-red-500' : 'bg-green-400'}`} style={{ width: `${Math.min(100, wattageInfo.psu ? (wattageInfo.estimated / wattageInfo.psu) * 100 : 50)}%` }}></div>
-                      </div>
-                    </div>
-                  </div>
+                  {/* 🌟 3. REPLACE TEXT WITH THE NEW VISUAL SPEEDOMETER */}
+                  <PerformanceGauge cart={cart} t={t} />
 
                   {compatibilityErrors.length > 0 && (
                     <div className="space-y-2">
@@ -1161,6 +1165,19 @@ export default function Storefront() {
             openAppDrawer('builder');
             showToast('AI successfully drafted your build! ✨');
             triggerHaptic('tick'); 
+          }} 
+        />
+      )}
+
+      {/* 🌟 5. RENDER THE AI SEARCH OVERLAY */}
+      {isSearchOpen && (
+        <SearchOverlay 
+          inventory={masterInventory} 
+          onClose={() => setIsSearchOpen(false)} 
+          onSelect={(product) => {
+            setIsSearchOpen(false);
+            openDetailModal(product);
+            triggerHaptic('tick');
           }} 
         />
       )}
