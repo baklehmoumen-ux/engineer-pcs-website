@@ -7,6 +7,7 @@ import { customStyles, ScrollFadeItem } from './ScrollFadeItem';
 import SlidingHeroBanner from './SlidingHeroBanner';
 import TechMarquee from './TechMarquee';
 import FlyToCart from './FlyToCart';
+import AutoBuilderQuiz from './AutoBuilderQuiz';
 
 // 🌟 PHASE 1: NATIVE HAPTIC ENGINE
 const triggerHaptic = (type) => {
@@ -109,6 +110,7 @@ export default function Storefront() {
   const t = dictionary[lang];
 
   const [flyingItems, setFlyingItems] = useState([]); 
+  const [showAiQuiz, setShowAiQuiz] = useState(false);
 
   const [viewMode, setViewMode] = useState('list');
   const [dbProducts, setDbProducts] = useState([]);
@@ -142,7 +144,6 @@ export default function Storefront() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [activeImage, setActiveImage] = useState('');
 
-  // 🌟 PHASE 3: PULL-TO-CLOSE MODAL GESTURE STATE
   const [modalSwipeY, setModalSwipeY] = useState(0);
   const modalStartY = useRef(0);
   const isModalSwiping = useRef(false);
@@ -907,6 +908,15 @@ export default function Storefront() {
               
               {drawerView === 'builder' && (
                 <div className="space-y-4 pb-20 md:pb-0">
+                  
+                  {/* 🌟 3. ADD THE AI BUTTON HERE */}
+                  <button 
+                    onClick={() => { closeAppDrawer(true); setShowAiQuiz(true); }}
+                    className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white p-4 rounded-2xl shadow-[0_0_20px_rgba(79,70,229,0.4)] transition-transform active:scale-95 flex items-center justify-center gap-3 font-black text-lg border border-indigo-400/50"
+                  >
+                    ✨ Let AI Auto-Build It
+                  </button>
+
                   <div className="bg-gradient-to-br from-gray-900 via-[#1a233a] to-blue-900 text-white p-5 rounded-2xl shadow-lg border border-gray-800 relative overflow-hidden animate-fade-in-up">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl transform translate-x-10 -translate-y-10 pointer-events-none"></div>
                     <h3 className="font-black text-lg md:text-xl flex items-center gap-2 mb-2 relative z-10">
@@ -1138,6 +1148,21 @@ export default function Storefront() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* 🌟 4. RENDER THE QUIZ MODAL */}
+      {showAiQuiz && (
+        <AutoBuilderQuiz 
+          inventory={masterInventory} 
+          onClose={() => setShowAiQuiz(false)} 
+          onComplete={(generatedBuild) => {
+            setCart(generatedBuild);
+            setShowAiQuiz(false);
+            openAppDrawer('builder');
+            showToast('AI successfully drafted your build! ✨');
+            triggerHaptic('tick'); 
+          }} 
+        />
       )}
 
       {/* 🌟 RENDER FLYING ITEMS LAYER */}
