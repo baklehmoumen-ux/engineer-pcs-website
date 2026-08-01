@@ -618,7 +618,7 @@ export default function Storefront() {
                 <h3 className="font-black text-gray-900 text-sm mb-2 flex items-center gap-1.5"><span>📞</span> {t.contactUs}</h3>
                 <div className="flex flex-wrap gap-2 mt-1">
                   <a href="https://wa.me/963946508988" target="_blank" rel="noreferrer" className="inline-block text-xs font-bold text-green-600 bg-green-50 px-3 py-1.5 rounded-lg hover:bg-green-100 transition">+963 946 508 988</a>
-                  <a href="https://instagram.com/engineerpcs" target="_blank" rel="noreferrer" className="inline-block text-xs font-bold text-pink-600 bg-pink-50 px-3 py-1.5 rounded-lg hover:bg-pink-100 transition">Instagram</a>
+                  <a href="https://instagram.com/engineer_pcs" target="_blank" rel="noreferrer" className="inline-block text-xs font-bold text-pink-600 bg-pink-50 px-3 py-1.5 rounded-lg hover:bg-pink-100 transition">Instagram</a>
                 </div>
               </div>
             </div>
