@@ -11,9 +11,9 @@ import FlyToCart from './FlyToCart';
 // 🌟 PHASE 1: NATIVE HAPTIC ENGINE
 const triggerHaptic = (type) => {
   if (typeof window !== 'undefined' && navigator.vibrate) {
-    if (type === 'tick') navigator.vibrate(15); // Crisp, premium click
-    if (type === 'error') navigator.vibrate([30, 40, 30]); // Double buzz
-    if (type === 'soft') navigator.vibrate(10); // Barely noticeable bump
+    if (type === 'tick') navigator.vibrate(15);
+    if (type === 'error') navigator.vibrate([30, 40, 30]);
+    if (type === 'soft') navigator.vibrate(10);
   }
 };
 
@@ -35,6 +35,71 @@ const ImageWithSkeleton = ({ src, alt, className }) => {
           setIsLoaded(true); 
         }}
       />
+    </div>
+  );
+};
+
+// 🌟 PHASE 3: SWIPE-TO-DELETE CART ITEM (Mobile Gestures)
+const SwipeableCartItem = ({ item, updateQuantity, removeFromCart, t }) => {
+  const [offsetX, setOffsetX] = useState(0);
+  const startX = useRef(0);
+  const startY = useRef(0);
+  const isSwiping = useRef(false);
+
+  const handleTouchStart = (e) => {
+    startX.current = e.touches[0].clientX;
+    startY.current = e.touches[0].clientY;
+    isSwiping.current = false;
+  };
+
+  const handleTouchMove = (e) => {
+    const diffX = e.touches[0].clientX - startX.current;
+    const diffY = e.touches[0].clientY - startY.current;
+    
+    if (!isSwiping.current && Math.abs(diffX) > Math.abs(diffY) + 5) {
+      isSwiping.current = true;
+    }
+
+    if (isSwiping.current && diffX < 0) {
+      setOffsetX(Math.max(diffX, -90)); 
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (offsetX <= -60) {
+      triggerHaptic('error'); 
+      removeFromCart(item.id);
+    } else {
+      setOffsetX(0); 
+    }
+    isSwiping.current = false;
+  };
+
+  return (
+    <div className="relative w-full rounded-lg shadow-sm border border-gray-100 bg-red-500 overflow-hidden">
+      <div className="absolute inset-y-0 right-0 w-20 flex items-center justify-center text-white text-2xl drop-shadow-md">
+        🗑️
+      </div>
+      <div
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        style={{ transform: `translateX(${offsetX}px)`, transition: offsetX === 0 ? 'transform 0.3s ease' : 'none' }}
+        className="flex gap-3 items-center bg-white p-3 md:p-4 relative z-10 w-full h-full border-r border-gray-100"
+      >
+        <img src={item.image.split(',')[0]} className="w-12 h-12 object-cover rounded shrink-0 border border-gray-100" />
+        <div className="flex-1 overflow-hidden">
+          <h4 className="font-bold text-gray-800 text-xs md:text-sm truncate">{item.name}</h4>
+          <p className="text-gray-500 text-xs md:text-sm mt-1">${item.price} {t.each}</p>
+          <div className="flex items-center gap-2 mt-2">
+            <button onClick={() => updateQuantity(item.id, -1)} className="bg-gray-100 hover:bg-gray-200 text-black font-bold h-6 w-6 rounded flex items-center justify-center text-xs cursor-pointer">-</button>
+            <span className="font-bold text-xs">{item.quantity}</span>
+            <button onClick={() => updateQuantity(item.id, 1)} className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold h-6 w-6 rounded flex items-center justify-center text-xs cursor-pointer">+</button>
+          </div>
+        </div>
+        <div className="text-base md:text-lg font-black text-gray-900">${item.price * item.quantity}</div>
+        <button onClick={() => removeFromCart(item.id)} className="hidden md:block text-red-500 hover:text-red-700 bg-red-50 p-2 rounded-md transition text-sm cursor-pointer">🗑️</button>
+      </div>
     </div>
   );
 };
@@ -76,6 +141,11 @@ export default function Storefront() {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [activeImage, setActiveImage] = useState('');
+
+  // 🌟 PHASE 3: PULL-TO-CLOSE MODAL GESTURE STATE
+  const [modalSwipeY, setModalSwipeY] = useState(0);
+  const modalStartY = useRef(0);
+  const isModalSwiping = useRef(false);
 
   const uiAnimations = `
     @keyframes slideOutRight {
@@ -390,6 +460,30 @@ export default function Storefront() {
     return <p className="text-xs text-gray-500 mt-2">{item.description || `Official ${item.category} component verified by EngineerPCs.`}</p>;
   };
 
+  // 🌟 PHASE 3: PULL-TO-CLOSE MODAL GESTURE HANDLERS
+  const handleModalTouchStart = (e) => {
+    modalStartY.current = e.touches[0].clientY;
+    isModalSwiping.current = false;
+  };
+  const handleModalTouchMove = (e) => {
+    const scrollContainer = document.getElementById('modal-scroll-area');
+    if (scrollContainer && scrollContainer.scrollTop > 0) return; // Only allow drag if scrolled to top
+
+    const diffY = e.touches[0].clientY - modalStartY.current;
+    if (diffY > 0) {
+      isModalSwiping.current = true;
+      setModalSwipeY(diffY);
+    }
+  };
+  const handleModalTouchEnd = () => {
+    if (modalSwipeY > 120) {
+      triggerHaptic('soft');
+      setSelectedProduct(null);
+    }
+    setModalSwipeY(0);
+    isModalSwiping.current = false;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 font-sans pb-24 md:pb-0 relative" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       <style dangerouslySetInnerHTML={{__html: customStyles}} />
@@ -441,7 +535,6 @@ export default function Storefront() {
 
       <SlidingHeroBanner slides={heroSlides} t={t} onAction={handleHeroAction} lang={lang} proBuildersText={t.heroProBuilders} />
       
-      {/* 🌟 INJECT INFINITE MARQUEE HERE */}
       <TechMarquee />
 
       <nav className="bg-[#232F3E] text-white text-sm py-2 px-2 md:px-4 shadow-md overflow-x-auto whitespace-nowrap hide-scrollbar sticky top-0 z-30">
@@ -547,7 +640,6 @@ export default function Storefront() {
                       <div className="flex overflow-x-auto snap-x snap-mandatory gap-3 pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                         {images.map((img, idx) => (
                           <div key={idx} onClick={() => openDetailModal(item)} className="w-[85%] sm:w-[45%] md:w-[30%] shrink-0 snap-start relative border border-gray-100 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center p-2 cursor-pointer hover:scale-105 transition-transform">
-                            {/* 🌟 INTEGRATED IMAGE SKELETON LOADER */}
                             <ImageWithSkeleton src={img} alt={`${item.name} - View ${idx + 1}`} className="h-40 md:h-56 w-full" />
                             {isOutOfStock && idx === 0 && (<div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center z-20 pointer-events-none"><span className="bg-red-600 text-white font-black text-xs uppercase tracking-widest px-3 py-1.5 rounded-md shadow-lg">{t.outOfStockBadge}</span></div>)}
                           </div>
@@ -596,7 +688,6 @@ export default function Storefront() {
                       <div onClick={() => openDetailModal(item)} className="h-32 md:h-56 bg-gray-50 flex items-center justify-center p-2 md:p-4 relative overflow-hidden cursor-pointer">
                         {isOutOfStock && (<div className="absolute inset-0 bg-black/60 backdrop-blur-[1px] flex items-center justify-center z-20"><span className="bg-red-600 text-white font-black text-xs md:text-sm uppercase tracking-widest px-3 py-1.5 rounded-md shadow-lg border border-red-400">{t.outOfStock}</span></div>)}
                         
-                        {/* 🌟 INTEGRATED IMAGE SKELETON LOADER */}
                         <ImageWithSkeleton src={firstImage} alt={item.name} className="w-full h-full group-hover:scale-105 transition-transform duration-300" />
                       </div>
                       <div className="p-3 md:p-5 flex flex-col flex-1">
@@ -805,8 +896,6 @@ export default function Storefront() {
               
               {drawerView === 'builder' && (
                 <div className="space-y-4 pb-20 md:pb-0">
-                  
-                  {/* 🌟 NEW CREATIVE INTRODUCTION CARD */}
                   <div className="bg-gradient-to-br from-gray-900 via-[#1a233a] to-blue-900 text-white p-5 rounded-2xl shadow-lg border border-gray-800 relative overflow-hidden animate-fade-in-up">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl transform translate-x-10 -translate-y-10 pointer-events-none"></div>
                     <h3 className="font-black text-lg md:text-xl flex items-center gap-2 mb-2 relative z-10">
@@ -911,20 +1000,13 @@ export default function Storefront() {
                     </div>
                   ) : (
                     cart.map(item => (
-                      <div key={item.id} className="flex gap-3 items-center bg-white p-3 md:p-4 rounded-lg shadow-sm border border-gray-100">
-                        <img src={item.image.split(',')[0]} className="w-12 h-12 object-cover rounded shrink-0 border border-gray-100" />
-                        <div className="flex-1 overflow-hidden">
-                          <h4 className="font-bold text-gray-800 text-xs md:text-sm truncate">{item.name}</h4>
-                          <p className="text-gray-500 text-xs md:text-sm mt-1">${item.price} {t.each}</p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <button onClick={() => updateQuantity(item.id, -1)} className="bg-gray-100 hover:bg-gray-200 text-black font-bold h-6 w-6 rounded flex items-center justify-center text-xs cursor-pointer">-</button>
-                            <span className="font-bold text-xs">{item.quantity}</span>
-                            <button onClick={() => updateQuantity(item.id, 1)} className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold h-6 w-6 rounded flex items-center justify-center text-xs cursor-pointer">+</button>
-                          </div>
-                        </div>
-                        <div className="text-base md:text-lg font-black text-gray-900">${item.price * item.quantity}</div>
-                        <button onClick={() => removeFromCart(item.id)} className="text-red-500 hover:text-red-700 bg-red-50 p-2 rounded-md transition text-sm cursor-pointer">🗑️</button>
-                      </div>
+                      <SwipeableCartItem 
+                        key={item.id} 
+                        item={item} 
+                        updateQuantity={updateQuantity} 
+                        removeFromCart={removeFromCart} 
+                        t={t} 
+                      />
                     ))
                   )}
                 </div>
@@ -986,15 +1068,25 @@ export default function Storefront() {
         </div>
       )}
 
-      {/* 🌟 PRODUCT DETAIL & MULTI-PICTURE MODAL (With Morph) */}
+      {/* 🌟 PRODUCT DETAIL & MULTI-PICTURE MODAL (With Morph & Drag-to-Close) */}
       {selectedProduct && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-modal-morph">
+          <div 
+            onTouchStart={handleModalTouchStart}
+            onTouchMove={handleModalTouchMove}
+            onTouchEnd={handleModalTouchEnd}
+            style={{ 
+              transform: `translateY(${modalSwipeY}px) scale(${1 - modalSwipeY / 2000})`, 
+              opacity: Math.max(1 - modalSwipeY / 400, 0.5), 
+              transition: modalSwipeY === 0 ? 'all 0.3s ease' : 'none' 
+            }}
+            className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-modal-morph"
+          >
             <div className="p-4 bg-gray-900 text-white flex justify-between items-center shrink-0">
               <span className="text-xs font-bold text-yellow-400 uppercase tracking-widest">{t.categories[selectedProduct.category] || selectedProduct.category}</span>
               <button onClick={() => setSelectedProduct(null)} className="text-gray-400 hover:text-white text-2xl font-bold cursor-pointer">✕</button>
             </div>
-            <div className="p-6 overflow-y-auto">
+            <div id="modal-scroll-area" className="p-6 overflow-y-auto overscroll-contain">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex flex-col gap-3">
                   <div className="h-64 bg-gray-100 rounded-xl overflow-hidden border border-gray-200 flex items-center justify-center p-4 relative">
