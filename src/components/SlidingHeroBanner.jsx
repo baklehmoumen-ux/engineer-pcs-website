@@ -39,22 +39,40 @@ const SlidingHeroBanner = ({ slides, onAction, lang, proBuildersText }) => {
       onMouseLeave={() => setIsHovered(false)}
       dir={lang === 'ar' ? 'rtl' : 'ltr'}
     >
+      {/* Interactive Mouse Glow */}
       <div 
         className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/10 rounded-full blur-[120px] mix-blend-screen transition-transform duration-1000 ease-out pointer-events-none z-20"
         style={{ transform: `translate(${mousePos.x * -80}px, ${mousePos.y * -80}px)` }}
       />
 
       {displaySlides.map((slide, index) => {
+        // Smart Bilingual Support
         const title = lang === 'ar' && slide.title_ar ? slide.title_ar : (slide.title_en || slide.title || '');
         const subtitle = lang === 'ar' && slide.subtitle_ar ? slide.subtitle_ar : (slide.subtitle_en || slide.subtitle || '');
         const btnText = lang === 'ar' && slide.btn_text_ar ? slide.btn_text_ar : (slide.btn_text_en || slide.button_text || '');
         
+        // Bulletproof Image Parsing
         let imageUrl = slide.image_url || '/images/default.jpg';
         if (!slide.image_url && slide.images) {
           try {
             const parsed = typeof slide.images === 'string' ? JSON.parse(slide.images) : slide.images;
             if (Array.isArray(parsed) && parsed.length > 0) imageUrl = parsed[0].url || parsed[0];
           } catch(e) {}
+        }
+
+        // 🌟 DYNAMIC ALIGNMENT LOGIC (With Arabic RTL Flipping)
+        let alignClass = "items-start text-left";
+        let textAlignment = slide.text_alignment || 'left';
+
+        if (textAlignment === 'center') {
+          alignClass = "items-center text-center mx-auto";
+        } else if (textAlignment === 'right') {
+          alignClass = "items-end text-right ml-auto";
+        }
+
+        if (lang === 'ar') {
+          if (textAlignment === 'left') alignClass = "items-start text-right";
+          if (textAlignment === 'right') alignClass = "items-end text-left mr-auto";
         }
 
         return (
@@ -67,7 +85,8 @@ const SlidingHeroBanner = ({ slides, onAction, lang, proBuildersText }) => {
             <div className="absolute inset-0 bg-black/30 z-10"></div>
 
             <div className="absolute inset-0 z-20 flex flex-col justify-center px-6 md:px-16 max-w-7xl mx-auto w-full">
-              <div className={`max-w-2xl transform transition-all duration-1000 delay-300 ${currentSlide === index ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+              {/* 🌟 UPGRADED PREMIUM CUBIC-BEZIER ANIMATION */}
+              <div className={`max-w-2xl flex flex-col ${alignClass} transform transition-all duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${currentSlide === index ? 'translate-y-0 opacity-100 delay-300' : 'translate-y-12 opacity-0'}`}>
                 
                 <span className="inline-block px-4 py-1 mb-4 text-xs md:text-sm font-black tracking-widest text-yellow-400 bg-yellow-400/10 border border-yellow-400/30 rounded-full uppercase shadow-[0_0_15px_rgba(250,204,21,0.2)]">
                   {proBuildersText}
@@ -84,7 +103,7 @@ const SlidingHeroBanner = ({ slides, onAction, lang, proBuildersText }) => {
                 {btnText && (
                   <button 
                     onClick={() => onAction(slide.action_target || slide.category_target || 'explore')}
-                    className="group/btn relative px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all hover:shadow-[0_0_35px_rgba(37,99,235,0.6)] hover:-translate-y-1 active:scale-95 cursor-pointer overflow-hidden border border-blue-500/50 inline-flex"
+                    className="group/btn relative px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all duration-300 hover:shadow-[0_0_35px_rgba(37,99,235,0.6)] hover:-translate-y-1 active:scale-95 cursor-pointer overflow-hidden border border-blue-500/50 inline-flex"
                   >
                     <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent group-hover/btn:animate-[shimmer_1.5s_infinite] pointer-events-none" />
                     <span className="flex items-center justify-center gap-3 text-sm md:text-base relative z-10 w-full">

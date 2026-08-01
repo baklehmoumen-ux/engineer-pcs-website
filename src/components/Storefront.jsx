@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { dictionary, categories, requiredParts, staticInventory } from '../Data/storeData';
 import { customStyles, ScrollFadeItem } from './ScrollFadeItem';
@@ -27,7 +27,12 @@ export default function Storefront() {
   const [addingToCart, setAddingToCart] = useState({});
   const [addedToCart, setAddedToCart] = useState({});
 
+  // 🌟 ADVANCED DRAWER & ANIMATION STATES
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+  const [showIntro, setShowIntro] = useState(false);
+  const hasSeenIntro = useRef(false);
+
   const [drawerView, setDrawerView] = useState('cart'); 
   const [customerInfo, setCustomerInfo] = useState({ name: '', phone: '', address: '' });
   
@@ -37,6 +42,32 @@ export default function Storefront() {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [activeImage, setActiveImage] = useState('');
+
+  // 🌟 NEW PREMIUM TRANSITION PHYSICS
+  const uiAnimations = `
+    @keyframes slideOutRight {
+      from { transform: translateX(0); box-shadow: -15px 0 35px rgba(0,0,0,0.5); }
+      to { transform: translateX(100%); box-shadow: none; }
+    }
+    @keyframes fadeOutOverlay {
+      from { opacity: 1; backdrop-filter: blur(4px); }
+      to { opacity: 0; backdrop-filter: blur(0px); }
+    }
+    @keyframes cinematicSplash {
+      0% { opacity: 0; transform: scale(0.95); }
+      15% { opacity: 1; transform: scale(1); }
+      85% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(1.05); }
+    }
+    @keyframes smoothSlideUp {
+      from { transform: translateY(100px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .animate-drawer-close { animation: slideOutRight 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .overlay-close { animation: fadeOutOverlay 0.5s ease-out forwards; }
+    .cinematic-splash { animation: cinematicSplash 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .smooth-slide-up { animation: smoothSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  `;
 
   useEffect(() => {
     async function fetchData() {
@@ -92,12 +123,35 @@ export default function Storefront() {
     return masterInventory.filter(i => i.category !== selectedProduct.category && i.in_stock !== false).slice(0, 2);
   }, [selectedProduct, masterInventory]);
 
+  // 🌟 NEW DRAWER OPEN/CLOSE LOGIC
+  const openAppDrawer = (view) => {
+    setDrawerView(view);
+    setIsDrawerOpen(true);
+    if (view === 'builder' && !hasSeenIntro.current) {
+      setShowIntro(true);
+      hasSeenIntro.current = true;
+      setTimeout(() => setShowIntro(false), 2200); // Wait for animation
+    }
+  };
+
+  const closeAppDrawer = (instant = false) => {
+    if (instant) {
+      setIsDrawerOpen(false);
+      setIsClosing(false);
+    } else {
+      setIsClosing(true);
+      setTimeout(() => {
+        setIsDrawerOpen(false);
+        setIsClosing(false);
+      }, 480); // Matches smooth slide out duration
+    }
+  };
+
   const handleHeroAction = (actionTarget) => {
     if (!actionTarget) return;
     if (actionTarget.toLowerCase() === 'builder') {
       setSelectingFor(null);
-      setDrawerView('builder');
-      setIsDrawerOpen(true);
+      openAppDrawer('builder');
     } else if (actionTarget.toLowerCase() === 'explore' || actionTarget.toLowerCase() === 'all') {
       setActiveCategory('All');
       document.getElementById('product-catalog')?.scrollIntoView({ behavior: 'smooth' });
@@ -129,7 +183,7 @@ export default function Storefront() {
       return [...newCart, { ...product, quantity: 1 }];
     });
     showToast(`${product.name.slice(0, 22)}...`);
-    if (isBuilderSelection) { setSelectingFor(null); setDrawerView('builder'); setIsDrawerOpen(true); }
+    if (isBuilderSelection) { setSelectingFor(null); openAppDrawer('builder'); }
   };
 
   const addToCart = (product) => { executeAddToCart(product); };
@@ -226,7 +280,7 @@ export default function Storefront() {
   const handleShareBuildWhatsApp = () => window.open(`https://wa.me/?text=${encodeURIComponent(generateShareBuildText())}`, '_blank');
   const handleCopyShareText = () => { navigator.clipboard.writeText(generateShareBuildText()); showToast(lang === 'ar' ? 'تم نسخ التجميعة إلى الحافظة! 📋' : 'Build summary copied to clipboard! 📋'); };
   const openDetailModal = (product) => { setSelectedProduct(product); setActiveImage(product.image ? product.image.split(',')[0].trim() : '/images/default.jpg'); };
-  const startSelectingPart = (category) => { setActiveCategory(category); setSelectingFor(category); setIsDrawerOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  const startSelectingPart = (category) => { setActiveCategory(category); setSelectingFor(category); closeAppDrawer(true); window.scrollTo({ top: 0, behavior: 'smooth' }); };
   
   const submitOrder = (e) => {
     e.preventDefault(); 
@@ -235,7 +289,9 @@ export default function Storefront() {
     cart.forEach(item => message += `▪️ ${item.quantity}x ${item.name} - $${item.price * item.quantity}\n`);
     message += `\n*💰 Total Due: $${cartTotal.toFixed(2)}*`;
     window.open(`https://wa.me/963946508988?text=${encodeURIComponent(message)}`, '_blank');
-  };const renderProductSpecs = (item) => {
+  };
+
+  const renderProductSpecs = (item) => {
     const s = item.specs || {};
     const cat = item.category;
 
@@ -256,11 +312,10 @@ export default function Storefront() {
     if (cat === 'PC Cases') return <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full"><SpecBox label="Type" val={s.type || 'ATX Mid Tower'} /><SpecBox label="Color" val={s.color || 'Black'} /><SpecBox label="Side Panel" val={s.sidePanel || 'Tempered Glass'} /><SpecBox label="External Vol." val={s.volume || '45.0 L'} /></div>;
     if (cat === 'Liquid & Air Cooling') return <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full"><SpecBox label="Fan RPM" val={s.rpm || '1550 RPM'} /><SpecBox label="Noise Level" val={s.noise || '25.6 dB'} /><SpecBox label="Radiator Size" val={s.radSize || '360 mm'} /><SpecBox label="Color" val={s.color || 'Black'} /></div>;
     return <p className="text-xs text-gray-500 mt-2">{item.description || `Official ${item.category} component verified by EngineerPCs.`}</p>;
-  };
-
-  return (
+  };return (
     <div className="min-h-screen bg-gray-50 font-sans pb-24 md:pb-0 relative" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       <style dangerouslySetInnerHTML={{__html: customStyles}} />
+      <style dangerouslySetInnerHTML={{__html: uiAnimations}} />
       
       {toastMessage && (
         <div className="fixed top-16 left-1/2 transform -translate-x-1/2 z-50 bg-gray-900 text-white px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 border border-yellow-400 text-xs md:text-sm font-semibold animate-bounce">
@@ -282,7 +337,7 @@ export default function Storefront() {
             <span className="animate-pulse text-lg">🔍</span> {t.selectPartPrefix} <span className="text-yellow-300 underline underline-offset-4">{t.categories[selectingFor] || selectingFor}</span> {t.selectPartSuffix}
           </span>
           <div className="flex gap-2">
-            <button onClick={() => { setSelectingFor(null); setIsDrawerOpen(true); setDrawerView('builder'); }} className="bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-md text-xs font-bold transition cursor-pointer shadow-sm border border-blue-400/50 whitespace-nowrap">{t.backToBuilder}</button>
+            <button onClick={() => { setSelectingFor(null); openAppDrawer('builder'); }} className="bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-md text-xs font-bold transition cursor-pointer shadow-sm border border-blue-400/50 whitespace-nowrap">{t.backToBuilder}</button>
             <button onClick={() => setSelectingFor(null)} className="text-white hover:text-gray-200 px-2 font-bold cursor-pointer text-lg leading-none">✕</button>
           </div>
         </div>
@@ -322,7 +377,9 @@ export default function Storefront() {
             </button>
           ))}
         </div>
-      </nav><main id="product-catalog" className="max-w-7xl mx-auto p-3 md:p-6 flex flex-col lg:flex-row gap-6">
+      </nav>
+
+      <main id="product-catalog" className="max-w-7xl mx-auto p-3 md:p-6 flex flex-col lg:flex-row gap-6">
         
         {/* DESKTOP PROFESSIONAL SIDEBAR */}
         <aside className="hidden lg:block w-64 shrink-0 pt-4">
@@ -440,8 +497,7 @@ export default function Storefront() {
                   </ScrollFadeItem>
                 );
               })}
-            </div>
-          ) : (
+            </div>) : (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
               {filteredInventory.map((item) => {
                 const qty = getItemQuantity(item.id);
@@ -485,7 +541,9 @@ export default function Storefront() {
             </div>
           )}
         </div>
-      </main>{/* 🌟 DESKTOP FRICTIONLESS STICKY SUMMARY */}
+      </main>
+
+      {/* 🌟 DESKTOP FRICTIONLESS STICKY SUMMARY */}
       <div className={`hidden lg:flex fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-md border-t border-gray-800 p-3 px-8 justify-between items-center z-40 shadow-[0_-10px_25px_rgba(0,0,0,0.5)] spring-up ${cartCount > 0 || selectingFor ? 'translate-y-0' : 'translate-y-full'}`}>
         <div className="flex items-center gap-8 text-white max-w-7xl mx-auto w-full">
           <div className="flex items-center gap-3">
@@ -512,27 +570,41 @@ export default function Storefront() {
               <span className="text-[10px] uppercase font-black text-gray-400">{t.total} ({cartCount} {t.items})</span>
               <span className="font-black text-xl">${cartTotal.toFixed(2)}</span>
             </div>
-            <button onClick={() => { setDrawerView('builder'); setIsDrawerOpen(true); }} className="bg-yellow-400 hover:bg-yellow-500 text-black font-extrabold px-6 py-2.5 rounded-lg transition active:scale-95 shadow cursor-pointer">
+            <button onClick={() => openAppDrawer('builder')} className="bg-yellow-400 hover:bg-yellow-500 text-black font-extrabold px-6 py-2.5 rounded-lg transition active:scale-95 shadow cursor-pointer">
               {t.reviewCart}
             </button>
           </div>
         </div>
       </div>
 
-      {/* 🌟 MOBILE FLOATING CIRCULAR ACTION BUTTONS */}
+      {/* 🌟 MOBILE FLOATING CIRCULAR ACTION BUTTONS (Smooth Slide Up) */}
       <div className="md:hidden fixed bottom-6 left-0 right-0 px-4 flex justify-between items-end z-40 pointer-events-none">
-        <button onClick={() => { setDrawerView('builder'); setIsDrawerOpen(true); }} className={`animate-fab pointer-events-auto h-16 w-16 rounded-full shadow-2xl flex items-center justify-center text-2xl transition-transform active:scale-90 border-4 border-white ${buildStatus.isComplete ? 'bg-green-500 text-white' : 'bg-gray-900 text-white'}`} title={t.pcBuilder}>
+        <button onClick={() => openAppDrawer('builder')} className={`smooth-slide-up pointer-events-auto h-16 w-16 rounded-full shadow-2xl flex items-center justify-center text-2xl transition-transform active:scale-90 border-4 border-white ${buildStatus.isComplete ? 'bg-green-500 text-white' : 'bg-gray-900 text-white'}`} title={t.pcBuilder}>
           {buildStatus.isComplete ? '✅' : '🛠️'}
         </button>
         {cartCount > 0 && (
-          <button onClick={() => { setDrawerView('cart'); setIsDrawerOpen(true); }} className="animate-fab pointer-events-auto h-16 w-16 bg-yellow-400 text-black rounded-full shadow-2xl flex items-center justify-center text-2xl transition-transform active:scale-90 border-4 border-white relative cursor-pointer" style={{ animationDelay: '0.1s' }} title={t.yourCart}>
+          <button onClick={() => openAppDrawer('cart')} className="smooth-slide-up pointer-events-auto h-16 w-16 bg-yellow-400 text-black rounded-full shadow-2xl flex items-center justify-center text-2xl transition-transform active:scale-90 border-4 border-white relative cursor-pointer" style={{ animationDelay: '0.15s' }} title={t.yourCart}>
             🛒
             <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-black w-6 h-6 rounded-full flex items-center justify-center border-2 border-white shadow">
               {cartCount}
             </span>
           </button>
         )}
-      </div>
+      </div>{/* 🌟 FULL SCREEN CINEMATIC SPLASH (Only triggers ONCE per session) */}
+      {showIntro && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#0a0f1c] text-white overflow-hidden cinematic-splash pointer-events-none">
+          <div className="absolute w-[300px] h-[300px] md:w-[600px] md:h-[600px] bg-blue-600/20 blur-[100px] rounded-full animate-pulse"></div>
+          <div className="relative z-10 flex flex-col items-center text-center px-4">
+            <span className="text-6xl md:text-8xl mb-6 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] animate-float">✨</span>
+            <h2 className="text-3xl md:text-6xl font-black mb-4 tracking-tight">
+              {lang === 'ar' ? 'صمم تحفتك الفنية' : 'Engineer Your Masterpiece'}
+            </h2>
+            <p className="text-blue-400 font-bold text-sm md:text-lg tracking-widest uppercase animate-pulse">
+              {lang === 'ar' ? 'جاري تجهيز مساحة العمل...' : 'Initializing workspace...'}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* 🌟 NEW MOBILE SIDE MENU DRAWER */}
       {isMobileMenuOpen && (
@@ -632,15 +704,15 @@ export default function Storefront() {
         </div>
       )}
 
-      {/* INTERACTIVE MULTI-STEP CHECKOUT & BUILDER DRAWER */}
-      {isDrawerOpen && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm animate-overlay">
-          <div className="w-full max-w-md bg-white h-full shadow-2xl flex flex-col animate-drawer">
+      {/* 🌟 INTERACTIVE MULTI-STEP CHECKOUT & BUILDER DRAWER */}
+      {(isDrawerOpen || isClosing) && (
+        <div className={`fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm ${isClosing ? 'overlay-close' : 'animate-overlay'}`}>
+          <div className={`w-full max-w-md bg-white h-full shadow-2xl flex flex-col ${isClosing ? 'animate-drawer-close' : 'animate-drawer'}`}>
             <div className="p-4 md:p-6 bg-gray-900 text-white flex justify-between items-center shadow-md z-10">
               <h2 className="text-xl md:text-2xl font-bold flex items-center gap-2">
                 {drawerView === 'cart' ? t.yourCart : drawerView === 'checkout' ? t.checkout : drawerView === 'auth' ? t.createAccount : t.pcBuilder}
               </h2>
-              <button onClick={() => setIsDrawerOpen(false)} className="text-gray-400 hover:text-white text-3xl font-bold leading-none cursor-pointer">&times;</button>
+              <button onClick={() => closeAppDrawer()} className="text-gray-400 hover:text-white text-3xl font-bold leading-none cursor-pointer">&times;</button>
             </div>
             <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50 relative">
               
@@ -651,10 +723,12 @@ export default function Storefront() {
                   <div className="bg-gradient-to-br from-gray-900 via-[#1a233a] to-blue-900 text-white p-5 rounded-2xl shadow-lg border border-gray-800 relative overflow-hidden animate-fade-in-up">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl transform translate-x-10 -translate-y-10 pointer-events-none"></div>
                     <h3 className="font-black text-lg md:text-xl flex items-center gap-2 mb-2 relative z-10">
-                      <span className="text-yellow-400">✨</span> Engineer Your Masterpiece
+                      <span className="text-yellow-400">✨</span> {lang === 'ar' ? 'صمم تحفتك الفنية' : 'Engineer Your Masterpiece'}
                     </h3>
                     <p className="text-gray-300 text-xs leading-relaxed font-medium relative z-10">
-                      Welcome to your personalized garage. Every component you select is instantly cross-checked for <strong>socket compatibility, spatial limits, and wattage requirements</strong>. Build your dream machine with absolute confidence.
+                      {lang === 'ar' 
+                        ? 'مرحباً بك في مساحتك المخصصة. يتم فحص كل قطعة تختارها تلقائياً لضمان التوافق التام واحتياجات الطاقة. صمم حاسوبك بكل ثقة.' 
+                        : 'Welcome to your personalized garage. Every component you select is instantly cross-checked for socket compatibility, spatial limits, and wattage requirements. Build your dream machine with absolute confidence.'}
                     </p>
                   </div>
 
@@ -798,7 +872,7 @@ export default function Storefront() {
               )}
             </div>
 
-            <div className="p-4 md:p-6 bg-white border-t border-gray-200 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)]">
+            <div className="p-4 md:p-6 bg-white border-t border-gray-200 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)] z-10">
               <div className="flex justify-between text-lg md:text-xl mb-4 md:mb-6"><span className="font-medium text-gray-600">{t.totalDue}</span><span className="font-black text-gray-900">${cartTotal.toFixed(2)}</span></div>
               {drawerView === 'builder' ? <button onClick={() => setDrawerView('cart')} className="w-full bg-gray-800 hover:bg-gray-900 text-white font-extrabold py-3 md:py-4 rounded-xl text-base md:text-lg shadow-lg cursor-pointer">{t.reviewCart}</button> : drawerView === 'cart' ? <button disabled={cart.length === 0} onClick={() => setDrawerView('checkout')} className="w-full bg-yellow-400 hover:bg-yellow-500 disabled:bg-gray-300 text-black font-extrabold py-3 md:py-4 rounded-xl text-base md:text-lg shadow-lg cursor-pointer">{t.proceedToCheckout}</button> : drawerView === 'checkout' ? <button type="submit" form="checkout-form" className="w-full bg-green-500 hover:bg-green-600 text-white font-extrabold py-3 md:py-4 rounded-xl text-base md:text-lg shadow-lg flex items-center justify-center gap-2 cursor-pointer">{paymentMethod === 'whatsapp' ? t.sendOrder : t.paySecurely}</button> : null}
             </div>
