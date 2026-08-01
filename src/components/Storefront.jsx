@@ -5,14 +5,45 @@ import { supabase } from '@/lib/supabase';
 import { dictionary, categories, requiredParts, staticInventory } from '../Data/storeData';
 import { customStyles, ScrollFadeItem } from './ScrollFadeItem';
 import SlidingHeroBanner from './SlidingHeroBanner';
-import TechMarquee from './TechMarquee'; // 🌟 NEW IMPORT
-import FlyToCart from './FlyToCart';     // 🌟 NEW IMPORT
+import TechMarquee from './TechMarquee';
+import FlyToCart from './FlyToCart';
+
+// 🌟 PHASE 1: NATIVE HAPTIC ENGINE
+const triggerHaptic = (type) => {
+  if (typeof window !== 'undefined' && navigator.vibrate) {
+    if (type === 'tick') navigator.vibrate(15); // Crisp, premium click
+    if (type === 'error') navigator.vibrate([30, 40, 30]); // Double buzz
+    if (type === 'soft') navigator.vibrate(10); // Barely noticeable bump
+  }
+};
+
+// 🌟 PHASE 2: PREMIUM SKELETON LOADER COMPONENT
+const ImageWithSkeleton = ({ src, alt, className }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  return (
+    <div className={`relative overflow-hidden flex items-center justify-center ${className}`}>
+      {!isLoaded && (
+        <div className="absolute inset-0 z-0 animate-pulse bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded-md" />
+      )}
+      <img
+        src={src}
+        alt={alt}
+        className={`w-full h-full object-contain relative z-10 transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+        onLoad={() => setIsLoaded(true)}
+        onError={(e) => { 
+          e.target.src = 'https://via.placeholder.com/300?text=PC+Component'; 
+          setIsLoaded(true); 
+        }}
+      />
+    </div>
+  );
+};
 
 export default function Storefront() {
   const [lang, setLang] = useState('en');
   const t = dictionary[lang];
 
-  const [flyingItems, setFlyingItems] = useState([]); // 🌟 NEW STATE FOR PARABOLA
+  const [flyingItems, setFlyingItems] = useState([]); 
 
   const [viewMode, setViewMode] = useState('list');
   const [dbProducts, setDbProducts] = useState([]);
@@ -31,7 +62,6 @@ export default function Storefront() {
   const [addingToCart, setAddingToCart] = useState({});
   const [addedToCart, setAddedToCart] = useState({});
 
-  // 🌟 ADVANCED DRAWER & ANIMATION STATES
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
@@ -47,7 +77,6 @@ export default function Storefront() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [activeImage, setActiveImage] = useState('');
 
-  // 🌟 NEW PREMIUM TRANSITION PHYSICS
   const uiAnimations = `
     @keyframes slideOutRight {
       from { transform: translateX(0); box-shadow: -15px 0 35px rgba(0,0,0,0.5); }
@@ -67,7 +96,6 @@ export default function Storefront() {
       from { transform: translateY(100px); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
     }
-    /* 🌟 NEW MODAL MORPH ANIMATION */
     @keyframes modalMorph {
       from { transform: scale(0.85); opacity: 0; border-radius: 40px; }
       to { transform: scale(1); opacity: 1; border-radius: 16px; }
@@ -104,7 +132,9 @@ export default function Storefront() {
   const showToast = (msg) => {
     setToastMessage(msg);
     setTimeout(() => { setToastMessage(''); }, 2200);
-  };const handleToggleCompare = (item) => {
+  };
+
+  const handleToggleCompare = (item) => {
     setCompareItems(prev => {
       if (prev.find(i => i.id === item.id)) return prev.filter(i => i.id !== item.id);
       if (prev.length >= 4) {
@@ -133,14 +163,13 @@ export default function Storefront() {
     return masterInventory.filter(i => i.category !== selectedProduct.category && i.in_stock !== false).slice(0, 2);
   }, [selectedProduct, masterInventory]);
 
-  // 🌟 DRAWER OPEN/CLOSE LOGIC
   const openAppDrawer = (view) => {
     setDrawerView(view);
     setIsDrawerOpen(true);
     if (view === 'builder' && !hasSeenIntro.current) {
       setShowIntro(true);
       hasSeenIntro.current = true;
-      setTimeout(() => setShowIntro(false), 2200); // Wait for animation
+      setTimeout(() => setShowIntro(false), 2200); 
     }
   };
 
@@ -153,7 +182,7 @@ export default function Storefront() {
       setTimeout(() => {
         setIsDrawerOpen(false);
         setIsClosing(false);
-      }, 480); // Matches smooth slide out duration
+      }, 480); 
     }
   };
 
@@ -171,28 +200,28 @@ export default function Storefront() {
     }
   };
 
- // 🌟 NEW TRIGGER FLY-TO-CART PARABOLA LOGIC
   const handleAddWithFeedback = (product, e) => {
     if (e) e.stopPropagation();
-    if (product.in_stock === false) { setNotifyModalOpen(true); return; }
+    if (product.in_stock === false) { 
+      triggerHaptic('error'); 
+      setNotifyModalOpen(true); 
+      return; 
+    }
+
+    triggerHaptic('tick');
 
     if (e && e.target) {
       const rect = e.target.getBoundingClientRect();
-      const startX = rect.left + rect.width / 2 - 40; // 40 is half of flying image width
+      const startX = rect.left + rect.width / 2 - 40; 
       const startY = rect.top + rect.height / 2 - 40;
 
-      // 🌟 PERFECTED TARGET COORDINATES (No DOM searching needed)
       const isMobile = window.innerWidth < 1024;
       let endX, endY;
 
       if (isMobile) {
-        // Mobile cart button is 64x64px, 16px from right edge, 24px from bottom edge.
-        // Center is 48px from right, 56px from bottom.
-        // Subtracting 40px centers our 80px flying image perfectly.
         endX = window.innerWidth - 88;
         endY = window.innerHeight - 96;
       } else {
-        // Desktop sticky bar Review Cart button position
         endX = window.innerWidth - 120;
         endY = window.innerHeight - 40;
       }
@@ -210,7 +239,7 @@ export default function Storefront() {
       setAddedToCart(prev => ({ ...prev, [product.id]: true }));
       executeAddToCart(product);
       setTimeout(() => { setAddedToCart(prev => ({ ...prev, [product.id]: false })); }, 1500);
-    }, 800); // Synced with the exact 0.8s fly animation
+    }, 800); 
   };
 
   const executeAddToCart = (product) => {
@@ -224,9 +253,12 @@ export default function Storefront() {
     });
     showToast(`${product.name.slice(0, 22)}...`);
     if (isBuilderSelection) { setSelectingFor(null); openAppDrawer('builder'); }
-  };const addToCart = (product) => { executeAddToCart(product); };
+  };
+
+  const addToCart = (product) => { executeAddToCart(product); };
 
   const updateQuantity = (id, delta) => {
+    triggerHaptic('soft');
     setCart(prev => {
       return prev.map(item => {
         if (item.id === id) {
@@ -238,7 +270,11 @@ export default function Storefront() {
     });
   };
 
-  const removeFromCart = (id) => setCart(prev => prev.filter(item => item.id !== id));
+  const removeFromCart = (id) => {
+    triggerHaptic('error');
+    setCart(prev => prev.filter(item => item.id !== id));
+  };
+
   const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
   const getItemQuantity = (id) => { const found = cart.find(item => item.id === id); return found ? found.quantity : 0; };
@@ -352,7 +388,9 @@ export default function Storefront() {
     if (cat === 'PC Cases') return <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full"><SpecBox label="Type" val={s.type || 'ATX Mid Tower'} /><SpecBox label="Color" val={s.color || 'Black'} /><SpecBox label="Side Panel" val={s.sidePanel || 'Tempered Glass'} /><SpecBox label="External Vol." val={s.volume || '45.0 L'} /></div>;
     if (cat === 'Liquid & Air Cooling') return <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-3 w-full"><SpecBox label="Fan RPM" val={s.rpm || '1550 RPM'} /><SpecBox label="Noise Level" val={s.noise || '25.6 dB'} /><SpecBox label="Radiator Size" val={s.radSize || '360 mm'} /><SpecBox label="Color" val={s.color || 'Black'} /></div>;
     return <p className="text-xs text-gray-500 mt-2">{item.description || `Official ${item.category} component verified by EngineerPCs.`}</p>;
-  };return (
+  };
+
+  return (
     <div className="min-h-screen bg-gray-50 font-sans pb-24 md:pb-0 relative" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       <style dangerouslySetInnerHTML={{__html: customStyles}} />
       <style dangerouslySetInnerHTML={{__html: uiAnimations}} />
@@ -468,7 +506,9 @@ export default function Storefront() {
               <span className="text-[9px] text-gray-400 font-bold tracking-wider uppercase">{t.createdBy}</span>
             </div>
           </div>
-        </aside><div className="flex-1 pb-32">
+        </aside>
+
+        <div className="flex-1 pb-32">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 md:mb-6 border-b-2 border-gray-200 pb-3 pt-4">
             <h2 className="text-lg md:text-2xl font-bold text-gray-800">{searchQuery ? `${t.search} "${searchQuery}"` : (t.categories[activeCategory] || activeCategory)}</h2>
             <div className="flex items-center justify-between sm:justify-end gap-3 flex-wrap">
@@ -506,9 +546,10 @@ export default function Storefront() {
                       </div>
                       <div className="flex overflow-x-auto snap-x snap-mandatory gap-3 pb-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                         {images.map((img, idx) => (
-                          <div key={idx} className="w-[85%] sm:w-[45%] md:w-[30%] shrink-0 snap-start relative border border-gray-100 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center p-2">
-                            <img src={img} alt={`${item.name} - View ${idx + 1}`} className="h-40 md:h-56 w-full object-contain cursor-pointer hover:scale-105 transition-transform" onClick={() => openDetailModal(item)} onError={(e) => { e.target.src = 'https://via.placeholder.com/300?text=PC+Component'; }}/>
-                            {isOutOfStock && idx === 0 && (<div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center z-10 pointer-events-none"><span className="bg-red-600 text-white font-black text-xs uppercase tracking-widest px-3 py-1.5 rounded-md shadow-lg">{t.outOfStockBadge}</span></div>)}
+                          <div key={idx} onClick={() => openDetailModal(item)} className="w-[85%] sm:w-[45%] md:w-[30%] shrink-0 snap-start relative border border-gray-100 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center p-2 cursor-pointer hover:scale-105 transition-transform">
+                            {/* 🌟 INTEGRATED IMAGE SKELETON LOADER */}
+                            <ImageWithSkeleton src={img} alt={`${item.name} - View ${idx + 1}`} className="h-40 md:h-56 w-full" />
+                            {isOutOfStock && idx === 0 && (<div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center z-20 pointer-events-none"><span className="bg-red-600 text-white font-black text-xs uppercase tracking-widest px-3 py-1.5 rounded-md shadow-lg">{t.outOfStockBadge}</span></div>)}
                           </div>
                         ))}
                       </div>
@@ -554,7 +595,9 @@ export default function Storefront() {
                       </div>
                       <div onClick={() => openDetailModal(item)} className="h-32 md:h-56 bg-gray-50 flex items-center justify-center p-2 md:p-4 relative overflow-hidden cursor-pointer">
                         {isOutOfStock && (<div className="absolute inset-0 bg-black/60 backdrop-blur-[1px] flex items-center justify-center z-20"><span className="bg-red-600 text-white font-black text-xs md:text-sm uppercase tracking-widest px-3 py-1.5 rounded-md shadow-lg border border-red-400">{t.outOfStock}</span></div>)}
-                        <img src={firstImage} alt={item.name} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" onError={(e) => { e.target.src = 'https://via.placeholder.com/300?text=PC+Component'; }} />
+                        
+                        {/* 🌟 INTEGRATED IMAGE SKELETON LOADER */}
+                        <ImageWithSkeleton src={firstImage} alt={item.name} className="w-full h-full group-hover:scale-105 transition-transform duration-300" />
                       </div>
                       <div className="p-3 md:p-5 flex flex-col flex-1">
                         <span className="text-[10px] md:text-xs font-bold text-blue-500 uppercase tracking-wider mb-1 line-clamp-1 pl-6 md:pl-0">{t.categories[item.category] || item.category}</span>
@@ -617,7 +660,9 @@ export default function Storefront() {
             </button>
           </div>
         </div>
-      </div>{/* 🌟 MOBILE FLOATING CIRCULAR ACTION BUTTONS (Smooth Slide Up) */}
+      </div>
+
+      {/* 🌟 MOBILE FLOATING CIRCULAR ACTION BUTTONS */}
       <div className="md:hidden fixed bottom-6 left-0 right-0 px-4 flex justify-between items-end z-40 pointer-events-none">
         <button onClick={() => openAppDrawer('builder')} className={`smooth-slide-up pointer-events-auto h-16 w-16 rounded-full shadow-2xl flex items-center justify-center text-2xl transition-transform active:scale-90 border-4 border-white ${buildStatus.isComplete ? 'bg-green-500 text-white' : 'bg-gray-900 text-white'}`} title={t.pcBuilder}>
           {buildStatus.isComplete ? '✅' : '🛠️'}
@@ -632,7 +677,7 @@ export default function Storefront() {
         )}
       </div>
 
-      {/* 🌟 FULL SCREEN CINEMATIC SPLASH (Only triggers ONCE per session) */}
+      {/* 🌟 FULL SCREEN CINEMATIC SPLASH */}
       {showIntro && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#0a0f1c] text-white overflow-hidden cinematic-splash pointer-events-none">
           <div className="absolute w-[300px] h-[300px] md:w-[600px] md:h-[600px] bg-blue-600/20 blur-[100px] rounded-full animate-pulse"></div>
