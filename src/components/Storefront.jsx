@@ -5,10 +5,14 @@ import { supabase } from '@/lib/supabase';
 import { dictionary, categories, requiredParts, staticInventory } from '../Data/storeData';
 import { customStyles, ScrollFadeItem } from './ScrollFadeItem';
 import SlidingHeroBanner from './SlidingHeroBanner';
+import TechMarquee from './TechMarquee'; // 🌟 NEW IMPORT
+import FlyToCart from './FlyToCart';     // 🌟 NEW IMPORT
 
 export default function Storefront() {
   const [lang, setLang] = useState('en');
   const t = dictionary[lang];
+
+  const [flyingItems, setFlyingItems] = useState([]); // 🌟 NEW STATE FOR PARABOLA
 
   const [viewMode, setViewMode] = useState('list');
   const [dbProducts, setDbProducts] = useState([]);
@@ -63,10 +67,16 @@ export default function Storefront() {
       from { transform: translateY(100px); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
     }
+    /* 🌟 NEW MODAL MORPH ANIMATION */
+    @keyframes modalMorph {
+      from { transform: scale(0.85); opacity: 0; border-radius: 40px; }
+      to { transform: scale(1); opacity: 1; border-radius: 16px; }
+    }
     .animate-drawer-close { animation: slideOutRight 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     .overlay-close { animation: fadeOutOverlay 0.5s ease-out forwards; }
     .cinematic-splash { animation: cinematicSplash 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     .smooth-slide-up { animation: smoothSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .animate-modal-morph { animation: modalMorph 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; transform-origin: center; }
   `;
 
   useEffect(() => {
@@ -123,7 +133,7 @@ export default function Storefront() {
     return masterInventory.filter(i => i.category !== selectedProduct.category && i.in_stock !== false).slice(0, 2);
   }, [selectedProduct, masterInventory]);
 
-  // 🌟 NEW DRAWER OPEN/CLOSE LOGIC
+  // 🌟 DRAWER OPEN/CLOSE LOGIC
   const openAppDrawer = (view) => {
     setDrawerView(view);
     setIsDrawerOpen(true);
@@ -161,16 +171,43 @@ export default function Storefront() {
     }
   };
 
+  // 🌟 NEW TRIGGER FLY-TO-CART PARABOLA LOGIC
   const handleAddWithFeedback = (product, e) => {
     if (e) e.stopPropagation();
     if (product.in_stock === false) { setNotifyModalOpen(true); return; }
+
+    if (e && e.target) {
+      const rect = e.target.getBoundingClientRect();
+      const startX = rect.left + rect.width / 2 - 40; // 40 is half of flying image width
+      const startY = rect.top + rect.height / 2 - 40;
+
+      // Smart tracking: Fly to the Mobile Cart on phones, Desktop Cart on PCs
+      const btnId = window.innerWidth < 1024 ? 'mobile-cart-btn' : 'desktop-cart-btn';
+      const cartBtn = document.getElementById(btnId);
+      
+      let endX = window.innerWidth - 60;
+      let endY = window.innerHeight - 60;
+
+      if (cartBtn) {
+        const cartRect = cartBtn.getBoundingClientRect();
+        endX = cartRect.left + cartRect.width / 2 - 40;
+        endY = cartRect.top + cartRect.height / 2 - 40;
+      }
+
+      setFlyingItems(prev => [...prev, {
+        uniqueId: Date.now() + Math.random(),
+        img: product.image ? product.image.split(',')[0].trim() : '/images/default.jpg',
+        startX, startY, endX, endY
+      }]);
+    }
+
     setAddingToCart(prev => ({ ...prev, [product.id]: true }));
     setTimeout(() => {
       setAddingToCart(prev => ({ ...prev, [product.id]: false }));
       setAddedToCart(prev => ({ ...prev, [product.id]: true }));
       executeAddToCart(product);
       setTimeout(() => { setAddedToCart(prev => ({ ...prev, [product.id]: false })); }, 1500);
-    }, 600);
+    }, 800); // Synced with the exact 0.8s fly animation
   };
 
   const executeAddToCart = (product) => {
@@ -184,9 +221,7 @@ export default function Storefront() {
     });
     showToast(`${product.name.slice(0, 22)}...`);
     if (isBuilderSelection) { setSelectingFor(null); openAppDrawer('builder'); }
-  };
-
-  const addToCart = (product) => { executeAddToCart(product); };
+  };const addToCart = (product) => { executeAddToCart(product); };
 
   const updateQuantity = (id, delta) => {
     setCart(prev => {
@@ -203,7 +238,9 @@ export default function Storefront() {
   const removeFromCart = (id) => setCart(prev => prev.filter(item => item.id !== id));
   const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
-  const getItemQuantity = (id) => { const found = cart.find(item => item.id === id); return found ? found.quantity : 0; };const wattageInfo = useMemo(() => {
+  const getItemQuantity = (id) => { const found = cart.find(item => item.id === id); return found ? found.quantity : 0; };
+
+  const wattageInfo = useMemo(() => {
     let estimatedWattage = 65; 
     let selectedPsuWattage = 0;
 
@@ -362,6 +399,9 @@ export default function Storefront() {
       </div>
 
       <SlidingHeroBanner slides={heroSlides} t={t} onAction={handleHeroAction} lang={lang} proBuildersText={t.heroProBuilders} />
+      
+      {/* 🌟 INJECT INFINITE MARQUEE HERE */}
+      <TechMarquee />
 
       <nav className="bg-[#232F3E] text-white text-sm py-2 px-2 md:px-4 shadow-md overflow-x-auto whitespace-nowrap hide-scrollbar sticky top-0 z-30">
         <div className="max-w-7xl mx-auto flex gap-4 md:gap-6 px-2">
@@ -425,9 +465,7 @@ export default function Storefront() {
               <span className="text-[9px] text-gray-400 font-bold tracking-wider uppercase">{t.createdBy}</span>
             </div>
           </div>
-        </aside>
-
-        <div className="flex-1 pb-32">
+        </aside><div className="flex-1 pb-32">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 md:mb-6 border-b-2 border-gray-200 pb-3 pt-4">
             <h2 className="text-lg md:text-2xl font-bold text-gray-800">{searchQuery ? `${t.search} "${searchQuery}"` : (t.categories[activeCategory] || activeCategory)}</h2>
             <div className="flex items-center justify-between sm:justify-end gap-3 flex-wrap">
@@ -497,7 +535,8 @@ export default function Storefront() {
                   </ScrollFadeItem>
                 );
               })}
-            </div>) : (
+            </div>
+          ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
               {filteredInventory.map((item) => {
                 const qty = getItemQuantity(item.id);
@@ -570,27 +609,27 @@ export default function Storefront() {
               <span className="text-[10px] uppercase font-black text-gray-400">{t.total} ({cartCount} {t.items})</span>
               <span className="font-black text-xl">${cartTotal.toFixed(2)}</span>
             </div>
-            <button onClick={() => openAppDrawer('builder')} className="bg-yellow-400 hover:bg-yellow-500 text-black font-extrabold px-6 py-2.5 rounded-lg transition active:scale-95 shadow cursor-pointer">
+            <button id="desktop-cart-btn" onClick={() => openAppDrawer('builder')} className="bg-yellow-400 hover:bg-yellow-500 text-black font-extrabold px-6 py-2.5 rounded-lg transition active:scale-95 shadow cursor-pointer">
               {t.reviewCart}
             </button>
           </div>
         </div>
-      </div>
-
-      {/* 🌟 MOBILE FLOATING CIRCULAR ACTION BUTTONS (Smooth Slide Up) */}
+      </div>{/* 🌟 MOBILE FLOATING CIRCULAR ACTION BUTTONS (Smooth Slide Up) */}
       <div className="md:hidden fixed bottom-6 left-0 right-0 px-4 flex justify-between items-end z-40 pointer-events-none">
         <button onClick={() => openAppDrawer('builder')} className={`smooth-slide-up pointer-events-auto h-16 w-16 rounded-full shadow-2xl flex items-center justify-center text-2xl transition-transform active:scale-90 border-4 border-white ${buildStatus.isComplete ? 'bg-green-500 text-white' : 'bg-gray-900 text-white'}`} title={t.pcBuilder}>
           {buildStatus.isComplete ? '✅' : '🛠️'}
         </button>
         {cartCount > 0 && (
-          <button onClick={() => openAppDrawer('cart')} className="smooth-slide-up pointer-events-auto h-16 w-16 bg-yellow-400 text-black rounded-full shadow-2xl flex items-center justify-center text-2xl transition-transform active:scale-90 border-4 border-white relative cursor-pointer" style={{ animationDelay: '0.15s' }} title={t.yourCart}>
+          <button id="mobile-cart-btn" onClick={() => openAppDrawer('cart')} className="smooth-slide-up pointer-events-auto h-16 w-16 bg-yellow-400 text-black rounded-full shadow-2xl flex items-center justify-center text-2xl transition-transform active:scale-90 border-4 border-white relative cursor-pointer" style={{ animationDelay: '0.15s' }} title={t.yourCart}>
             🛒
             <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-black w-6 h-6 rounded-full flex items-center justify-center border-2 border-white shadow">
               {cartCount}
             </span>
           </button>
         )}
-      </div>{/* 🌟 FULL SCREEN CINEMATIC SPLASH (Only triggers ONCE per session) */}
+      </div>
+
+      {/* 🌟 FULL SCREEN CINEMATIC SPLASH (Only triggers ONCE per session) */}
       {showIntro && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#0a0f1c] text-white overflow-hidden cinematic-splash pointer-events-none">
           <div className="absolute w-[300px] h-[300px] md:w-[600px] md:h-[600px] bg-blue-600/20 blur-[100px] rounded-full animate-pulse"></div>
@@ -899,10 +938,10 @@ export default function Storefront() {
         </div>
       )}
 
-      {/* PRODUCT DETAIL & MULTI-PICTURE MODAL */}
+      {/* 🌟 PRODUCT DETAIL & MULTI-PICTURE MODAL (With Morph) */}
       {selectedProduct && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+          <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-modal-morph">
             <div className="p-4 bg-gray-900 text-white flex justify-between items-center shrink-0">
               <span className="text-xs font-bold text-yellow-400 uppercase tracking-widest">{t.categories[selectedProduct.category] || selectedProduct.category}</span>
               <button onClick={() => setSelectedProduct(null)} className="text-gray-400 hover:text-white text-2xl font-bold cursor-pointer">✕</button>
@@ -949,6 +988,9 @@ export default function Storefront() {
           </div>
         </div>
       )}
+
+      {/* 🌟 RENDER FLYING ITEMS LAYER */}
+      <FlyToCart items={flyingItems} onComplete={(id) => setFlyingItems(prev => prev.filter(i => i.uniqueId !== id))} />
 
     </div>
   );
