@@ -171,7 +171,7 @@ export default function Storefront() {
     }
   };
 
-  // 🌟 NEW TRIGGER FLY-TO-CART PARABOLA LOGIC
+ // 🌟 NEW TRIGGER FLY-TO-CART PARABOLA LOGIC
   const handleAddWithFeedback = (product, e) => {
     if (e) e.stopPropagation();
     if (product.in_stock === false) { setNotifyModalOpen(true); return; }
@@ -181,17 +181,20 @@ export default function Storefront() {
       const startX = rect.left + rect.width / 2 - 40; // 40 is half of flying image width
       const startY = rect.top + rect.height / 2 - 40;
 
-      // Smart tracking: Fly to the Mobile Cart on phones, Desktop Cart on PCs
-      const btnId = window.innerWidth < 1024 ? 'mobile-cart-btn' : 'desktop-cart-btn';
-      const cartBtn = document.getElementById(btnId);
-      
-      let endX = window.innerWidth - 60;
-      let endY = window.innerHeight - 60;
+      // 🌟 PERFECTED TARGET COORDINATES (No DOM searching needed)
+      const isMobile = window.innerWidth < 1024;
+      let endX, endY;
 
-      if (cartBtn) {
-        const cartRect = cartBtn.getBoundingClientRect();
-        endX = cartRect.left + cartRect.width / 2 - 40;
-        endY = cartRect.top + cartRect.height / 2 - 40;
+      if (isMobile) {
+        // Mobile cart button is 64x64px, 16px from right edge, 24px from bottom edge.
+        // Center is 48px from right, 56px from bottom.
+        // Subtracting 40px centers our 80px flying image perfectly.
+        endX = window.innerWidth - 88;
+        endY = window.innerHeight - 96;
+      } else {
+        // Desktop sticky bar Review Cart button position
+        endX = window.innerWidth - 120;
+        endY = window.innerHeight - 40;
       }
 
       setFlyingItems(prev => [...prev, {
