@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { fallbackSlides } from '../data/storeData';
+import { fallbackSlides } from '../Data/storeData';
 
 const SlidingHeroBanner = ({ slides, onAction, lang, proBuildersText }) => {
   const [currentSlide, setCurrentSlide] = useState(0);

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
-import { dictionary, categories, requiredParts, staticInventory } from '../data/storeData';
+import { dictionary, categories, requiredParts, staticInventory } from '../Data/storeData';
 import { customStyles, ScrollFadeItem } from './ScrollFadeItem';
 import SlidingHeroBanner from './SlidingHeroBanner';
 
