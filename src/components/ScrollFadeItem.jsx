@@ -28,6 +28,37 @@ export const customStyles = `
     0% { width: 0%; }
     100% { width: 100%; }
   }
+
+  /* 🌟 NEW PREMIUM ANIMATIONS */
+  @keyframes slideInRight {
+    from { transform: translateX(100%); box-shadow: none; }
+    to { transform: translateX(0); box-shadow: -15px 0 35px rgba(0,0,0,0.5); }
+  }
+  @keyframes scaleSpring {
+    0% { transform: scale(0); opacity: 0; }
+    60% { transform: scale(1.15); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes fadeInOverlay {
+    from { opacity: 0; backdrop-filter: blur(0px); }
+    to { opacity: 1; backdrop-filter: blur(4px); }
+  }
+
+  /* 🌟 NEW CSS CLASSES */
+  .animate-drawer {
+    animation: slideInRight 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .animate-fab {
+    animation: scaleSpring 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+  .animate-overlay {
+    animation: fadeInOverlay 0.4s ease-out forwards;
+  }
+  .spring-up {
+    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* Existing Utilities */
   .animate-kinetic {
     animation: kinetic-shift 4s ease-in-out infinite;
     display: inline-block;

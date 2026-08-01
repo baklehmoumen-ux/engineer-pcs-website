@@ -486,7 +486,7 @@ export default function Storefront() {
           )}
         </div>
       </main>{/* 🌟 DESKTOP FRICTIONLESS STICKY SUMMARY */}
-      <div className={`hidden lg:flex fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-md border-t border-gray-800 p-3 px-8 justify-between items-center z-40 shadow-[0_-10px_25px_rgba(0,0,0,0.5)] transition-transform duration-500 ${cartCount > 0 || selectingFor ? 'translate-y-0' : 'translate-y-full'}`}>
+      <div className={`hidden lg:flex fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-md border-t border-gray-800 p-3 px-8 justify-between items-center z-40 shadow-[0_-10px_25px_rgba(0,0,0,0.5)] spring-up ${cartCount > 0 || selectingFor ? 'translate-y-0' : 'translate-y-full'}`}>
         <div className="flex items-center gap-8 text-white max-w-7xl mx-auto w-full">
           <div className="flex items-center gap-3">
             <span className="text-3xl">{buildStatus.isComplete ? '✅' : '🛠️'}</span>
@@ -521,11 +521,11 @@ export default function Storefront() {
 
       {/* 🌟 MOBILE FLOATING CIRCULAR ACTION BUTTONS */}
       <div className="md:hidden fixed bottom-6 left-0 right-0 px-4 flex justify-between items-end z-40 pointer-events-none">
-        <button onClick={() => { setDrawerView('builder'); setIsDrawerOpen(true); }} className={`pointer-events-auto h-16 w-16 rounded-full shadow-2xl flex items-center justify-center text-2xl transition-transform active:scale-90 border-4 border-white ${buildStatus.isComplete ? 'bg-green-500 text-white' : 'bg-gray-900 text-white'}`} title={t.pcBuilder}>
+        <button onClick={() => { setDrawerView('builder'); setIsDrawerOpen(true); }} className={`animate-fab pointer-events-auto h-16 w-16 rounded-full shadow-2xl flex items-center justify-center text-2xl transition-transform active:scale-90 border-4 border-white ${buildStatus.isComplete ? 'bg-green-500 text-white' : 'bg-gray-900 text-white'}`} title={t.pcBuilder}>
           {buildStatus.isComplete ? '✅' : '🛠️'}
         </button>
         {cartCount > 0 && (
-          <button onClick={() => { setDrawerView('cart'); setIsDrawerOpen(true); }} className="pointer-events-auto h-16 w-16 bg-yellow-400 text-black rounded-full shadow-2xl flex items-center justify-center text-2xl transition-transform active:scale-90 border-4 border-white relative cursor-pointer" title={t.yourCart}>
+          <button onClick={() => { setDrawerView('cart'); setIsDrawerOpen(true); }} className="animate-fab pointer-events-auto h-16 w-16 bg-yellow-400 text-black rounded-full shadow-2xl flex items-center justify-center text-2xl transition-transform active:scale-90 border-4 border-white relative cursor-pointer" style={{ animationDelay: '0.1s' }} title={t.yourCart}>
             🛒
             <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-black w-6 h-6 rounded-full flex items-center justify-center border-2 border-white shadow">
               {cartCount}
@@ -634,17 +634,30 @@ export default function Storefront() {
 
       {/* INTERACTIVE MULTI-STEP CHECKOUT & BUILDER DRAWER */}
       {isDrawerOpen && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm transition-opacity">
-          <div className="w-full max-w-md bg-white h-full shadow-2xl flex flex-col animate-slide-in-right">
-            <div className="p-4 md:p-6 bg-gray-900 text-white flex justify-between items-center shadow-md">
+        <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm animate-overlay">
+          <div className="w-full max-w-md bg-white h-full shadow-2xl flex flex-col animate-drawer">
+            <div className="p-4 md:p-6 bg-gray-900 text-white flex justify-between items-center shadow-md z-10">
               <h2 className="text-xl md:text-2xl font-bold flex items-center gap-2">
                 {drawerView === 'cart' ? t.yourCart : drawerView === 'checkout' ? t.checkout : drawerView === 'auth' ? t.createAccount : t.pcBuilder}
               </h2>
               <button onClick={() => setIsDrawerOpen(false)} className="text-gray-400 hover:text-white text-3xl font-bold leading-none cursor-pointer">&times;</button>
             </div>
-            <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
+            <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50 relative">
+              
               {drawerView === 'builder' && (
                 <div className="space-y-4 pb-20 md:pb-0">
+                  
+                  {/* 🌟 NEW CREATIVE INTRODUCTION CARD */}
+                  <div className="bg-gradient-to-br from-gray-900 via-[#1a233a] to-blue-900 text-white p-5 rounded-2xl shadow-lg border border-gray-800 relative overflow-hidden animate-fade-in-up">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl transform translate-x-10 -translate-y-10 pointer-events-none"></div>
+                    <h3 className="font-black text-lg md:text-xl flex items-center gap-2 mb-2 relative z-10">
+                      <span className="text-yellow-400">✨</span> Engineer Your Masterpiece
+                    </h3>
+                    <p className="text-gray-300 text-xs leading-relaxed font-medium relative z-10">
+                      Welcome to your personalized garage. Every component you select is instantly cross-checked for <strong>socket compatibility, spatial limits, and wattage requirements</strong>. Build your dream machine with absolute confidence.
+                    </p>
+                  </div>
+
                   <div className="bg-gray-900 text-white p-4 rounded-2xl shadow-lg space-y-3 border border-gray-800">
                     <div className="flex justify-between items-center border-b border-gray-800 pb-2">
                       <span className="text-xs font-extrabold text-yellow-400 uppercase tracking-widest">{t.expectedPerf}</span>
